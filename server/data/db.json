@@ -1,0 +1,363 @@
+{
+  "users": [],
+  "liked_songs": [
+    {
+      "id": "like_8901b5bce1bc",
+      "userId": "guest",
+      "trackId": "qn4gwho7u",
+      "title": "наколки",
+      "artist": "Unknown Artist",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "source": "local",
+      "cover": null,
+      "addedAt": "2026-10-18T19:09:02.036Z"
+    }
+  ],
+  "liked_artists": [
+    {
+      "userId": "guest",
+      "key": "9282c8b4-ca0b-4c6b-b7e3-4f7762dfc4d6",
+      "id": "9282c8b4-ca0b-4c6b-b7e3-4f7762dfc4d6",
+      "name": "Nirvana",
+      "image": "",
+      "likedAt": "2026-10-19T15:54:29.102Z"
+    },
+    {
+      "userId": "guest",
+      "key": "33ff8a92-2f3b-4cac-8ea0-5eebfa995626",
+      "id": "33ff8a92-2f3b-4cac-8ea0-5eebfa995626",
+      "name": "KANA-BOON",
+      "image": "",
+      "likedAt": "2026-10-19T13:33:23.980Z"
+    },
+    {
+      "userId": "guest",
+      "key": "cb54014a-d728-4e8d-8934-15426a3ddd5d",
+      "id": "cb54014a-d728-4e8d-8934-15426a3ddd5d",
+      "name": "Dooz Kawa",
+      "image": "",
+      "likedAt": "2026-10-19T10:13:04.762Z"
+    }
+  ],
+  "playlists": [],
+  "imported_media": [],
+  "play_events": [
+    {
+      "id": "play_5b553f907673",
+      "userId": "guest",
+      "title": "Save Your Tears (Official Music Video)",
+      "artist": "The Weeknd",
+      "playedAt": "2026-10-19T15:54:43.038Z"
+    },
+    {
+      "id": "play_e249a844ba5f",
+      "userId": "guest",
+      "title": "Kekra - 9 Milli",
+      "artist": "YouTube",
+      "playedAt": "2026-10-19T13:44:11.821Z"
+    },
+    {
+      "id": "play_243a7f142005",
+      "userId": "guest",
+      "title": "Julie Pietri - Eve lève toi (Clip Officiel - avec paroles)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-19T13:38:39.004Z"
+    },
+    {
+      "id": "play_fcec2ce1f193",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T13:15:09.313Z"
+    },
+    {
+      "id": "play_45c2f34a2896",
+      "userId": "guest",
+      "title": "Harder, Better, Faster, Stronger",
+      "artist": "Daft Punk",
+      "playedAt": "2026-10-19T12:04:57.965Z"
+    },
+    {
+      "id": "play_3c882a982368",
+      "userId": "guest",
+      "title": "The HU - Yuve Yuve Yu",
+      "artist": "YouTube",
+      "playedAt": "2026-10-19T10:02:00.165Z"
+    },
+    {
+      "id": "play_d7edfd3baf0e",
+      "userId": "guest",
+      "title": "The HU - Yuve Yuve Yu (Official Music Video)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-19T09:26:49.898Z"
+    },
+    {
+      "id": "play_3a4f730df2a0",
+      "userId": "guest",
+      "title": "The HU - Yuve Yuve Yu (Official Music Video)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-19T08:08:58.860Z"
+    },
+    {
+      "id": "play_ff95ec7359ec",
+      "userId": "guest",
+      "title": "VAN HALEN (Clip Officiel)",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-19T08:08:57.666Z"
+    },
+    {
+      "id": "play_0e95b0f1915f",
+      "userId": "guest",
+      "title": "Dancing In The Flames (Official Music Video)",
+      "artist": "The Weeknd",
+      "playedAt": "2026-10-19T07:46:54.574Z"
+    },
+    {
+      "id": "play_1b5b5ec53914",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T07:46:31.045Z"
+    },
+    {
+      "id": "play_c13bf37b3ad1",
+      "userId": "guest",
+      "title": "VAN HALEN (Clip Officiel) [dl_a55bc307463ff21e]",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-19T07:39:52.954Z"
+    },
+    {
+      "id": "play_2aaa6658084f",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T07:39:38.524Z"
+    },
+    {
+      "id": "play_67ced7106a24",
+      "userId": "guest",
+      "title": "VAN HALEN (Clip Officiel) [dl_a55bc307463ff21e]",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-19T07:36:53.463Z"
+    },
+    {
+      "id": "play_773fd6865e58",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T07:35:54.306Z"
+    },
+    {
+      "id": "play_df6f56b0b5e2",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T07:35:42.826Z"
+    },
+    {
+      "id": "play_5443e56fe0f3",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T07:35:29.818Z"
+    },
+    {
+      "id": "play_8997383e9aa6",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-19T07:02:22.847Z"
+    },
+    {
+      "id": "play_67a10784ce54",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "",
+      "playedAt": "2026-10-18T19:07:18.357Z"
+    }
+  ],
+  "downloads": [
+    {
+      "id": "dl_d5c7f19d14bf86ad",
+      "userId": "guest",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Kekra - 9 Milli (Clip Officiel) [dl_d5c7f19d14bf86ad].mp3",
+      "fileName": "Kekra - 9 Milli (Clip Officiel) [dl_d5c7f19d14bf86ad].mp3",
+      "fileSize": 7451547,
+      "fileSizeFormatted": "7.11 MB",
+      "downloadedAt": "2026-10-19T13:44:11.347Z"
+    },
+    {
+      "id": "dl_0dc55e1da62bf937",
+      "userId": "guest",
+      "title": "Eve lève toi (Clip Officiel - avec paroles)",
+      "artist": "Julie Pietri",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Julie Pietri - Eve lève toi (Clip Officiel - avec paroles) [dl_0dc55e1da62bf937].mp3",
+      "fileName": "Julie Pietri - Eve lève toi (Clip Officiel - avec paroles) [dl_0dc55e1da62bf937].mp3",
+      "fileSize": 6933652,
+      "fileSizeFormatted": "6.61 MB",
+      "downloadedAt": "2026-10-19T13:38:38.126Z"
+    },
+    {
+      "id": "dl_2dcbf2a6862dbde6",
+      "userId": "guest",
+      "title": "Harder, Better, Faster, Stronger (Official Video)",
+      "artist": "Daft Punk",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Daft Punk - Harder, Better, Faster, Stronger (Official Video) [dl_2dcbf2a6862dbde6].mp3",
+      "fileName": "Daft Punk - Harder, Better, Faster, Stronger (Official Video) [dl_2dcbf2a6862dbde6].mp3",
+      "fileSize": 6815511,
+      "fileSizeFormatted": "6.50 MB",
+      "downloadedAt": "2026-10-19T12:04:57.811Z"
+    },
+    {
+      "id": "dl_f2250abb315f2a0d",
+      "userId": "guest",
+      "title": "VAN HALEN (Clip Officiel)",
+      "artist": "KAARIS",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\KAARIS - VAN HALEN (Clip Officiel) [dl_f2250abb315f2a0d].mp3",
+      "fileName": "KAARIS - VAN HALEN (Clip Officiel) [dl_f2250abb315f2a0d].mp3",
+      "fileSize": 6941351,
+      "fileSizeFormatted": "6.62 MB",
+      "downloadedAt": "2026-10-19T10:04:04.845Z"
+    },
+    {
+      "id": "dl_f77757b08d71cda8",
+      "userId": "guest",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\KAARIS - HURACAN (Clip Officiel) [dl_f77757b08d71cda8].mp3",
+      "fileName": "KAARIS - HURACAN (Clip Officiel) [dl_f77757b08d71cda8].mp3",
+      "fileSize": 8459723,
+      "fileSizeFormatted": "8.07 MB",
+      "downloadedAt": "2026-10-19T10:04:00.503Z"
+    },
+    {
+      "id": "dl_62bef4dcd1b3800a",
+      "userId": "guest",
+      "title": "Top 50 Hits Music Spotify 2026🩶｜｜ The Hottest Trending Songs on TikTok -- Best Healing Acoustic 2026",
+      "artist": "YouTube Audio",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Top 50 Hits Music Spotify 2026🩶｜｜ The Hottest Trending Songs on TikTok -- Best Healing Acoustic 2026 [dl_62bef4dcd1b3800a].mp3",
+      "fileName": "Top 50 Hits Music Spotify 2026🩶｜｜ The Hottest Trending Songs on TikTok -- Best Healing Acoustic 2026 [dl_62bef4dcd1b3800a].mp3",
+      "fileSize": 210743699,
+      "fileSizeFormatted": "200.98 MB",
+      "downloadedAt": "2026-10-19T10:04:00.228Z"
+    },
+    {
+      "id": "dl_dc343ffb899f119b",
+      "userId": "guest",
+      "title": "Top Pop Songs 2025 - Billboard Top 100 🎧🔥 Justin Bieber Billie Eilish Miley Cyrus",
+      "artist": "Pop Music 2025",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Pop Music 2025 - Top Pop Songs 2025 - Billboard Top 100 🎧🔥 Justin Bieber Billie Eilish Miley Cyrus [dl_dc343ffb899f119b].mp3",
+      "fileName": "Pop Music 2025 - Top Pop Songs 2025 - Billboard Top 100 🎧🔥 Justin Bieber Billie Eilish Miley Cyrus [dl_dc343ffb899f119b].mp3",
+      "fileSize": 238051294,
+      "fileSizeFormatted": "227.02 MB",
+      "downloadedAt": "2026-10-19T10:03:58.116Z"
+    },
+    {
+      "id": "dl_70b3952cdd1d3706",
+      "userId": "guest",
+      "title": "LA CHEVRE (CLIP OFFICIEL)",
+      "artist": "KAARIS",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\KAARIS - LA CHEVRE (CLIP OFFICIEL) [dl_70b3952cdd1d3706].mp3",
+      "fileName": "KAARIS - LA CHEVRE (CLIP OFFICIEL) [dl_70b3952cdd1d3706].mp3",
+      "fileSize": 5248789,
+      "fileSizeFormatted": "5.01 MB",
+      "downloadedAt": "2026-10-19T10:03:52.619Z"
+    },
+    {
+      "id": "dl_8456f71bdcc47d67",
+      "userId": "guest",
+      "title": "Zoo",
+      "artist": "Kaaris",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Kaaris - Zoo [dl_8456f71bdcc47d67].mp3",
+      "fileName": "Kaaris - Zoo [dl_8456f71bdcc47d67].mp3",
+      "fileSize": 9767759,
+      "fileSizeFormatted": "9.32 MB",
+      "downloadedAt": "2026-10-19T10:03:46.204Z"
+    },
+    {
+      "id": "dl_eb58672a23785edf",
+      "userId": "guest",
+      "title": "Top 200 Most Viewed Rock Songs On YouTube(101-200). Best Rock Songs.",
+      "artist": "YouTube Audio",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Top 200 Most Viewed Rock Songs On YouTube(101-200). Best Rock Songs. [dl_eb58672a23785edf].mp3",
+      "fileName": "Top 200 Most Viewed Rock Songs On YouTube(101-200). Best Rock Songs. [dl_eb58672a23785edf].mp3",
+      "fileSize": 17546233,
+      "fileSizeFormatted": "16.73 MB",
+      "downloadedAt": "2026-10-19T10:03:37.404Z"
+    },
+    {
+      "id": "dl_35ede204edd0b17c",
+      "userId": "guest",
+      "title": "Music Mix 2026 ｜ Party Club Dance 2026 ｜ Best Remixes Of Popular Songs 2026 MEGAMIX (DJ Silviu M)",
+      "artist": "YouTube Audio",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Music Mix 2026 ｜ Party Club Dance 2026 ｜ Best Remixes Of Popular Songs 2026 MEGAMIX (DJ Silviu M) [dl_35ede204edd0b17c].mp3",
+      "fileName": "Music Mix 2026 ｜ Party Club Dance 2026 ｜ Best Remixes Of Popular Songs 2026 MEGAMIX (DJ Silviu M) [dl_35ede204edd0b17c].mp3",
+      "fileSize": 165474182,
+      "fileSizeFormatted": "157.81 MB",
+      "downloadedAt": "2026-10-19T10:03:24.929Z"
+    },
+    {
+      "id": "dl_03f89d1fde7cbe89",
+      "userId": "guest",
+      "title": "Out of Time",
+      "artist": "The Weeknd",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Out of Time [dl_03f89d1fde7cbe89].mp3",
+      "fileName": "The Weeknd - Out of Time [dl_03f89d1fde7cbe89].mp3",
+      "fileSize": 7472975,
+      "fileSizeFormatted": "7.13 MB",
+      "downloadedAt": "2026-10-19T10:02:10.157Z"
+    },
+    {
+      "id": "dl_46316bf870406642",
+      "userId": "guest",
+      "title": "Starboy ft. Daft Punk (Official Video) ft. Daft Punk",
+      "artist": "The Weeknd",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Starboy ft. Daft Punk (Official Video) ft. Daft Punk [dl_46316bf870406642].mp3",
+      "fileName": "The Weeknd - Starboy ft. Daft Punk (Official Video) ft. Daft Punk [dl_46316bf870406642].mp3",
+      "fileSize": 8893598,
+      "fileSizeFormatted": "8.48 MB",
+      "downloadedAt": "2026-10-19T10:02:08.125Z"
+    },
+    {
+      "id": "dl_276856efcb6d1338",
+      "userId": "guest",
+      "title": "Save Your Tears (Official Music Video)",
+      "artist": "The Weeknd",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Save Your Tears (Official Music Video) [dl_276856efcb6d1338].mp3",
+      "fileName": "The Weeknd - Save Your Tears (Official Music Video) [dl_276856efcb6d1338].mp3",
+      "fileSize": 8635288,
+      "fileSizeFormatted": "8.24 MB",
+      "downloadedAt": "2026-10-19T10:02:06.890Z"
+    },
+    {
+      "id": "dl_31c0db12176f4826",
+      "userId": "guest",
+      "title": "Yuve Yuve Yu (Official Music Video)",
+      "artist": "The HU",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The HU - Yuve Yuve Yu (Official Music Video) [dl_31c0db12176f4826].mp3",
+      "fileName": "The HU - Yuve Yuve Yu (Official Music Video) [dl_31c0db12176f4826].mp3",
+      "fileSize": 11779819,
+      "fileSizeFormatted": "11.23 MB",
+      "downloadedAt": "2026-10-19T10:01:59.888Z"
+    },
+    {
+      "id": "dl_0cdd09c6a505840e",
+      "userId": "guest",
+      "title": "Dancing In The Flames (Official Music Video)",
+      "artist": "The Weeknd",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Dancing In The Flames (Official Music Video) [dl_0cdd09c6a505840e].mp3",
+      "fileName": "The Weeknd - Dancing In The Flames (Official Music Video) [dl_0cdd09c6a505840e].mp3",
+      "fileSize": 8531336,
+      "fileSizeFormatted": "8.14 MB",
+      "downloadedAt": "2026-10-19T10:01:58.593Z"
+    }
+  ],
+  "settings": {
+    "version": "1.2.0",
+    "initializedAt": "2026-10-18T09:44:24.843Z"
+  }
+}

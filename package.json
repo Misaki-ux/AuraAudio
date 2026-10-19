@@ -1,0 +1,61 @@
+{
+  "name": "auraplayer",
+  "version": "1.2.0",
+  "description": "AuraAudio - Modern Dark Glassmorphic Audio Player with 3-State Dynamic Reduction and Smart Auto-Reduction",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "server": "node server/index.js",
+    "setup:ytdlp": "powershell -ExecutionPolicy Bypass -File tools/install-ytdlp.ps1",
+    "dev": "electron . --enable-logging",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.auraplayer.app",
+    "productName": "AuraAudio",
+    "files": [
+      "**/*",
+      "!downloads/**",
+      "!server/data/db.json",
+      "!dist/**"
+    ],
+    "win": {
+      "icon": "assets/royal-blue/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "mac": {
+      "icon": "assets/icon.png",
+      "target": [
+        "dmg"
+      ]
+    }
+  },
+  "keywords": [
+    "audio-player",
+    "music-player",
+    "electron",
+    "glassmorphism",
+    "compact-player",
+    "mini-player",
+    "indexeddb",
+    "audio-visualizer",
+    "tailwindcss"
+  ],
+  "author": "Yohann",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3"
+  }
+}

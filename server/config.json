@@ -1,0 +1,62 @@
+{
+  "server": {
+    "port": 3456,
+    "host": "127.0.0.1",
+    "jwtSecret": "aura_audio_jwt_super_secret_key_2026_dev",
+    "tokenExpiryHours": 72
+  },
+  "storage": {
+    "downloadsDir": "./downloads",
+    "databaseFile": "./server/data/db.json"
+  },
+  "oauth": {
+    "google": {
+      "name": "Google",
+      "icon": "fa-brands fa-google",
+      "enabled": true,
+      "clientId": "aura-google-client-id.apps.googleusercontent.com",
+      "clientSecret": "GOCSPX-auraGoogleSecretKey",
+      "authUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "tokenUrl": "https://oauth2.googleapis.com/token",
+      "userInfoUrl": "https://www.googleapis.com/oauth2/v3/userinfo",
+      "redirectUri": "http://127.0.0.1:3456/api/auth/oauth/google/callback",
+      "scope": "openid profile email"
+    },
+    "github": {
+      "name": "GitHub",
+      "icon": "fa-brands fa-github",
+      "enabled": true,
+      "clientId": "aura_gh_client_id_dev",
+      "clientSecret": "aura_gh_secret_key_dev",
+      "authUrl": "https://github.com/login/oauth/authorize",
+      "tokenUrl": "https://github.com/login/oauth/access_token",
+      "userInfoUrl": "https://api.github.com/user",
+      "redirectUri": "http://127.0.0.1:3456/api/auth/oauth/github/callback",
+      "scope": "read:user user:email"
+    },
+    "spotify": {
+      "name": "Spotify",
+      "icon": "fa-brands fa-spotify",
+      "enabled": true,
+      "clientId": "aura_spotify_client_id_dev",
+      "clientSecret": "aura_spotify_secret_key_dev",
+      "authUrl": "https://accounts.spotify.com/authorize",
+      "tokenUrl": "https://accounts.spotify.com/api/token",
+      "userInfoUrl": "https://api.spotify.com/v1/me",
+      "redirectUri": "http://127.0.0.1:3456/api/auth/oauth/spotify/callback",
+      "scope": "user-read-private user-read-email user-library-read"
+    },
+    "discord": {
+      "name": "Discord",
+      "icon": "fa-brands fa-discord",
+      "enabled": true,
+      "clientId": "aura_discord_client_id_dev",
+      "clientSecret": "aura_discord_secret_key_dev",
+      "authUrl": "https://discord.com/api/oauth2/authorize",
+      "tokenUrl": "https://discord.com/api/oauth2/token",
+      "userInfoUrl": "https://discord.com/api/users/@me",
+      "redirectUri": "http://127.0.0.1:3456/api/auth/oauth/discord/callback",
+      "scope": "identify email"
+    }
+  }
+}
