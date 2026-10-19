@@ -1,4 +1,10 @@
-# <img src="assets/icon_64x64.png" width="36" height="36" align="center" alt="AuraAudio Logo" /> AuraAudio (AuraPlayer)
+# <img width="36" height="36" alt="x" src="https://github.com/user-attachments/assets/7e19a74c-bfbf-4184-8a01-df4ac2a67286" />
+ AuraAudio (AuraPlayer)
+<img width="114" height="23" alt="image" src="https://github.com/user-attachments/assets/017ad516-6949-4f01-be62-c09facc85496" />
+<img width="120" height="25" alt="image" src="https://github.com/user-attachments/assets/941c4ef5-8713-41c0-b9eb-5256edd9fe37" />
+<img width="121" height="24" alt="image" src="https://github.com/user-attachments/assets/ff68bfba-fb25-4f64-ac37-d9e18993a087" />
+<img width="120" height="31" alt="image" src="https://github.com/user-attachments/assets/e4560669-ba46-44ab-9449-1e3f3d8b41b7" />
+<img width="112" height="30" alt="image" src="https://github.com/user-attachments/assets/2fa4ae7c-d20b-40c9-a073-ccac064e3a50" />
 
 > **Modern Dark Glassmorphic Audio Player** engineered for desktop multitasking with **3-State Dynamic Reduction**, an intelligent **Auto-Reduction Engine**, and custom branded artwork.
 
@@ -9,11 +15,18 @@
 
 ---
 
+
+
+
+
 ## ✨ Features at a Glance
 
 - 🎛️ **3-State Dynamic Reduction**:
+  <img width="993" height="608" alt="image" src="https://github.com/user-attachments/assets/57394600-ea54-4f80-b0fd-a8105655cc52" />
   - **Full Mode (920 × 580)**: Complete dashboard with rotating vinyl disc and branded label, real-time audio spectrum visualizer, full playlist queue with instant search & drag-and-drop, track information, seekbar, and YT Shorts-style vertical volume popup.
+    <img width="567" height="243" alt="image" src="https://github.com/user-attachments/assets/e4f713a0-4b80-4d8a-9a3e-b84071f71e7a" />
   - **Compact Mode (520 × 240)**: Sleek horizontal media card with medium spinning vinyl disc, marquee ticker, seekbar, full controls, and horizontal volume slider.
+    <img width="523" height="128" alt="image" src="https://github.com/user-attachments/assets/2580b5ef-07e3-4f65-8c80-c1693f39ace9" />
   - **Micro Mode (360 × 74)**: Ultra-compact floating pill bar with mini vinyl disc, scrolling track marquee, time tracker, and micro controls.
 - ⚡ **Intelligent Auto-Reduction Engine**:
   - **Inactivity / Idle Auto-Reduction**: Automatically detects when you are idle (configurable to 15s, 30s, 1m, 2m, or 5m) and smoothly shrinks the player to Compact or Micro mode with a graceful countdown toast.
@@ -39,10 +52,17 @@
 - 📥 **Favorite on Import**: Choose **Like imports** before adding audio files, and use the heart on any queue card to update favorites.
 - 👤 **Guest-first account access**: The main navigation keeps Queue, Search, Discover, DL My Songs, and Liked. Create and load playlists from Queue; sign-in and cloud options open from the Guest/account button.
 - 🔍 **Global Search**: Search the local library, curated catalog, and real YouTube results from a dedicated tab; results update as you type. Queue filtering remains available separately.
+  <img width="555" height="396" alt="image" src="https://github.com/user-attachments/assets/b1988bb7-56a4-484a-a8b6-4cd0d705a23e" />
+
 - 💗 **Liked library**: Liked songs and artists share the same row styling and can be collapsed independently on desktop and mobile.
 - ✨ **Personalized Discovery**: Recommendations use the current user's likes, imported media, downloads, playlists, and recent plays. Opening Discover fetches fresh data from the server.
+  <img width="558" height="494" alt="image" src="https://github.com/user-attachments/assets/7ffd9910-696f-4bfd-b8a2-3ac0b801d2f9" />
+  <img width="565" height="471" alt="image" src="https://github.com/user-attachments/assets/f488c076-3f66-4950-bd34-ebe811b65992" />
+
 - 🎙️ **Artist discovery**: Search and open artist profiles with biographies, portraits, albums, artwork, and playable recording results. Favorite artists and songs directly from the discovery view. Metadata comes from MusicBrainz, Wikimedia, and Cover Art Archive when available.
 - 🧹 **Cache controls**: Settings estimates local imported audio and server download sizes before partial or full cleanup.
+  <img width="917" height="217" alt="image" src="https://github.com/user-attachments/assets/305e706a-06b8-434f-83cc-564a7f461f0f" />
+
 - 🗂️ **Queue playlists**: Load playlists from the Queue selector, or use the vertical dots on a track to add it to a playlist, open its artist or album, or search related songs.
 - 🔗 **Service playlist imports**: Import Spotify playlists and saved songs from Spotify's personal-data JSON export; AuraAudio does not connect to the Spotify Web API. Apple Music supports developer-token validation and MusicKit account authorization before playlist import. SoundCloud playlists are read through yt-dlp; tracks only play locally when the source marks them downloadable. Spotify and Apple Music audio stays in the official service.
 - 🎚️ **Daily mixes**: Choose Your Aura Mix, Electro, Pop, or Rock in Discover or the Queue playlist selector. Your Aura Mix reflects liked songs and listening history; mood mixes use YouTube results with curated fallbacks. Playback downloads tracks only as they are played. Use **Download full mix** for an explicit batch download (up to two at a time) with per-track status. Discover data is cached per profile for ten minutes and can be refreshed manually.
