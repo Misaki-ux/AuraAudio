@@ -1,10 +1,10 @@
 # <img width="36" height="36" alt="x" src="https://github.com/user-attachments/assets/7e19a74c-bfbf-4184-8a01-df4ac2a67286" />
- AuraAudio (AuraPlayer)
-<img width="114" height="23" alt="image" src="https://github.com/user-attachments/assets/017ad516-6949-4f01-be62-c09facc85496" />
+
+<img width="120" height="25" alt="image" src="https://github.com/user-attachments/assets/017ad516-6949-4f01-be62-c09facc85496" />
 <img width="120" height="25" alt="image" src="https://github.com/user-attachments/assets/941c4ef5-8713-41c0-b9eb-5256edd9fe37" />
-<img width="121" height="24" alt="image" src="https://github.com/user-attachments/assets/ff68bfba-fb25-4f64-ac37-d9e18993a087" />
-<img width="120" height="31" alt="image" src="https://github.com/user-attachments/assets/e4560669-ba46-44ab-9449-1e3f3d8b41b7" />
-<img width="112" height="30" alt="image" src="https://github.com/user-attachments/assets/2fa4ae7c-d20b-40c9-a073-ccac064e3a50" />
+<img width="120" height="25" alt="image" src="https://github.com/user-attachments/assets/ff68bfba-fb25-4f64-ac37-d9e18993a087" />
+<img width="120" height="25" alt="image" src="https://github.com/user-attachments/assets/e4560669-ba46-44ab-9449-1e3f3d8b41b7" />
+<img width="120" height="25" alt="image" src="https://github.com/user-attachments/assets/2fa4ae7c-d20b-40c9-a073-ccac064e3a50" />
 
 > **Modern Dark Glassmorphic Audio Player** engineered for desktop multitasking with **3-State Dynamic Reduction**, an intelligent **Auto-Reduction Engine**, and custom branded artwork.
 
@@ -16,15 +16,12 @@
 ---
 
 
-
-
-
 ## ✨ Features at a Glance
 
 - 🎛️ **3-State Dynamic Reduction**:
   <img width="993" height="608" alt="image" src="https://github.com/user-attachments/assets/57394600-ea54-4f80-b0fd-a8105655cc52" />
   - **Full Mode (920 × 580)**: Complete dashboard with rotating vinyl disc and branded label, real-time audio spectrum visualizer, full playlist queue with instant search & drag-and-drop, track information, seekbar, and YT Shorts-style vertical volume popup.
-    <img width="567" height="243" alt="image" src="https://github.com/user-attachments/assets/e4f713a0-4b80-4d8a-9a3e-b84071f71e7a" />
+       <img width="567" height="243" alt="image" src="https://github.com/user-attachments/assets/e4f713a0-4b80-4d8a-9a3e-b84071f71e7a" />
   - **Compact Mode (520 × 240)**: Sleek horizontal media card with medium spinning vinyl disc, marquee ticker, seekbar, full controls, and horizontal volume slider.
     <img width="523" height="128" alt="image" src="https://github.com/user-attachments/assets/2580b5ef-07e3-4f65-8c80-c1693f39ace9" />
   - **Micro Mode (360 × 74)**: Ultra-compact floating pill bar with mini vinyl disc, scrolling track marquee, time tracker, and micro controls.
