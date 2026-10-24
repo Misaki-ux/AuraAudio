@@ -7,13 +7,14 @@ const url = require('url');
 const path = require('path');
 const fs = require('fs');
 const MusicMetadataService = require('./music-metadata');
+const { matchKey } = require('./music-metadata');
 
 function downloadIdentity(track) {
     const title = String(track.title || path.parse(track.fileName || '').name).toLocaleLowerCase()
         .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
         .replace(/\s*\[(?:dl_)?[a-f0-9]{8,}\]\s*/gi, ' ')
         .replace(/\((?:official\s+)?(?:music\s+)?video\)|\[(?:official\s+)?(?:music\s+)?video\]/gi, ' ')
-        .replace(/\s+/g, ' ').trim();
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' ').trim();
     const artist = String(track.artist || '').toLocaleLowerCase().trim();
     const knownArtist = artist && !/^(unknown(?: artist)?|youtube(?: audio)?|local(?: track| audio)?)$/i.test(artist);
     return title ? { title, artist: knownArtist ? artist : '' } : null;
@@ -26,13 +27,13 @@ function sameDownload(trackA, trackB) {
 }
 
 class ApiRouter {
-    constructor(db, authService, discoveryService, youtubeService, downloadsDir) {
+    constructor(db, authService, discoveryService, youtubeService, downloadsDir, musicMetadata) {
         this.db = db;
         this.auth = authService;
         this.discovery = discoveryService;
         this.ytb = youtubeService;
         this.downloadsDir = path.resolve(downloadsDir);
-        this.musicMetadata = new MusicMetadataService();
+        this.musicMetadata = musicMetadata || new MusicMetadataService();
     }
 
     sendJson(res, statusCode, data) {
@@ -40,7 +41,7 @@ class ApiRouter {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range'
         });
         res.end(JSON.stringify(data));
     }
@@ -101,84 +102,133 @@ class ApiRouter {
         const pathname = fullUrl.pathname;
         const method = req.method.toUpperCase();
         const query = Object.fromEntries(fullUrl.searchParams.entries());
-
-        // Handle CORS preflight
+        const diagnosticCategory = pathname.startsWith('/api/auth/') ? 'auth'
+            : pathname.startsWith('/api/search') ? 'search'
+                : pathname.startsWith('/api/discovery/') ? 'discovery'
+                    : pathname.startsWith('/api/library/') ? 'library'
+                        : pathname.startsWith('/api/ytb/') ? 'download'
+                            : pathname.startsWith('/api/media/') ? 'media'
+                                : pathname.startsWith('/api/covers/') ? 'artwork'
+                                    : pathname.startsWith('/api/telemetry') ? 'telemetry' : 'api';
+        const writeHead = res.writeHead.bind(res);
+        res.writeHead = (statusCode, ...args) => {
+            if (pathname.startsWith('/api/') && Number(statusCode) >= 400) {
+                const authUser = this.getAuthUser(req);
+                this.db.recordDiagnostic(authUser ? authUser.userId : 'guest', diagnosticCategory, method, Number(statusCode));
+            }
+            return writeHead(statusCode, ...args);
+        };
+        
+        // CORS preflight: browsers send OPTIONS before POST/DELETE with JSON or Authorization headers.
+        // It must answer 2xx or the real request is never sent.
         if (method === 'OPTIONS') {
             res.writeHead(204, {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range',
+                'Access-Control-Allow-Private-Network': 'true',
+                'Access-Control-Max-Age': '86400'
             });
             return res.end();
         }
 
-        try {
-            if (pathname === '/api/integrations/apple/validate' && method === 'POST') {
-                const body = await this.parseBody(req);
-                const developerToken = typeof body.developerToken === 'string' ? body.developerToken.trim() : '';
-                if (developerToken.split('.').length !== 3) return this.sendError(res, 400, 'Paste a signed Apple Music developer token (JWT).');
-                const headers = { Authorization: `Bearer ${developerToken}` };
+        // GET /api/lyrics (Proxied to LRCLIB)
+        if (pathname === '/api/lyrics' && method === 'GET') {
+            let title = String(query.title || '').trim();
+            const artist = String(query.artist || '').trim();
+            if (!title) return this.sendJson(res, 200, { lines: [] });
+            
+            // Clean raw YouTube titles (e.g. remove "(Clip Officiel)")
+            title = title.replace(/\((?:official\s+)?(?:music\s+)?video\)|\[(?:official\s+)?(?:music\s+)?video\]|\(clip officiel\)|\(audio\)|\(lyrics?\)/gi, '').trim();
+
+            const fetchLyrics = async (url) => {
                 try {
-                    const origin = typeof body.origin === 'string' ? new URL(body.origin).origin : '';
-                    if (origin) headers.Origin = origin;
-                } catch (_) { return this.sendError(res, 400, 'The app origin is invalid.'); }
-                const upstream = await fetch('https://api.music.apple.com/v1/test', { headers, signal: AbortSignal.timeout(12000) });
-                const responseText = await upstream.text();
-                const payload = responseText ? (() => { try { return JSON.parse(responseText); } catch (_) { return {}; } })() : {};
-                if (!upstream.ok) {
-                    const message = payload.errors?.[0]?.detail || payload.errors?.[0]?.title || `Apple Music API rejected the token (HTTP ${upstream.status}).`;
-                    return this.sendError(res, upstream.status, message);
+                    const lrcRes = await fetch(url, { 
+                        headers: { 'User-Agent': 'AuraAudio/1.2.0 (https://github.com/auraplayer)' },
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    if (!lrcRes.ok) return null;
+                    const data = await lrcRes.json();
+                    if (!Array.isArray(data) || data.length === 0) return null;
+                    return data.find(item => item.syncedLyrics) || data[0];
+                } catch { return null; }
+            };
+
+            try {
+                // Strategy 1: Exact Title + Artist
+                let bestMatch = await fetchLyrics(`https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(artist)}`);
+                
+                // Strategy 2: Title only (if Artist failed)
+                if (!bestMatch && artist) {
+                    bestMatch = await fetchLyrics(`https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}`);
                 }
-                return this.sendJson(res, 200, { valid: true, message: 'Apple Music developer token confirmed.' });
+
+                // Strategy 3: Generic text query (helps with French accents/spelling variants)
+                if (!bestMatch) {
+                    bestMatch = await fetchLyrics(`https://lrclib.net/api/search?q=${encodeURIComponent(title + ' ' + artist)}`);
+                }
+
+                if (!bestMatch) return this.sendJson(res, 200, { lines: [] });
+
+                if (bestMatch.syncedLyrics) {
+                    const lines = bestMatch.syncedLyrics.split('\n')
+                        .map(line => {
+                            const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+                            if (match) {
+                                const time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+                                const text = match[3].trim();
+                                return text ? { t: time, text } : null;
+                            }
+                            return null;
+                        }).filter(Boolean);
+                    return this.sendJson(res, 200, { lines });
+                } else if (bestMatch.plainLyrics) {
+                    const lines = bestMatch.plainLyrics.split('\n').filter(l => l.trim()).map((text, i) => ({ t: i * 4, text }));
+                    return this.sendJson(res, 200, { lines });
+                }
+                return this.sendJson(res, 200, { lines: [] });
+            } catch (err) {
+                return this.sendJson(res, 200, { lines: [] });
             }
-            if (pathname === '/api/integrations/soundcloud/playlist' && method === 'POST') {
-                const body = await this.parseBody(req);
-                let target;
-                try { target = new URL(body.url); } catch { return this.sendError(res, 400, 'Enter a valid SoundCloud playlist URL.'); }
-                if (!['soundcloud.com', 'www.soundcloud.com', 'm.soundcloud.com'].includes(target.hostname)) return this.sendError(res, 400, 'Only SoundCloud playlist URLs are supported.');
-                return this.sendJson(res, 200, await this.ytb.getPlaylistInfo(target.toString()));
-            }
-            if (pathname === '/api/integrations/apple/playlist' && method === 'POST') {
-                const body = await this.parseBody(req);
-                let target;
-                try { target = new URL(body.url); } catch { return this.sendError(res, 400, 'Enter a valid Apple Music playlist URL.'); }
-                if (target.hostname !== 'music.apple.com') return this.sendError(res, 400, 'Only Apple Music URLs are supported.');
-                if (typeof body.developerToken !== 'string' || body.developerToken.split('.').length !== 3) return this.sendError(res, 400, 'Paste a valid Apple Music developer token to import Apple Music catalog playlists.');
-                const parts = target.pathname.split('/').filter(Boolean);
-                const playlistId = parts.find(part => /^(?:pl|p)\./i.test(part));
-                if (!playlistId) return this.sendError(res, 400, 'The Apple Music URL must point to a playlist.');
-                if (body.musicUserToken && (typeof body.musicUserToken !== 'string' || body.musicUserToken.length > 8192)) return this.sendError(res, 400, 'The Apple Music user token is invalid. Reconnect Apple Music and try again.');
-                const appleHeaders = { Authorization: `Bearer ${body.developerToken}` };
-                if (body.musicUserToken) appleHeaders['Music-User-Token'] = body.musicUserToken;
-                let upstream = await fetch(`https://api.music.apple.com/v1/catalog/${encodeURIComponent(parts[0] || 'us')}/playlists/${encodeURIComponent(playlistId)}?include=tracks`, { headers: appleHeaders });
-                let payload = await upstream.json().catch(() => ({}));
-                if (!upstream.ok && body.musicUserToken && [403, 404].includes(upstream.status)) {
-                    upstream = await fetch(`https://api.music.apple.com/v1/me/library/playlists/${encodeURIComponent(playlistId)}?include=tracks`, { headers: appleHeaders });
-                    payload = await upstream.json().catch(() => ({}));
-                }
-                if (!upstream.ok) return this.sendError(res, upstream.status, payload.errors?.[0]?.detail || 'Apple Music could not return this playlist.');
-                const playlist = payload.data?.[0];
-                let appleTracks = [...(playlist?.relationships?.tracks?.data || [])];
-                let next = playlist?.relationships?.tracks?.next || '';
-                while (next && appleTracks.length < 1000) {
-                    const nextUrl = new URL(next, 'https://api.music.apple.com');
-                    if (nextUrl.hostname !== 'api.music.apple.com') break;
-                    const pageResponse = await fetch(nextUrl.toString(), { headers: appleHeaders });
-                    const page = await pageResponse.json().catch(() => ({}));
-                    if (!pageResponse.ok) break;
-                    appleTracks.push(...(page.data || []));
-                    next = page.next || '';
-                }
-                return this.sendJson(res, 200, { name: playlist?.attributes?.name || 'Apple Music playlist', tracks: appleTracks.slice(0, 1000).map(track => ({
-                    id: `apple:${track.id}`, title: track.attributes?.name || 'Untitled', artist: track.attributes?.artistName || '',
-                    duration: Math.floor((track.attributes?.durationInMillis || 0) / 1000), source: 'apple-music', sourceUrl: track.attributes?.url || ''
-                })) });
             }
             if (method === 'GET' && (pathname === '/mobile' || pathname === '/mobile/')) {
-                const mobileFile = path.resolve(__dirname, '..', 'mobile', 'index.html');
+                const mobileDistFile = path.resolve(__dirname, '..', 'mobile-dist', 'index.html');
+                const mobileFile = fs.existsSync(mobileDistFile)
+                    ? mobileDistFile
+                    : path.resolve(__dirname, '..', 'mobile', 'index.html');
                 if (!fs.existsSync(mobileFile)) return this.sendError(res, 404, 'Mobile app is not installed.');
                 res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
                 return fs.createReadStream(mobileFile).pipe(res);
+            }
+            if (method === 'GET' && (pathname === '/manifest.webmanifest' || pathname === '/service-worker.js')) {
+                const mobileDistPath = path.resolve(__dirname, '..', 'mobile-dist', path.basename(pathname));
+                const mobileSourcePath = path.resolve(__dirname, '..', 'mobile', path.basename(pathname));
+                const filePath = fs.existsSync(mobileDistPath) ? mobileDistPath : mobileSourcePath;
+                if (!fs.existsSync(filePath)) return this.sendError(res, 404, 'Mobile app resource not found.');
+                const isWorker = pathname === '/service-worker.js';
+                res.writeHead(200, {
+                    'Content-Type': isWorker ? 'application/javascript; charset=utf-8' : 'application/manifest+json; charset=utf-8',
+                    'Cache-Control': 'no-cache',
+                    ...(isWorker ? { 'Service-Worker-Allowed': '/' } : {})
+                });
+                return fs.createReadStream(filePath).pipe(res);
+            }
+            if (method === 'GET' && pathname.startsWith('/assets/')) {
+                let requestedAsset;
+                try { requestedAsset = decodeURIComponent(pathname.slice('/assets/'.length)); }
+                catch { return this.sendError(res, 400, 'Invalid asset path.'); }
+                // Assets live beside server/ in the standalone build, never inside mobile-dist/.
+                const assetRoot = path.resolve(__dirname, '..', 'assets');
+                const assetPath = path.resolve(assetRoot, requestedAsset);
+                if (!assetPath.startsWith(assetRoot + path.sep)) return this.sendError(res, 400, 'Invalid asset path.');
+                if (!fs.existsSync(assetPath) || !fs.statSync(assetPath).isFile()) return this.sendError(res, 404, 'Asset not found.');
+                const contentType = { '.png': 'image/png', '.ico': 'image/x-icon', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }[path.extname(assetPath).toLowerCase()] || 'application/octet-stream';
+                res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' });
+                return fs.createReadStream(assetPath).pipe(res);
+            }
+            if (method === 'GET' && pathname === '/') {
+                res.writeHead(302, { Location: '/mobile/', 'Cache-Control': 'no-store' });
+                return res.end();
             }
 
             // -------------------------------------------------------------
@@ -283,7 +333,12 @@ class ApiRouter {
             // -------------------------------------------------------------
             // GET /api/discovery/artists
             if (pathname === '/api/discovery/artists' && method === 'GET') {
-                const artists = await Promise.all(this.discovery.getArtists().map(artist => this.musicMetadata.getFeaturedArtist(artist).catch(() => ({ ...artist, image: '' }))));
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const signals = this.db.getDiscoverySignals(userId);
+                const { releases } = await this.discovery.getLatestReleases(signals);
+                const artists = await this.discovery.getFeaturedArtists(signals, releases);
+                res.setHeader('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400');
                 return this.sendJson(res, 200, artists);
             }
 
@@ -293,21 +348,81 @@ class ApiRouter {
                 return this.sendJson(res, 200, artists);
             }
 
-            // GET /api/discovery/artists/:id
-            const artistDetailMatch = pathname.match(/^\/api\/discovery\/artists\/([a-z0-9_-]+)$/i);
-            if (artistDetailMatch && method === 'GET') {
-                const artist = this.discovery.getArtistById(artistDetailMatch[1]);
-                if (!artist && /^[a-f0-9-]{36}$/i.test(artistDetailMatch[1])) {
-                    return this.sendJson(res, 200, await this.musicMetadata.getArtistProfile(artistDetailMatch[1]));
-                }
+            // GET /api/artists/profile?name=  (used by the mobile artist pop-up)
+            if (pathname === '/api/artists/profile' && method === 'GET') {
+                const name = String(query.name || '').trim();
+                if (!name) return this.sendError(res, 400, 'name is required');
                 try {
-                    const profile = /^[a-f0-9-]{36}$/i.test(artistDetailMatch[1])
-                        ? await this.musicMetadata.getArtistProfile(artistDetailMatch[1], artist)
-                        : artist && await this.musicMetadata.getArtistByName(artist.name, artist);
+                    const profile = await this.musicMetadata.getArtistByName(name);
                     if (profile) return this.sendJson(res, 200, profile);
-                } catch (error) { console.warn('[Discovery] Artist profile lookup failed:', error.message); }
-                if (!artist) return this.sendError(res, 404, 'Artist not found');
-                return this.sendJson(res, 200, await this.musicMetadata.getFeaturedArtist(artist));
+                    return this.sendError(res, 404, 'Artist not found');
+                } catch (error) {
+                    console.warn('[Discovery] Artist profile lookup failed:', error.message);
+                    return this.sendError(res, 502, 'Artist profile is temporarily unavailable.');
+                }
+            }
+
+            // Fast artist-specific song lookup used to paint the artist sheet before
+            // slower biography, release-group, and artwork providers finish.
+            if (pathname === '/api/artists/songs' && method === 'GET') {
+                const artist = String(query.artist || '').trim().slice(0, 120);
+                if (artist.length < 2) return this.sendError(res, 400, 'Artist name must be at least 2 characters.');
+                try {
+                    const tracks = await this.musicMetadata.searchSongs(artist, 25);
+                    const artistKey = matchKey(artist);
+                    return this.sendJson(res, 200, tracks.filter(track => matchKey(track.artist) === artistKey).slice(0, 20));
+                } catch (error) {
+                    console.warn(`[Discovery] Artist songs lookup failed for "${artist}":`, error.message);
+                    return this.sendJson(res, 200, []);
+                }
+            }
+
+            // Related tracks use this artist's live MusicBrainz genre tags rather
+            // than unrelated user-wide recommendations.
+            if (pathname === '/api/discovery/related-tracks' && method === 'GET') {
+                const artist = String(query.artist || '').trim().slice(0, 120);
+                const tags = String(query.tags || '').split(',').map(tag => tag.trim().slice(0, 40)).filter(Boolean).slice(0, 5);
+                if (artist.length < 2 || !tags.length) return this.sendJson(res, 200, { tracks: [] });
+                try {
+                    const results = await this.musicMetadata.searchSongs(tags.join(' '), 25);
+                    const artistKey = matchKey(artist);
+                    const unique = new Map();
+                    for (const track of results) {
+                        if (!track.title || !track.artist || matchKey(track.artist) === artistKey) continue;
+                        const genre = matchKey(track.genre || '');
+                        const genreMatches = genre && tags.some(rawTag => {
+                            const tag = matchKey(rawTag);
+                            if (/indie|independent|alternative/.test(tag)) return /alternative|rock|indie/.test(genre);
+                            if (/electro|electronic|techno|house/.test(tag)) return /electro|electronic|dance/.test(genre);
+                            if (/russia|russian/.test(tag)) return /russian|world|folk/.test(genre);
+                            return genre.includes(tag) || tag.includes(genre);
+                        });
+                        if (!genreMatches) continue;
+                        const key = `${matchKey(track.title)}|${matchKey(track.artist)}`;
+                        if (!unique.has(key)) unique.set(key, track);
+                    }
+                    return this.sendJson(res, 200, { tracks: [...unique.values()].slice(0, 10) });
+                } catch (error) {
+                    console.warn(`[Discovery] Related tracks lookup failed for "${artist}":`, error.message);
+                    return this.sendJson(res, 200, { tracks: [] });
+                }
+            }
+
+            // GET /api/discovery/artists/:id — MusicBrainz id or a live name handle
+            const artistDetailMatch = pathname.match(/^\/api\/discovery\/artists\/(.+)$/);
+            if (artistDetailMatch && method === 'GET') {
+                const handle = decodeURIComponent(artistDetailMatch[1]);
+                const id = handle.startsWith('name:') ? decodeURIComponent(handle.slice(5)) : handle;
+                try {
+                    const profile = /^[a-f0-9-]{36}$/i.test(id)
+                        ? await this.musicMetadata.getArtistProfile(id)
+                        : await this.musicMetadata.getArtistByName(id);
+                    if (profile) return this.sendJson(res, 200, profile);
+                    return this.sendError(res, 404, 'Artist not found');
+                } catch (error) {
+                    console.warn('[Discovery] Artist detail lookup failed:', error.message);
+                    return this.sendError(res, 502, 'Artist details are temporarily unavailable.');
+                }
             }
 
             const dynamicArtistMatch = pathname.match(/^\/api\/discovery\/artist\/([a-f0-9-]{36})$/i);
@@ -315,7 +430,14 @@ class ApiRouter {
 
             if (pathname === '/api/music/track-metadata' && method === 'GET') {
                 const result = await this.musicMetadata.lookupTrack(query.title || '', query.artist || '');
-                return this.sendJson(res, 200, result || {});
+                return this.sendJson(res, 200, result || { found: false, message: 'No matching recording was found.' });
+            }
+
+            if ((pathname === '/api/music/album' || pathname === '/api/albums') && method === 'GET') {
+                const result = pathname === '/api/albums'
+                    ? await this.musicMetadata.lookupAlbumByName(query.title || query.name || '', query.artist || '')
+                    : await this.musicMetadata.lookupAlbum(query.title || '', query.artist || '');
+                return this.sendJson(res, 200, result || { found: false, message: 'No matching album was found.' });
             }
 
             // GET /api/discovery/daily-mix
@@ -323,44 +445,40 @@ class ApiRouter {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
                 const signals = this.db.getDiscoverySignals(userId);
-                const artists = [...new Map([
-                    ...(signals.recentTracks || []).map(track => track.artist),
-                    ...(signals.likedTracks || []).map(track => track.artist)
-                ].map(artist => String(artist || '').trim()).filter(Boolean).map(artist => [artist.toLowerCase(), artist])).values()].slice(0, 4);
-                const relatedResults = await Promise.all(artists.map(artist =>
-                    this.ytb.search(`${artist} popular songs`, 4).catch(error => {
-                        console.warn(`[Discovery] Could not find related tracks for ${artist}:`, error.message);
-                        return [];
-                    })
-                ));
-                const relatedTracks = relatedResults.flat().map(track => ({
-                    id: `yt_${track.id}`,
-                    title: track.title,
-                    artist: track.uploader || 'YouTube',
-                    playQuery: track.url || `https://www.youtube.com/watch?v=${track.id}`,
-                    duration: track.duration,
-                    reason: 'Because you like this artist'
-                }));
-                const moodQueries = [
-                    ['mix_electro', 'electro house electronic music hits'],
-                    ['mix_pop', 'popular pop songs hits'],
-                    ['mix_rock', 'rock music classics hits']
-                ];
-                const moodResults = await Promise.all(moodQueries.map(async ([id, search]) => {
-                    try { return [id, await this.ytb.search(search, 6)]; }
-                    catch (error) { console.warn(`[Discovery] Could not load ${id} tracks:`, error.message); return [id, []]; }
-                }));
-                const moodTracks = Object.fromEntries(moodResults.map(([id, results]) => [id, results.map(track => ({
-                    id: `yt_${track.id}`, title: track.title, artist: track.uploader || 'YouTube',
-                    playQuery: track.url || `https://www.youtube.com/watch?v=${track.id}`,
-                    duration: track.duration, reason: 'Curated mood mix'
-                }))]));
-                return this.sendJson(res, 200, this.discovery.getDailyMixes(signals, relatedTracks, moodTracks));
+                const paged = query.offset !== undefined || query.limit !== undefined;
+                const offset = Math.max(0, Number.parseInt(query.offset || '0', 10) || 0);
+                const limit = Math.max(4, Math.min(8, Number.parseInt(query.limit || '6', 10) || 6));
+                res.setHeader('Cache-Control', 'no-store');
+                const result = await this.discovery.buildDailyMix(signals, { offset, limit });
+                // Older Discover clients expect this endpoint to return an array.
+                // The current client opts into pagination with offset/limit.
+                return this.sendJson(res, 200, paged ? result : result.mixes);
             }
 
-            // GET /api/discovery/releases
+            // GET /api/discovery/releases — personalized from liked artists,
+            // liked songs and recently played music.
             if (pathname === '/api/discovery/releases' && method === 'GET') {
-                return this.sendJson(res, 200, this.discovery.getLatestReleases());
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const signals = this.db.getDiscoverySignals(userId);
+                res.setHeader('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400');
+                return this.sendJson(res, 200, await this.discovery.getLatestReleases(signals));
+            }
+
+            // GET /api/discovery/latest-releases?artist=name
+            if (pathname === '/api/discovery/latest-releases' && method === 'GET') {
+                const artist = String(query.artist || '').trim();
+                if (artist.length < 2 || artist.length > 120) {
+                    return this.sendError(res, 400, 'Artist name must be between 2 and 120 characters.');
+                }
+                try {
+                    const result = await this.musicMetadata.getLatestReleasesByArtist(artist);
+                    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+                    return this.sendJson(res, 200, result);
+                } catch (error) {
+                    console.warn(`[Discovery] Latest releases lookup failed for "${artist}":`, error.message);
+                    return this.sendError(res, 502, 'Latest releases are temporarily unavailable. Try again shortly.');
+                }
             }
 
             // GET /api/discovery/recommendations
@@ -372,7 +490,7 @@ class ApiRouter {
                     excludeLiked: query.excludeLiked === 'true',
                     excludePlayed: query.excludePlayed === 'true'
                 };
-                return this.sendJson(res, 200, this.discovery.getRecommendations([], signals, options));
+                return this.sendJson(res, 200, await this.discovery.getRecommendations(signals, options));
             }
 
             // GET /api/discovery/profile (Signals used to personalize discovery)
@@ -407,8 +525,51 @@ class ApiRouter {
                 const userId = authUser ? authUser.userId : 'guest';
                 const body = await this.parseBody(req);
                 if (!body.track || typeof body.track.title !== 'string') return this.sendError(res, 400, 'Track title is required');
-                this.db.recordPlay(userId, body.track);
-                return this.sendJson(res, 202, { recorded: true });
+                let listenedSeconds = null;
+                if (body.listenedSeconds !== undefined) {
+                    listenedSeconds = Number(body.listenedSeconds);
+                    if (!Number.isFinite(listenedSeconds) || listenedSeconds < 0 || listenedSeconds > 86400) {
+                        return this.sendError(res, 400, 'Listened seconds must be a number between 0 and 86,400.');
+                    }
+                }
+                const recorded = this.db.recordPlay(userId, body.track, listenedSeconds);
+                return this.sendJson(res, 202, { recorded: !!recorded });
+            }
+
+            if (pathname === '/api/telemetry/preferences' && method === 'GET') {
+                const authUser = this.getAuthUser(req);
+                return this.sendJson(res, 200, this.db.getPlayHistoryPreferences(authUser ? authUser.userId : 'guest'));
+            }
+
+            if (pathname === '/api/telemetry/preferences' && method === 'PUT') {
+                const authUser = this.getAuthUser(req);
+                const body = await this.parseBody(req);
+                const retentionDays = Number(body.retentionDays);
+                const minimumListenSeconds = Number(body.minimumListenSeconds);
+                const validRetention = new Set([0, 7, 30, 90, 180, 365]);
+                const validMinimumListen = new Set([0, 10, 30, 60, 120]);
+                if (!Number.isInteger(retentionDays) || !validRetention.has(retentionDays)) {
+                    return this.sendError(res, 400, 'Retention must be 0, 7, 30, 90, 180, or 365 days.');
+                }
+                if (!Number.isInteger(minimumListenSeconds) || !validMinimumListen.has(minimumListenSeconds)) {
+                    return this.sendError(res, 400, 'Minimum listen duration must be 0, 10, 30, 60, or 120 seconds.');
+                }
+                const preferences = this.db.setPlayHistoryPreferences(authUser ? authUser.userId : 'guest', {
+                    retentionDays, minimumListenSeconds
+                });
+                return this.sendJson(res, 200, preferences);
+            }
+
+            if (pathname === '/api/telemetry' && method === 'GET') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                return this.sendJson(res, 200, this.db.getTelemetry(userId));
+            }
+
+            if (pathname === '/api/telemetry' && method === 'DELETE') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                return this.sendJson(res, 200, { cleared: this.db.clearTelemetry(userId) });
             }
 
             // GET /api/search?q=query
@@ -417,17 +578,32 @@ class ApiRouter {
                 if (q.length > 120) return this.sendError(res, 400, 'Search query must be 120 characters or fewer.');
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
-                const catalogResults = this.discovery.search(q);
+                const feedResults = q ? await this.discovery.search(q) : { artists: [], tracks: [], releases: [] };
                 const library = this.db.searchLibrary(userId, q, 30);
-                let youtube = [];
-                if (q) {
-                    try {
-                        youtube = await this.ytb.search(q, 8);
-                    } catch (error) {
-                        console.warn('[Search] YouTube results unavailable:', error.message);
-                    }
-                }
-                return this.sendJson(res, 200, { ...catalogResults, library, youtube });
+                const withTimeout = (promise, ms) => Promise.race([promise, new Promise(resolve => setTimeout(() => resolve(null), ms))]);
+                // Internal lookups pass yt=0 / artists=0 to skip the slow external providers
+                const wantYoutube = query.yt !== '0', wantArtists = query.artists !== '0';
+                const [youtube, onlineArtists] = await Promise.all([
+                    q && wantYoutube
+                        ? this.ytb.search(q, 8).catch(error => { console.warn('[Search] YouTube results unavailable:', error.message); return []; })
+                        : [],
+                    q.length >= 2 && wantArtists
+                        ? withTimeout(this.musicMetadata.searchArtists(q, 6).catch(() => []), 3500)
+                        : []
+                ]);
+                // Real MusicBrainz artists, enriched with a picture from Wikipedia.
+                const matchedArtists = (onlineArtists || []).filter(artist => artist.name && artist.score >= 70).slice(0, 5);
+                const artists = await Promise.all(matchedArtists.map(async artist => {
+                    const wiki = await withTimeout(this.musicMetadata.wikipediaSummary(artist.name), 2500);
+                    return { id: artist.id, name: artist.name, genre: [artist.type, ...(artist.tags || []).slice(0, 2)].filter(Boolean).join(' · ') || 'Artist',
+                        image: wiki?.image || '', description: artist.disambiguation || wiki?.description || '' };
+                }));
+                const youtubeResults = (youtube || []).map(video => {
+                    const videoId = String(video.id || '').replace(/^yt_/, '');
+                    const externalUrl = /^https?:\/\//i.test(video.url || '') ? video.url : (/^[\w-]{11}$/.test(videoId) ? `https://www.youtube.com/watch?v=${videoId}` : '');
+                    return { ...video, externalUrl };
+                });
+                return this.sendJson(res, 200, { ...feedResults, artists, library, youtube: youtubeResults });
             }
 
             // -------------------------------------------------------------
@@ -459,20 +635,31 @@ class ApiRouter {
 
                 let downloadId;
                 const downloadPromise = this.ytb.downloadAudio(body.url, body.title, id => { downloadId = id; });
+                
                 downloadPromise.then(result => {
                     for (const existing of this.db.getDownloads(userId)) {
                         if (!sameDownload(result, existing)) continue;
                         const previousPath = path.basename(existing.fileName || '') === existing.fileName ? path.join(this.downloadsDir, existing.fileName) : '';
                         try { if (previousPath && fs.existsSync(previousPath)) fs.unlinkSync(previousPath); }
                         catch (error) { console.warn('[API] Could not remove duplicate downloaded audio:', error.message); continue; }
+                        if (/^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(existing.coverFile || '')) {
+                            try { fs.unlinkSync(path.join(this.downloadsDir, existing.coverFile)); } catch {}
+                        }
                         this.db.removeDownload(userId, existing.fileName);
                     }
-                    this.db.addDownloadRecord({ userId, ...result });
+                    this.db.addDownloadRecord({ userId, ...result, coverChecked: true });
+                    this.db.recordActivity(userId, 'download', result);
                     const progress = this.ytb.getDownloadProgress(downloadId);
                     if (progress) progress.result = { ...result, streamUrl: `/api/media/${encodeURIComponent(result.fileName)}` };
                 }).catch(error => {
                     console.error('[API] YouTube download failed:', error.message);
+                    const progress = this.ytb.getDownloadProgress(downloadId);
+                    if (progress) {
+                        progress.status = 'failed';
+                        progress.error = error.message;
+                    }
                 });
+                
                 return this.sendJson(res, 202, {
                     success: true,
                     id: downloadId,
@@ -487,6 +674,12 @@ class ApiRouter {
                 const progress = this.ytb.getDownloadProgress(ytbProgressMatch[1]);
                 return this.sendJson(res, 200, progress || { status: 'unknown' });
             }
+            // POST /api/ytb/cancel/:id (Panic Kill Downloads)
+            const ytbCancelMatch = pathname.match(/^\/api\/ytb\/cancel\/([a-z0-9_-]+)$/i);
+            if (ytbCancelMatch && method === 'POST') {
+                const success = this.ytb.killDownload(ytbCancelMatch[1]);
+                return this.sendJson(res, 200, { success, message: success ? 'Download killed' : 'Download not found or already finished' });
+            }
 
             // -------------------------------------------------------------
             // LOCAL MEDIA STREAMING (Downloaded Audio Files)
@@ -497,6 +690,7 @@ class ApiRouter {
                 if (path.basename(decodedFilename) !== decodedFilename || decodedFilename.includes('..')) {
                     return this.sendError(res, 400, 'Invalid media filename');
                 }
+
                 const filePath = path.join(this.downloadsDir, decodedFilename);
                 if (!fs.existsSync(filePath)) {
                     return this.sendError(res, 404, 'Audio file not found');
@@ -540,6 +734,21 @@ class ApiRouter {
                 }
             }
 
+            const coverMatch = pathname.match(/^\/api\/covers\/([^/]+)$/);
+            if (coverMatch && method === 'GET') {
+                const fileName = decodeURIComponent(coverMatch[1]);
+                if (!/^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(fileName)) {
+                    return this.sendError(res, 400, 'Invalid cover filename.');
+                }
+                const filePath = path.join(this.downloadsDir, fileName);
+                if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+                    return this.sendError(res, 404, 'Cover image not found.');
+                }
+                const contentType = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[path.extname(fileName).slice(1)];
+                res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' });
+                return fs.createReadStream(filePath).pipe(res);
+            }
+
             // -------------------------------------------------------------
             // LIKED SONGS & PLAYLISTS (Cloud Library)
             // -------------------------------------------------------------
@@ -547,7 +756,22 @@ class ApiRouter {
             if (pathname === '/api/library/liked' && method === 'GET') {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
-                const liked = this.db.getLikedSongs(userId);
+                const downloads = this.db.getDownloads(userId);
+                const liked = this.db.getLikedSongs(userId).map(track => {
+                    const match = downloads.find(download => sameDownload(track, download));
+                    const fileName = String(match?.fileName || '');
+                    const safePath = fileName && path.basename(fileName) === fileName && !fileName.includes('..')
+                        ? path.join(this.downloadsDir, fileName)
+                        : '';
+                    if (!safePath || !fs.existsSync(safePath) || !fs.statSync(safePath).isFile()) return track;
+                    return {
+                        ...track,
+                        fileName,
+                        streamUrl: `/api/media/${encodeURIComponent(fileName)}`,
+                        cover: track.cover || match.cover || '',
+                        duration: track.duration || match.duration || 0
+                    };
+                });
                 return this.sendJson(res, 200, liked);
             }
 
@@ -559,16 +783,45 @@ class ApiRouter {
                 return this.sendJson(res, 200, this.db.importLikedSongs(userId, body.tracks));
             }
 
+            if (pathname === '/api/library/liked/artwork' && method === 'POST') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const body = await this.parseBody(req);
+                if (typeof body.trackId !== 'string' || !body.trackId.trim() || body.trackId.length > 240) {
+                    return this.sendError(res, 400, 'A valid liked-track ID is required.');
+                }
+                const cover = typeof body.cover === 'string' ? body.cover : '';
+                const album = typeof body.album === 'string' ? body.album.trim().slice(0, 240) : '';
+                if (!cover && !album) return this.sendError(res, 400, 'Artwork or album metadata is required.');
+                if (cover && (cover.length > 1500 || !(/^https?:\/\//i.test(cover) || /^\/api\/covers\/cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/i.test(cover)))) {
+                    return this.sendError(res, 400, 'A valid artwork URL is required.');
+                }
+                const updated = this.db.updateLikedSongArtwork(userId, body.trackId, cover, album);
+                return this.sendJson(res, 200, { updated });
+            }
+
             // GET /api/library/downloads
             if (pathname === '/api/library/downloads' && method === 'GET') {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
                 const downloads = [];
                 for (const track of this.db.getDownloads(userId)) {
+                    const fileName = String(track.fileName || '');
+                    const filePath = fileName && path.basename(fileName) === fileName && !fileName.includes('..')
+                        ? path.join(this.downloadsDir, fileName)
+                        : '';
+                    if (!filePath || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+                        console.info(`[Library] Pruned stale download record: ${fileName || '(invalid filename)'}`);
+                        this.db.removeDownload(userId, fileName);
+                        continue;
+                    }
                     if (downloads.some(existing => sameDownload(track, existing))) {
-                        const duplicatePath = path.basename(track.fileName || '') === track.fileName ? path.join(this.downloadsDir, track.fileName) : '';
+                        const duplicatePath = filePath;
                         try {
                             if (duplicatePath && fs.existsSync(duplicatePath)) fs.unlinkSync(duplicatePath);
+                            if (/^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(track.coverFile || '')) {
+                                try { fs.unlinkSync(path.join(this.downloadsDir, track.coverFile)); } catch {}
+                            }
                             this.db.removeDownload(userId, track.fileName);
                         } catch (error) { console.warn('[Library] Could not remove duplicate download:', error.message); }
                         continue;
@@ -579,6 +832,30 @@ class ApiRouter {
                     ...track,
                     streamUrl: `/api/media/${encodeURIComponent(track.fileName)}`
                 }));
+                for (const track of result) {
+                    const safeCoverFile = /^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(track.coverFile || '');
+                    if (safeCoverFile && fs.existsSync(path.join(this.downloadsDir, track.coverFile))) {
+                        track.cover = `/api/covers/${encodeURIComponent(track.coverFile)}`;
+                        continue;
+                    }
+                    if (track.coverChecked) {
+                        track.coverFile = '';
+                        track.cover = '';
+                        continue;
+                    }
+                    const cached = track.fileName
+                        ? await this.ytb.resolveAndCacheCover(track.artist || '', track.title || '', track.fileName, track.cover || '')
+                        : null;
+                    if (cached) {
+                        this.db.updateDownloadCover(userId, track.fileName, cached.coverFile);
+                        track.coverFile = cached.coverFile;
+                        track.cover = cached.coverUrl;
+                    } else {
+                        this.db.updateDownloadCover(userId, track.fileName, '');
+                        track.coverFile = '';
+                        track.cover = '';
+                    }
+                }
                 return this.sendJson(res, 200, result);
             }
 
@@ -600,6 +877,10 @@ class ApiRouter {
                     return this.sendError(res, 500, `Could not delete downloaded audio: ${error.message}`);
                 }
                 this.db.removeDownload(userId, fileName);
+                const coverFile = record.coverFile;
+                if (/^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(coverFile || '')) {
+                    try { fs.unlinkSync(path.join(this.downloadsDir, coverFile)); } catch {}
+                }
                 return this.sendJson(res, 200, { deleted: true, fileName });
             }
 
@@ -610,6 +891,7 @@ class ApiRouter {
                 const body = await this.parseBody(req);
                 if (!body.track) return this.sendError(res, 400, 'Track payload is required');
                 const result = this.db.toggleLikeSong(userId, body.track);
+                this.db.recordActivity(userId, result.liked ? 'like_added' : 'like_removed', body.track);
                 return this.sendJson(res, 200, result);
             }
 
@@ -624,6 +906,41 @@ class ApiRouter {
             if (pathname === '/api/library/artists/liked' && method === 'GET') {
                 const authUser = this.getAuthUser(req);
                 return this.sendJson(res, 200, this.db.getLikedArtists(authUser ? authUser.userId : 'guest'));
+            }
+
+            if (pathname === '/api/library/artists/refresh-images' && method === 'POST') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const body = await this.parseBody(req);
+                if (body.names !== undefined && (!Array.isArray(body.names) || body.names.some(name => typeof name !== 'string'))) {
+                    return this.sendError(res, 400, 'Artist names must be an array of strings.');
+                }
+                const requestedNames = new Set((body.names || []).map(name => name.trim().toLowerCase()).filter(Boolean));
+                const artists = this.db.getLikedArtists(userId).filter(artist =>
+                    requestedNames.size ? requestedNames.has(String(artist.name || '').toLowerCase()) : !artist.image
+                );
+                let updated = 0;
+                const failed = [];
+                for (let index = 0; index < artists.length; index += 3) {
+                    const results = await Promise.all(artists.slice(index, index + 3).map(async artist => {
+                        try {
+                            const refreshed = await this.musicMetadata.getFeaturedArtist(
+                                { id: artist.id, key: artist.key, name: artist.name, image: artist.image },
+                                { force: true }
+                            );
+                            return refreshed.image && refreshed.image !== artist.image
+                                ? { artist, image: refreshed.image }
+                                : { failed: artist.name };
+                        } catch (error) {
+                            console.warn(`[Library] Could not refresh image for "${artist.name}":`, error.message);
+                            return { failed: artist.name };
+                        }
+                    }));
+                    const updates = results.filter(result => result.artist);
+                    updated += this.db.updateLikedArtistImages(userId, updates);
+                    failed.push(...results.filter(result => result.failed).map(result => result.failed));
+                }
+                return this.sendJson(res, 200, { updated, failed });
             }
 
             if (pathname === '/api/library/artists/toggle' && method === 'POST') {
@@ -646,6 +963,7 @@ class ApiRouter {
                 const userId = authUser ? authUser.userId : 'guest';
                 const body = await this.parseBody(req);
                 const playlist = this.db.createPlaylist(userId, body.name, body.description, body.isPublic);
+                if (playlist) this.db.recordActivity(userId, 'playlist_created', { name: playlist.name });
                 return this.sendJson(res, 201, playlist);
             }
 
@@ -670,6 +988,7 @@ class ApiRouter {
                 if (!body.track) return this.sendError(res, 400, 'Track payload is required');
                 const updated = this.db.addTrackToPlaylist(playlistId, body.track, userId);
                 if (!updated) return this.sendError(res, 404, 'Playlist not found');
+                this.db.recordActivity(userId, 'playlist_track_added', { title: body.track.title, artist: body.track.artist, name: updated.name });
                 return this.sendJson(res, 200, updated);
             }
 
@@ -690,6 +1009,6 @@ class ApiRouter {
             return this.sendError(res, err.statusCode || 500, err.statusCode === 502 ? err.message : (err.message || 'Internal Server Error'));
         }
     }
-}
+
 
 module.exports = ApiRouter;

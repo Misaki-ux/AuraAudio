@@ -11,6 +11,7 @@ const Database = require('./db');
 const AuthService = require('./auth');
 const EmailService = require('./email');
 const DiscoveryService = require('./discovery');
+const MusicMetadataService = require('./music-metadata');
 const YouTubeService = require('./youtube');
 const ApiRouter = require('./routes');
 
@@ -47,12 +48,13 @@ class AuraServer {
         this.db = new Database(dbPath);
         this.emailService = new EmailService();
         this.authService = new AuthService(this.config, this.db, this.emailService);
-        this.discoveryService = new DiscoveryService();
+        this.musicMetadata = new MusicMetadataService();
+        this.discoveryService = new DiscoveryService(this.musicMetadata);
         this.youtubeService = new YouTubeService(dlDir);
-        this.router = new ApiRouter(this.db, this.authService, this.discoveryService, this.youtubeService, dlDir);
+        this.router = new ApiRouter(this.db, this.authService, this.discoveryService, this.youtubeService, dlDir, this.musicMetadata);
         
         this.server = null;
-        this.activePort = this.config.server.port || 3456;
+        this.activePort = Number(process.env.AURA_PORT) || this.config.server.port || 3456;
         this.host = process.env.AURA_HOST || this.config.server.host || '127.0.0.1';
     }
 
@@ -60,7 +62,12 @@ class AuraServer {
         return new Promise((resolve, reject) => {
             const port = requestedPort || this.activePort;
             this.server = http.createServer((req, res) => {
-                this.router.handle(req, res);
+                this.router.handle(req, res).catch(err => {
+                    console.error('[Router Error]', err);
+                    if (res.headersSent) return res.destroy(err);
+                    res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ error: true, message: 'Internal Server Error' }));
+                });
             });
 
             this.server.on('error', (err) => {

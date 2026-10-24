@@ -7,6 +7,17 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+function normalizeLikedText(value) {
+    return String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+function likedSongIdentity(track) {
+    const title = normalizeLikedText(track.title || track.name);
+    const artist = normalizeLikedText(track.artist);
+    return title && artist ? `${title}|${artist}` : '';
+}
+
 class Database {
     constructor(dbFilePath) {
         this.filePath = path.resolve(dbFilePath || path.join(__dirname, 'data', 'db.json'));
@@ -18,7 +29,10 @@ class Database {
             playlists: [],
             imported_media: [],
             play_events: [],
+            activity_events: [],
+            diagnostics: [],
             downloads: [],
+            play_history_preferences: [],
             settings: {
                 version: "1.2.0",
                 initializedAt: new Date().toISOString()
@@ -88,11 +102,55 @@ class Database {
 
     // --- Liked Songs ---
     getLikedSongs(userId = 'guest') {
-        return this.data.liked_songs.filter(item => item.userId === userId);
+        const unique = new Map();
+        for (const item of this.data.liked_songs.filter(track => track.userId === userId)) {
+            const identity = likedSongIdentity(item) || `id:${normalizeLikedText(item.trackId)}`;
+            const existing = unique.get(identity);
+            if (!existing) {
+                unique.set(identity, { ...item });
+                continue;
+            }
+            for (const key of ['cover', 'album', 'albumTitle', 'fileName', 'url', 'localAudioId', 'duration', 'durationFormatted']) {
+                if (!existing[key] && item[key]) existing[key] = item[key];
+            }
+        }
+        return [...unique.values()];
+    }
+
+    updateLikedSongArtwork(userId = 'guest', trackId, cover, album = '') {
+        const track = this.data.liked_songs.find(item => item.userId === userId && item.trackId === trackId);
+        if (!track) return false;
+        let changed = false;
+        if (!track.cover && cover) {
+            track.cover = String(cover).slice(0, 1500);
+            changed = true;
+        }
+        if (!track.album && album) {
+            track.album = String(album).slice(0, 240);
+            changed = true;
+        }
+        if (changed) this.save();
+        return changed;
     }
 
     getLikedArtists(userId = 'guest') {
         return (this.data.liked_artists || []).filter(item => item.userId === userId);
+    }
+
+    updateLikedArtistImages(userId, updates) {
+        let changed = 0;
+        for (const { artist, image } of updates) {
+            if (!image) continue;
+            const entry = (this.data.liked_artists || []).find(item =>
+                item.userId === userId
+                && ((artist.key && item.key === artist.key) || (artist.id && item.id === artist.id) || (artist.name && item.name === artist.name))
+            );
+            if (!entry || entry.image === image) continue;
+            entry.image = String(image).slice(0, 1000);
+            changed++;
+        }
+        if (changed) this.save();
+        return changed;
     }
 
     toggleLikedArtist(userId = 'guest', artist = {}) {
@@ -128,7 +186,9 @@ class Database {
     }
 
     getDiscoverySignals(userId = 'guest') {
+        this.prunePlayHistory(userId);
         const liked = this.getLikedSongs(userId);
+        const likedArtists = this.getLikedArtists(userId);
         const downloads = this.getDownloads(userId);
         const playlists = this.data.playlists.filter(p => p.userId === userId);
         const imported = (this.data.imported_media || []).filter(item => item.userId === userId);
@@ -144,12 +204,13 @@ class Database {
         const artists = [...new Set(tracks.map(track => track.artist).filter(Boolean))];
         const titles = [...new Set(tracks.map(track => track.title).filter(Boolean))];
         return {
-            sourceCounts: { liked: liked.length, downloads: downloads.length, playlists: playlists.length, imported: imported.length, recentPlays: played.length },
+            sourceCounts: { liked: liked.length, likedArtists: likedArtists.length, downloads: downloads.length, playlists: playlists.length, imported: imported.length, recentPlays: played.length },
             artists,
             tracks: titles,
+            likedArtists: likedArtists.map(artist => ({ id: artist.id || '', name: artist.name, image: artist.image || '' })),
             likedTracks: liked.map(track => ({ title: track.title, artist: track.artist })),
             recentTracks: played.map(track => ({ title: track.title, artist: track.artist })),
-            hasListeningData: tracks.length > 0
+            hasListeningData: tracks.length > 0 || likedArtists.length > 0
         };
     }
 
@@ -213,8 +274,10 @@ class Database {
         return synced;
     }
 
-    recordPlay(userId = 'guest', track = {}) {
+    recordPlay(userId = 'guest', track = {}, listenedSeconds = null) {
         if (!track || typeof track.title !== 'string' || !track.title.trim()) return null;
+        const preferences = this.getPlayHistoryPreferences(userId);
+        if (Number.isFinite(listenedSeconds) && listenedSeconds < preferences.minimumListenSeconds) return null;
         const collection = this.data.play_events || (this.data.play_events = []);
         const event = {
             id: 'play_' + crypto.randomBytes(6).toString('hex'),
@@ -224,8 +287,94 @@ class Database {
             playedAt: new Date().toISOString()
         };
         collection.unshift(event);
+        this.prunePlayHistory(userId, false);
+        this.recordActivity(userId, 'play', event, false);
+        this.save();
+        return event;
+    }
+
+    getPlayHistoryPreferences(userId = 'guest') {
+        const preferences = (this.data.play_history_preferences || []).find(item => item.userId === userId);
+        return {
+            retentionDays: Number.isInteger(preferences?.retentionDays) ? preferences.retentionDays : 0,
+            minimumListenSeconds: Number.isInteger(preferences?.minimumListenSeconds) ? preferences.minimumListenSeconds : 0
+        };
+    }
+
+    setPlayHistoryPreferences(userId = 'guest', { retentionDays, minimumListenSeconds }) {
+        const preferences = { userId, retentionDays, minimumListenSeconds, updatedAt: new Date().toISOString() };
+        this.data.play_history_preferences ||= [];
+        const index = this.data.play_history_preferences.findIndex(item => item.userId === userId);
+        if (index >= 0) this.data.play_history_preferences[index] = preferences;
+        else this.data.play_history_preferences.push(preferences);
+        this.prunePlayHistory(userId, false);
+        this.save();
+        return this.getPlayHistoryPreferences(userId);
+    }
+
+    prunePlayHistory(userId = 'guest', persist = true) {
+        const collection = this.data.play_events || [];
+        const preferences = this.getPlayHistoryPreferences(userId);
+        const cutoff = preferences.retentionDays > 0
+            ? Date.now() - preferences.retentionDays * 24 * 60 * 60 * 1000
+            : 0;
+        const userEvents = collection.filter(event => event.userId === userId)
+            .sort((a, b) => String(b.playedAt || '').localeCompare(String(a.playedAt || '')));
+        const retained = userEvents.filter(event => {
+            const timestamp = Date.parse(event.playedAt || '');
+            return !cutoff || !Number.isFinite(timestamp) || timestamp >= cutoff;
+        }).slice(0, 5000);
+        const keep = new Set(retained);
+        const filtered = collection.filter(event => event.userId !== userId || keep.has(event));
+        const removed = collection.length - filtered.length;
+        if (removed) {
+            this.data.play_events = filtered;
+            if (persist) this.save();
+        }
+        return removed;
+    }
+
+    recordActivity(userId = 'guest', type, payload = {}, persist = true) {
+        const allowed = new Set(['play', 'download', 'like_added', 'like_removed', 'playlist_created', 'playlist_track_added']);
+        if (!allowed.has(type)) return null;
+        const collection = this.data.activity_events || (this.data.activity_events = []);
+        const event = {
+            id: 'activity_' + crypto.randomBytes(6).toString('hex'),
+            userId,
+            type,
+            occurredAt: new Date().toISOString()
+        };
+        for (const field of ['title', 'artist', 'name']) {
+            if (typeof payload[field] === 'string' && payload[field].trim()) {
+                event[field] = payload[field].trim().slice(0, field === 'title' ? 200 : 160);
+            }
+        }
+        collection.unshift(event);
         const userEvents = collection.filter(item => item.userId === userId);
-        for (const expired of userEvents.slice(5000)) {
+        for (const expired of userEvents.slice(2000)) {
+            const index = collection.indexOf(expired);
+            if (index >= 0) collection.splice(index, 1);
+        }
+        if (persist) this.save();
+        return event;
+    }
+
+    recordDiagnostic(userId = 'guest', category, method, statusCode) {
+        const categories = new Set(['api', 'auth', 'search', 'discovery', 'library', 'download', 'media', 'telemetry', 'artwork']);
+        const methods = new Set(['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD']);
+        if (!categories.has(category) || !methods.has(method) || !Number.isInteger(statusCode) || statusCode < 400 || statusCode > 599) return null;
+        const collection = this.data.diagnostics || (this.data.diagnostics = []);
+        const event = {
+            id: 'diag_' + crypto.randomBytes(6).toString('hex'),
+            userId,
+            category,
+            method,
+            statusCode,
+            occurredAt: new Date().toISOString()
+        };
+        collection.unshift(event);
+        const userEvents = collection.filter(item => item.userId === userId);
+        for (const expired of userEvents.slice(500)) {
             const index = collection.indexOf(expired);
             if (index >= 0) collection.splice(index, 1);
         }
@@ -233,21 +382,87 @@ class Database {
         return event;
     }
 
+    getTelemetry(userId = 'guest') {
+        this.prunePlayHistory(userId);
+        const plays = (this.data.play_events || []).filter(event => event.userId === userId);
+        const actions = (this.data.activity_events || []).filter(event => event.userId === userId && event.type !== 'play');
+        const diagnostics = (this.data.diagnostics || []).filter(event => event.userId === userId);
+        const counts = (items, key) => {
+            const result = new Map();
+            for (const item of items) {
+                const value = String(item[key] || '').trim();
+                if (value) result.set(value, (result.get(value) || 0) + 1);
+            }
+            return [...result].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 5);
+        };
+        const byDay = new Map();
+        for (let daysAgo = 6; daysAgo >= 0; daysAgo--) {
+            const day = new Date();
+            day.setHours(0, 0, 0, 0);
+            day.setDate(day.getDate() - daysAgo);
+            byDay.set(day.toISOString().slice(0, 10), 0);
+        }
+        for (const event of plays) {
+            const day = String(event.playedAt || '').slice(0, 10);
+            if (byDay.has(day)) byDay.set(day, byDay.get(day) + 1);
+        }
+        const recent = [
+            ...plays.map(event => ({ type: 'play', title: event.title, artist: event.artist, occurredAt: event.playedAt })),
+            ...actions
+        ].sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || ''))).slice(0, 25);
+        const errors = diagnostics.sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || ''))).slice(0, 10)
+            .map(({ category, method, statusCode, occurredAt }) => ({ category, method, statusCode, occurredAt }));
+        return {
+            totals: {
+                plays: plays.length,
+                likes: this.getLikedSongs(userId).length,
+                downloads: this.getDownloads(userId).length,
+                playlists: this.data.playlists.filter(item => item.userId === userId).length,
+                diagnostics: diagnostics.length
+            },
+            playsByDay: [...byDay].map(([date, count]) => ({ date, count })),
+            topArtists: counts(plays, 'artist'),
+            topTracks: counts(plays, 'title'),
+            recent,
+            diagnostics: errors
+        };
+    }
+
+    clearTelemetry(userId = 'guest') {
+        const before = (this.data.play_events || []).length + (this.data.activity_events || []).length + (this.data.diagnostics || []).length;
+        this.data.play_events = (this.data.play_events || []).filter(event => event.userId !== userId);
+        this.data.activity_events = (this.data.activity_events || []).filter(event => event.userId !== userId);
+        this.data.diagnostics = (this.data.diagnostics || []).filter(event => event.userId !== userId);
+        const after = this.data.play_events.length + this.data.activity_events.length + this.data.diagnostics.length;
+        if (before !== after) this.save();
+        return before - after;
+    }
+
     isLiked(userId = 'guest', trackId) {
         return this.data.liked_songs.some(item => item.userId === userId && item.trackId === trackId);
     }
 
     toggleLikeSong(userId = 'guest', track) {
-        const trackId = track.id || track.name || track.title;
-        const index = this.data.liked_songs.findIndex(item => item.userId === userId && item.trackId === trackId);
-        
-        if (index >= 0) {
-            // Remove
-            this.data.liked_songs.splice(index, 1);
+        const trackId = String(track.id || track.trackId || track.name || track.title || '').trim();
+        const identity = likedSongIdentity(track);
+        const matches = item => item.userId === userId
+            && (String(item.trackId || '').toLowerCase() === trackId.toLowerCase()
+                || (identity && likedSongIdentity(item) === identity));
+        if (this.data.liked_songs.some(matches)) {
+            this.data.liked_songs = this.data.liked_songs.filter(item => !matches(item));
             this.save();
             return { liked: false, trackId };
         } else {
             // Add
+            let fileName = typeof track.fileName === 'string' ? track.fileName : '';
+            if (!fileName) {
+                const mediaUrl = String(track.streamUrl || track.url || '').match(/^\/api\/media\/([^/?#]+)/i);
+                if (mediaUrl) {
+                    try { fileName = decodeURIComponent(mediaUrl[1]); }
+                    catch { fileName = ''; }
+                }
+            }
+            if (path.basename(fileName) !== fileName || fileName.includes('..')) fileName = '';
             const likedTrack = {
                 id: 'like_' + crypto.randomBytes(6).toString('hex'),
                 userId,
@@ -256,9 +471,11 @@ class Database {
                 artist: track.artist || 'Unknown Artist',
                 duration: track.duration || 0,
                 durationFormatted: track.durationFormatted || '--:--',
-                url: track.url || '',
+                url: track.url || track.streamUrl || '',
+                fileName,
+                localAudioId: String(track.localAudioId || '').slice(0, 100),
                 source: track.source || 'local',
-                cover: track.cover || null,
+                cover: typeof track.cover === 'string' ? track.cover.slice(0, 1500) : null,
                 addedAt: new Date().toISOString()
             };
             this.data.liked_songs.unshift(likedTrack);
@@ -269,20 +486,23 @@ class Database {
 
     importLikedSongs(userId = 'guest', tracks = []) {
         const collection = this.data.liked_songs;
-        const existing = new Set(collection.filter(item => item.userId === userId).map(item => String(item.trackId || '').toLowerCase()));
+        const existingIds = new Set(collection.filter(item => item.userId === userId).map(item => String(item.trackId || '').toLowerCase()));
+        const existingIdentities = new Set(collection.filter(item => item.userId === userId).map(likedSongIdentity).filter(Boolean));
         let added = 0;
         for (const track of tracks.slice(0, 1000)) {
             const trackId = String(track.id || track.trackId || '').trim();
-            const key = trackId.toLowerCase();
-            if (!key || existing.has(key)) continue;
-            existing.add(key);
+            const idKey = trackId.toLowerCase();
+            const identity = likedSongIdentity(track);
+            if ((!idKey || existingIds.has(idKey)) || (identity && existingIdentities.has(identity))) continue;
+            existingIds.add(idKey);
+            if (identity) existingIdentities.add(identity);
             collection.unshift({
                 id: 'like_' + crypto.randomBytes(6).toString('hex'), userId, trackId,
                 title: String(track.title || track.name || 'Untitled').slice(0, 240),
                 artist: String(track.artist || 'Unknown Artist').slice(0, 180),
                 duration: Number(track.duration) || 0, durationFormatted: '--:--',
                 url: '', source: String(track.source || 'external').slice(0, 40),
-                sourceUrl: String(track.sourceUrl || '').slice(0, 1000), cover: track.cover || null,
+                sourceUrl: String(track.sourceUrl || '').slice(0, 1000), cover: typeof track.cover === 'string' ? track.cover.slice(0, 1500) : null,
                 addedAt: new Date().toISOString()
             });
             added++;
@@ -324,11 +544,14 @@ class Database {
             id: track.id || 'trk_' + crypto.randomBytes(4).toString('hex'),
             title: track.title || track.name,
             artist: track.artist || 'Unknown Artist',
+            album: String(track.album || track.albumTitle || '').slice(0, 240),
             duration: track.duration || 0,
             url: track.url || '',
             source: track.source || 'local',
             sourceUrl: track.sourceUrl || '',
+            cover: typeof track.cover === 'string' ? track.cover.slice(0, 1500) : null,
             downloadable: track.downloadable === true,
+            localAudioId: String(track.localAudioId || '').slice(0, 100),
             addedAt: new Date().toISOString()
         };
         playlist.tracks.push(trackEntry);
@@ -348,9 +571,12 @@ class Database {
             playlist.tracks.push({
                 id, title: String(track.title || track.name || 'Untitled').slice(0, 240),
                 artist: String(track.artist || 'Unknown Artist').slice(0, 180),
+                album: String(track.album || track.albumTitle || '').slice(0, 240),
                 duration: Number(track.duration) || 0, url: '',
                 source: String(track.source || 'external').slice(0, 40),
                 sourceUrl: String(track.sourceUrl || '').slice(0, 1000), downloadable: track.downloadable === true,
+                cover: typeof track.cover === 'string' ? track.cover.slice(0, 1500) : null,
+                localAudioId: String(track.localAudioId || '').slice(0, 100),
                 addedAt: new Date().toISOString()
             });
         }
@@ -388,6 +614,16 @@ class Database {
         this.data.downloads.unshift(entry);
         this.save();
         return entry;
+    }
+
+    updateDownloadCover(userId = 'guest', fileName, coverFile) {
+        const track = this.data.downloads.find(item => item.userId === userId && item.fileName === fileName);
+        if (!track) return null;
+        track.coverFile = String(coverFile || '').slice(0, 100);
+        track.cover = track.coverFile ? `/api/covers/${encodeURIComponent(track.coverFile)}` : '';
+        track.coverChecked = true;
+        this.save();
+        return track;
     }
 
     getDownloads(userId = 'guest') {
