@@ -129,6 +129,7 @@
         .window-brand { min-width: 0; grid-column: 2; grid-row: 1; justify-self: center; }
         .window-brand img { flex: 0 0 auto; filter: drop-shadow(0 0 5px var(--color-glow)); }
         #quickThemePresets { grid-column: 1; grid-row: 1; justify-self: start; gap: 9px; }
+        #quickThemePresets > img { width: 16px; height: 16px; flex: 0 0 auto; object-fit: contain; }
         #quickThemePresets button {
             width: 14px; height: 14px; flex: 0 0 auto;
             border: 1px solid rgba(255,255,255,.14);
@@ -430,6 +431,7 @@
 
             <!-- Topbar Center: Quick Color Presets Only (3-view UI removed as requested) -->
             <div id="quickThemePresets" role="group" aria-label="Accent color" class="no-drag flex items-center">
+                <img src="assets/settings/color-wheel.png" alt="" aria-hidden="true">
                 <button data-quick-color="#2563eb" data-palette="royal-blue" aria-label="Aura Royal Blue" aria-pressed="true" title="Aura Royal Blue" class="rounded-full bg-[#2563eb] transition"></button>
                 <button data-quick-color="#1ed760" data-palette="spotify-green" aria-label="Spotify Emerald" aria-pressed="false" title="Spotify Emerald" class="rounded-full bg-[#1ed760] transition"></button>
                 <button data-quick-color="#a855f7" data-palette="cyber-violet" aria-label="Cyber Violet" aria-pressed="false" title="Cyber Violet" class="rounded-full bg-[#a855f7] transition"></button>
@@ -468,8 +470,8 @@
                 </button>
 
                 <!-- Settings Button -->
-                <button id="settingsBtn" title="Settings & Auto-Reduction" class="px-2 py-1 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition">
-                    <i class="fa-solid fa-gear text-xs"></i>
+                <button id="settingsBtn" title="Settings & Auto-Reduction" aria-label="Settings & Auto-Reduction" class="px-2 py-1 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition">
+                    <img src="assets/settings/setting.png" alt="" aria-hidden="true" class="w-4 h-4 object-contain">
                 </button>
                 
                 <div class="w-px h-3 bg-zinc-800 mx-1"></div>
@@ -579,24 +581,24 @@
                 <div class="pb-2.5 border-b border-dark-border shrink-0">
                     <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar text-xs font-semibold">
                         <button data-main-tab="queue" class="main-tab-btn active px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-white bg-zinc-800 border border-zinc-700/80 shrink-0">
-                            <i class="fa-solid fa-list-ul theme-accent-text"></i>
+                            <img src="assets/nav/music-library.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
                             <span>Queue</span>
                             <span id="tabQueueBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700 font-mono">0</span>
                         </button>
                         <button data-main-tab="search" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
-                            <i class="fa-solid fa-magnifying-glass text-blue-400"></i>
+                            <img src="assets/nav/search.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
                             <span>Search</span>
                         </button>
                         <button data-main-tab="discover" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
-                            <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                            <img src="assets/nav/diamond.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
                             <span>Discover</span>
                         </button>
                         <button data-main-tab="youtube" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
-                            <i class="fa-brands fa-youtube text-red-500"></i>
+                            <img src="assets/nav/down-arrow.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
                             <span>DL My Songs</span>
                         </button>
                         <button data-main-tab="liked" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
-                            <i class="fa-solid fa-heart text-red-500"></i>
+                            <img src="assets/nav/heart.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
                             <span>Liked</span>
                             <span id="tabLikedBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700 font-mono">0</span>
                         </button>
@@ -2197,6 +2199,12 @@
                 startVisualizer();
             } else {
                 stopVisualizer();
+            }
+
+            // Electron can suspend Web Audio while the compact window is occluded.
+            // Resume the existing graph without touching the media element position.
+            if (state.isPlaying && state.audioCtx?.state === 'suspended') {
+                state.audioCtx.resume().catch(error => console.warn('Could not resume audio after player reduction:', error));
             }
 
             // Sync track UI in current mode

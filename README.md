@@ -1,7 +1,4 @@
-# <img width="36" height="36" alt="x" src="https://github.com/user-attachments/assets/7e19a74c-bfbf-4184-8a01-df4ac2a67286" /> AuraAudio V1.2
-
-
-
+# <img src="assets/icon_64x64.png" width="36" height="36" align="center" alt="AuraAudio Logo" /> AuraAudio (AuraPlayer)
 
 > **Modern Dark Glassmorphic Audio Player** engineered for desktop multitasking with **3-State Dynamic Reduction**, an intelligent **Auto-Reduction Engine**, and custom branded artwork.
 
@@ -12,20 +9,11 @@
 
 ---
 
-
 ## ✨ Features at a Glance
-- 5 Themes:
-<img width="36" height="36" alt="x_192x192" src="https://github.com/user-attachments/assets/9800fea6-3777-48c0-a4a1-75c4c8cfec7c" /> Fushia 
-<img width="36" height="36" alt="x_192x192" src="https://github.com/user-attachments/assets/8191e29b-62e9-47fd-86aa-c1159dde507b" /> Purple 
-<img width="36" height="36" alt="icon_128x128" src="https://github.com/user-attachments/assets/f5cea20a-90fa-47eb-9a4f-46145b7888f9" /> Blue 
-<img width="36" height="36" alt="x_192x192" src="https://github.com/user-attachments/assets/dfcb9aa0-f787-4be4-8bd0-cfb50d8eee9d" /> Green 
-<img width="36" height="36" alt="x_192x192" src="https://github.com/user-attachments/assets/1b199729-1818-42bf-b3e6-4fb16e25cf84" /> Orange
+
 - 🎛️ **3-State Dynamic Reduction**:
-  <img width="993" height="608" alt="image" src="https://github.com/user-attachments/assets/57394600-ea54-4f80-b0fd-a8105655cc52" />
   - **Full Mode (920 × 580)**: Complete dashboard with rotating vinyl disc and branded label, real-time audio spectrum visualizer, full playlist queue with instant search & drag-and-drop, track information, seekbar, and YT Shorts-style vertical volume popup.
-       <img width="567" height="243" alt="image" src="https://github.com/user-attachments/assets/e4f713a0-4b80-4d8a-9a3e-b84071f71e7a" />
   - **Compact Mode (520 × 240)**: Sleek horizontal media card with medium spinning vinyl disc, marquee ticker, seekbar, full controls, and horizontal volume slider.
-    <img width="523" height="128" alt="image" src="https://github.com/user-attachments/assets/2580b5ef-07e3-4f65-8c80-c1693f39ace9" />
   - **Micro Mode (360 × 74)**: Ultra-compact floating pill bar with mini vinyl disc, scrolling track marquee, time tracker, and micro controls.
 - ⚡ **Intelligent Auto-Reduction Engine**:
   - **Inactivity / Idle Auto-Reduction**: Automatically detects when you are idle (configurable to 15s, 30s, 1m, 2m, or 5m) and smoothly shrinks the player to Compact or Micro mode with a graceful countdown toast.
@@ -51,21 +39,14 @@
 - 📥 **Favorite on Import**: Choose **Like imports** before adding audio files, and use the heart on any queue card to update favorites.
 - 👤 **Guest-first account access**: The main navigation keeps Queue, Search, Discover, DL My Songs, and Liked. Create and load playlists from Queue; sign-in and cloud options open from the Guest/account button.
 - 🔍 **Global Search**: Search the local library, curated catalog, and real YouTube results from a dedicated tab; results update as you type. Queue filtering remains available separately.
-  <img width="555" height="396" alt="image" src="https://github.com/user-attachments/assets/b1988bb7-56a4-484a-a8b6-4cd0d705a23e" />
-
 - 💗 **Liked library**: Liked songs and artists share the same row styling and can be collapsed independently on desktop and mobile.
 - ✨ **Personalized Discovery**: Recommendations use the current user's likes, imported media, downloads, playlists, and recent plays. Opening Discover fetches fresh data from the server.
-  <img width="558" height="494" alt="image" src="https://github.com/user-attachments/assets/7ffd9910-696f-4bfd-b8a2-3ac0b801d2f9" />
-  <img width="565" height="471" alt="image" src="https://github.com/user-attachments/assets/f488c076-3f66-4950-bd34-ebe811b65992" />
-
 - 🎙️ **Artist discovery**: Search and open artist profiles with biographies, portraits, albums, artwork, and playable recording results. Favorite artists and songs directly from the discovery view. Metadata comes from MusicBrainz, Wikimedia, and Cover Art Archive when available.
 - 🧹 **Cache controls**: Settings estimates local imported audio and server download sizes before partial or full cleanup.
-  <img width="917" height="217" alt="image" src="https://github.com/user-attachments/assets/305e706a-06b8-434f-83cc-564a7f461f0f" />
-
 - 🗂️ **Queue playlists**: Load playlists from the Queue selector, or use the vertical dots on a track to add it to a playlist, open its artist or album, or search related songs.
 - 🔗 **Service playlist imports**: Import Spotify playlists and saved songs from Spotify's personal-data JSON export; AuraAudio does not connect to the Spotify Web API. Apple Music supports developer-token validation and MusicKit account authorization before playlist import. SoundCloud playlists are read through yt-dlp; tracks only play locally when the source marks them downloadable. Spotify and Apple Music audio stays in the official service.
-- 🎚️ **Daily mixes**: Choose Your Aura Mix, Electro, Pop, or Rock in Discover or the Queue playlist selector. Your Aura Mix reflects liked songs and listening history; mood mixes use YouTube results with curated fallbacks. Playback downloads tracks only as they are played. Use **Download full mix** for an explicit batch download (up to two at a time) with per-track status. Discover data is cached per profile for ten minutes and can be refreshed manually.
-- 📱 **Mobile player**: Open `/mobile/` on the server to search, like, play, and browse downloads from a phone. Audio is served by the same local API and download folder.
+- 🎚️ **Daily mixes**: Choose Your Aura Mix, Electro, Pop, Rock, Rap, Hip-Hop, Reggae, R&B, Classical, Jazz, Blues, Country, Alternative, Techno, Metal, Indie, or Latin in Discover or the Queue playlist selector. Your Aura Mix reflects liked songs and listening history; mood mixes use remote results for the primary moods and curated, playable-on-demand fallbacks for the others. Discover initially renders six cards and reveals more on request. Playback downloads tracks only after the user chooses to play them. Use **Download full mix** for an explicit batch download (up to two at a time) with per-track status. Discover data is cached per profile for ten minutes and can be refreshed manually.
+- 📱 **Mobile player**: Open `/mobile/` on the server to browse server-backed likes and playlists, search, play, and access downloads. First launch presents sign-in or guest access; signed-in users can sign out from the account panel. Saved liked and downloaded tracks play from their existing server/device media and do not start a replacement download when a saved file is missing; stale missing-download entries are pruned from the download library. Playlist rows show artwork, artist, album, date added, and a normalized duration; each playlist also has recommendations with an explicit add action. Recommendation entries do not imply that playback is available—the server may return metadata without a playable source. Mobile Settings can import audio folders/files into device-local IndexedDB for playback, import Spotify personal-data JSON, download a versioned backup of liked songs, artists, and playlists, and set per-profile play-history retention and minimum listen duration. Folder permissions are not retained; re-import after adding files. Missing or failed liked-track covers are retried through the server's free metadata lookup and saved to the profile and browser cache when found. Artist detail includes a free iTunes Search API latest-release lookup with locally cached artist/release metadata and artwork; it loads release names and covers first, and only loads album tracks after a release is selected. Audio is downloaded only when the user chooses Play. In Liked Songs, tap a row or its play button to play; double-tap a row to append it to the queue without starting a download. The expanded mobile player hides the tab navigation and stays below the top bar; fullscreen lyrics also start below the top bar. Download progress remains non-blocking, and unliking removes duplicate like records.
 - 🌈 **Dynamic Accent Color & Glow Engine**:
   - Signature Aura Royal Blue (`#2563eb`) matching the official asset palette.
   - One-click color presets: Spotify Green, Cyber Violet, Vibrant Amber, Hot Pink.
@@ -73,6 +54,31 @@
   - Replace each preset's `assets/<palette>/x.png` and `x.ico` placeholders to brand the app and favicon for that palette.
 - 🖼️ **Picture-in-Picture (PiP)**: Pop out an OS-level floating video overlay with the live branded insignia, song title, and time progress.
 - ⌨️ **Comprehensive Keyboard Navigation**: Control everything effortlessly with hotkeys.
+
+## Build and Run
+
+Install Node.js 18 or newer, then install the project dependencies with `npm install`. Edit the mobile source in `mobile/index.html`; `mobile-dist/index.html` is generated output, not a second library or database. Both the desktop and standalone servers serve the generated page and shared artwork.
+
+| Command | Action | Output |
+| --- | --- | --- |
+| `npm run app` (or `npm start`) | Run the Electron app in development | Opens AuraAudio and starts its embedded API server |
+| `npm run server` | Run only the API server from the project | API on port 3456; data in `server/data/db.json`, downloads in `downloads/` |
+| `npm run mobile:compile` | Compile the mobile web client | `mobile-dist/index.html` |
+| `npm run android:apk` | Compile the mobile client, sync the Capacitor Android project, and build a debug APK | `dist/AuraAudio-debug.apk` |
+| `npm run server:compile` | Build the standalone server distribution, including the mobile client | `standalone-server/` |
+| `powershell -ExecutionPolicy Bypass -File tools/sync-standalone-server.ps1` | Copy newer root server JavaScript files into the existing standalone server | Updates `standalone-server/server/*.js`; leaves runtime data, configuration, and assets unchanged |
+| `npm run appcompile` | Build mobile and standalone server outputs, then package the desktop app | `dist/` installers and portable app, plus both standalone folders |
+| `npm run pack` | Prepare mobile and server outputs and create an unpacked desktop build | `dist/win-unpacked/` on Windows |
+
+`npm run build` and `npm run dist` are aliases for `npm run appcompile`. On Windows, the packaged app produces NSIS installer and portable executable targets. The standalone server needs Node.js 18+ and FFmpeg on PATH; the Windows yt-dlp executable is included when available. See [HOW_TO_RUN.md](HOW_TO_RUN.md) for LAN access and launch steps.
+
+### Build the Android APK
+
+Install Node.js 22+, JDK 17 or newer, and Android Studio with Android SDK Platform 35 and Build Tools 35.0.0. Install dependencies with `npm install`, then run `npm run android:apk`. On its first run this generates the `android/` Capacitor project, syncs the mobile client and its assets, and builds `dist/AuraAudio-debug.apk`. Android uses an HTTP local WebView origin and allows cleartext requests so it can reach the LAN API over HTTP. The build uses the first available private LAN IPv4 address and port 3456 for its default API URL. To choose a host explicitly, set `AURA_API_HOST` (and optionally `AURA_PORT`) or set the complete `AURA_API_URL` before building. The host server must be reachable from the phone; see [HOW_TO_RUN.md](HOW_TO_RUN.md) for configuring LAN access. Debug APKs are for installation and testing; Play Store distribution needs a signed release build.
+
+### Mobile installation and background audio
+
+The mobile page includes a web app manifest and service worker and can be installed from a supported browser over HTTPS (or from `localhost` during development). When the browser exposes the Media Session API, AuraAudio publishes track metadata, playback position, and available play, pause, previous, next, and seek controls. Background playback is still controlled by the browser and operating system: mobile browsers may suspend a tab, stop audio under power or memory pressure, or limit lock-screen controls. Installing the web app can improve launch and media-control integration, but does not guarantee uninterrupted playback. iOS Safari and other mobile browser behavior varies by OS/browser version and user settings; AuraAudio cannot override those restrictions.
 
 ---
 
@@ -165,9 +171,13 @@ Open **Settings (<i class="fa-solid fa-gear"></i>)** to customize the auto-reduc
 
 Spotify can provide a copy of your account data, including playlist details and the songs in Your Library. Request it from [Spotify Account Privacy](https://www.spotify.com/fr/account/privacy/). Spotify sends the download link by email; delivery can take up to 5 days.
 
-When the email arrives, download and extract the ZIP archive. In AuraAudio's **DL My Songs** section, expand **How to get your Spotify data export**, then choose **Import Spotify data export (JSON)**. Select a `Playlist*.json` file to import playlists into Queue, or `YourLibrary.json` to import saved songs into Liked. Repeat for additional playlist JSON files if the export contains more than one. To avoid duplicates, AuraAudio skips playlists whose names already exist.
+When the email arrives, download and extract the ZIP archive. On desktop, use **DL My Songs → Import Spotify data export (JSON)**. On mobile, open **Settings → Import Spotify data**. Select a `Playlist*.json` file to import playlists into Queue, or `YourLibrary.json` to import saved songs into Liked. Repeat for additional playlist JSON files if the export contains more than one. Playlist names and duplicate tracks are deduplicated. To avoid duplicates, AuraAudio skips playlists whose names already exist.
 
-This is a metadata import. Spotify tracks continue to play in Spotify; AuraAudio does not download or stream Spotify audio. Spotify API sign-in and playlist API requests are not used.
+This is a metadata import. Spotify tracks continue to play in Spotify; AuraAudio does not download or stream Spotify audio. Spotify API sign-in and playlist API requests are not used. Mobile library backups are local JSON downloads containing only liked songs, liked artists, and playlists—not play history, diagnostics, credentials, tokens, or audio files.
+
+### Import audio on mobile
+
+In the mobile app, open **Settings → Import audio folder** and select a folder. Use **Choose audio files** if the browser does not support folder selection. Supported audio files are stored in the browser's device-local IndexedDB and can be played from the **On this device** section; folder access is not linked or kept by AuraAudio, and storage availability depends on the browser/device.
 
 ### Connect Apple Music
 
@@ -175,7 +185,7 @@ In **DL My Songs**, paste an Apple Music developer token and click **Confirm API
 
 ### Use the mobile player
 
-The server serves a separate touch-friendly interface at `http://<server-address>:3456/mobile/`. To make it reachable from a phone on the same network, set `server.host` to `0.0.0.0` in `server/config.json` (or set `AURA_HOST=0.0.0.0`) and run `npm run server`. Find the computer's LAN IP and use that address in the phone browser. The app and mobile page share the same API, profile data, and `downloads/` directory. The embedded desktop server stays bound to localhost by default.
+The server serves a separate touch-friendly interface at `http://<server-address>:3456/mobile/`. Its service worker uses the V7 cache namespace and keeps the app shell available offline after a successful visit; API requests and audio streams still require the server. To make it reachable from a phone on the same network, set `server.host` to `0.0.0.0` in `server/config.json` (or set `AURA_HOST=0.0.0.0`) and run `npm run server`. Find the computer's LAN IP and use that address in the phone browser. The app and mobile page share the same API, profile data, and `downloads/` directory. The embedded desktop server stays bound to localhost by default. Background playback is best-effort and remains subject to browser and operating-system policies.
 
 Desktop search results and personalized mix tracks play through the queue. Online audio is downloaded by the server first; the download status card shows progress, errors, and the saved path. MP3 conversion requires FFmpeg alongside `yt-dlp`.
 
