@@ -1,0 +1,14 @@
+{
+  "name": "AuraAudio Mobile",
+  "short_name": "AuraAudio",
+  "description": "Control your AuraAudio library and music playback.",
+  "start_url": "/mobile/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#3868ed",
+  "icons": [
+    { "src": "/assets/icon_128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/icon_64x64.png", "sizes": "64x64", "type": "image/png", "purpose": "any" }
+  ]
+}

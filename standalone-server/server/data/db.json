@@ -1,0 +1,818 @@
+{
+  "users": [],
+  "liked_songs": [],
+  "liked_artists": [],
+  "playlists": [],
+  "imported_media": [],
+  "play_events": [
+    {
+      "id": "play_daa44e9bac3f",
+      "userId": "guest",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana",
+      "playedAt": "2026-10-24T18:22:48.417Z"
+    },
+    {
+      "id": "play_1522b272f1c5",
+      "userId": "guest",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana",
+      "playedAt": "2026-10-24T18:20:49.287Z"
+    },
+    {
+      "id": "play_247e9826b783",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-24T18:20:36.304Z"
+    },
+    {
+      "id": "play_9780c4c23a17",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-24T18:17:27.890Z"
+    },
+    {
+      "id": "play_90a1607e238b",
+      "userId": "guest",
+      "title": "Lose Yourself",
+      "artist": "Eminem",
+      "playedAt": "2026-10-24T18:09:52.108Z"
+    },
+    {
+      "id": "play_8e9e2e05ccdc",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-24T18:05:58.653Z"
+    },
+    {
+      "id": "play_c13f9c655610",
+      "userId": "guest",
+      "title": "Karma Police",
+      "artist": "Radiohead",
+      "playedAt": "2026-10-24T18:05:57.150Z"
+    },
+    {
+      "id": "play_ba87c8b5bdbe",
+      "userId": "guest",
+      "title": "Karma Police",
+      "artist": "Radiohead",
+      "playedAt": "2026-10-24T18:05:05.608Z"
+    },
+    {
+      "id": "play_1989e387a1df",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-24T18:05:02.969Z"
+    },
+    {
+      "id": "play_2f45d8db1958",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-24T17:58:33.334Z"
+    },
+    {
+      "id": "play_7461f1df34b7",
+      "userId": "guest",
+      "title": "Silhouette",
+      "artist": "KANA-BOON",
+      "playedAt": "2026-10-24T17:48:03.446Z"
+    },
+    {
+      "id": "play_0a8c1601ea35",
+      "userId": "guest",
+      "title": "Karma Police",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-24T17:44:43.330Z"
+    },
+    {
+      "id": "play_356e672b6818",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-24T17:44:41.741Z"
+    },
+    {
+      "id": "play_f96c276097a4",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-24T17:37:28.925Z"
+    },
+    {
+      "id": "play_30836a8e02d0",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-24T17:34:31.892Z"
+    },
+    {
+      "id": "play_33ca8e1a17b3",
+      "userId": "guest",
+      "title": "12ème Lettre",
+      "artist": "Lino",
+      "playedAt": "2026-10-24T16:58:58.788Z"
+    },
+    {
+      "id": "play_90816ade09ab",
+      "userId": "guest",
+      "title": "Karma Police",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-24T16:58:55.618Z"
+    },
+    {
+      "id": "play_8cb9fef12042",
+      "userId": "guest",
+      "title": "Karma Police",
+      "artist": "Radiohead",
+      "playedAt": "2026-10-24T12:06:08.896Z"
+    },
+    {
+      "id": "play_2d3a873f9aae",
+      "userId": "guest",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana",
+      "playedAt": "2026-10-24T12:04:57.205Z"
+    },
+    {
+      "id": "play_a4bc9a983c2c",
+      "userId": "guest",
+      "title": "Silhouette",
+      "artist": "KANA-BOON",
+      "playedAt": "2026-10-24T12:04:55.447Z"
+    },
+    {
+      "id": "play_b3e5307dc6db",
+      "userId": "guest",
+      "title": "HURACAN",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-24T12:04:52.635Z"
+    },
+    {
+      "id": "play_936eb6ede284",
+      "userId": "guest",
+      "title": "Réseaux (Clip Officiel)",
+      "artist": "Niska",
+      "playedAt": "2026-10-24T11:46:23.924Z"
+    },
+    {
+      "id": "play_79cf52b5efc5",
+      "userId": "guest",
+      "title": "Silhouette",
+      "artist": "KANA-BOON",
+      "playedAt": "2026-10-24T11:46:22.219Z"
+    },
+    {
+      "id": "play_1e9fb5b01b41",
+      "userId": "guest",
+      "title": "12ème Lettre",
+      "artist": "Lino",
+      "playedAt": "2026-10-24T11:46:20.633Z"
+    },
+    {
+      "id": "play_90ab23d7d116",
+      "userId": "guest",
+      "title": "KAARIS - HURACAN",
+      "artist": "Kaaris",
+      "playedAt": "2026-10-24T11:45:26.061Z"
+    },
+    {
+      "id": "play_b23ab31919b5",
+      "userId": "guest",
+      "title": "Runaway",
+      "artist": "AURORA",
+      "playedAt": "2026-10-24T11:39:00.409Z"
+    },
+    {
+      "id": "play_8e4cec97937a",
+      "userId": "guest",
+      "title": "Lose Yourself",
+      "artist": "Eminem",
+      "playedAt": "2026-10-24T11:20:56.100Z"
+    },
+    {
+      "id": "play_7afa2f726de6",
+      "userId": "guest",
+      "title": "Michael Jackson - They Don't Care About Us",
+      "artist": "Michael Jackson",
+      "playedAt": "2026-10-24T11:17:37.658Z"
+    },
+    {
+      "id": "play_a1b73822292d",
+      "userId": "guest",
+      "title": "Silhouette",
+      "artist": "KANA-BOON",
+      "playedAt": "2026-10-24T10:53:50.954Z"
+    },
+    {
+      "id": "play_0715969cbd5a",
+      "userId": "guest",
+      "title": "Silhouette",
+      "artist": "KANA-BOON",
+      "playedAt": "2026-10-24T09:18:40.124Z"
+    },
+    {
+      "id": "play_45c42841c408",
+      "userId": "guest",
+      "title": "KAARIS - HURACAN",
+      "artist": "Kaaris",
+      "playedAt": "2026-10-24T09:16:24.502Z"
+    },
+    {
+      "id": "play_2bc149060a26",
+      "userId": "guest",
+      "title": "Lose Yourself",
+      "artist": "Eminem",
+      "playedAt": "2026-10-24T08:37:53.345Z"
+    },
+    {
+      "id": "play_ffe43004c12c",
+      "userId": "guest",
+      "title": "Runaway",
+      "artist": "AURORA",
+      "playedAt": "2026-10-24T08:37:49.194Z"
+    },
+    {
+      "id": "play_8c3875bbed24",
+      "userId": "guest",
+      "title": "12ème Lettre",
+      "artist": "Lino",
+      "playedAt": "2026-10-23T21:43:39.812Z"
+    },
+    {
+      "id": "play_62b218e3265a",
+      "userId": "guest",
+      "title": "AURORA - Runaway",
+      "artist": "AURORA",
+      "playedAt": "2026-10-23T20:37:16.987Z"
+    },
+    {
+      "id": "play_6696918f5147",
+      "userId": "guest",
+      "title": "12ème Lettre",
+      "artist": "Lino",
+      "playedAt": "2026-10-23T19:47:36.176Z"
+    }
+  ],
+  "activity_events": [
+    {
+      "id": "activity_6eaeb1708d72",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-24T18:27:39.961Z",
+      "title": "KAARIS - HURACAN",
+      "artist": "Kaaris"
+    },
+    {
+      "id": "activity_e408b4f7af41",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-24T18:27:39.183Z",
+      "title": "Karma Police",
+      "artist": "Radiohead"
+    },
+    {
+      "id": "activity_fd77065781d6",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-24T18:27:38.321Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_268e21752154",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-24T18:27:37.116Z",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana"
+    },
+    {
+      "id": "activity_552bdd164e05",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:22:48.417Z",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana"
+    },
+    {
+      "id": "activity_6932e3fc5953",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:20:49.288Z",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana"
+    },
+    {
+      "id": "activity_a6279de074a1",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:20:36.304Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_118c4fed419b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:17:27.890Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_d6e4ebff0abc",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:09:52.108Z",
+      "title": "Lose Yourself",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_ebfa1dba09a6",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-24T18:09:50.011Z",
+      "title": "Lose Yourself",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_007cff00408e",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T18:09:45.999Z",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana"
+    },
+    {
+      "id": "activity_adee359b777b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:05:58.653Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_361ac68ff192",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:05:57.156Z",
+      "title": "Karma Police",
+      "artist": "Radiohead"
+    },
+    {
+      "id": "activity_498d8c3cf293",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:05:05.608Z",
+      "title": "Karma Police",
+      "artist": "Radiohead"
+    },
+    {
+      "id": "activity_37617bcf86a0",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T18:05:02.969Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_c7ae00b518d9",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T17:58:33.334Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_ed401e9495d0",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T17:58:20.555Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_5f5d7e15d720",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T17:57:58.148Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_3f8483c29bdd",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T17:48:03.446Z",
+      "title": "Silhouette",
+      "artist": "KANA-BOON"
+    },
+    {
+      "id": "activity_14baed8880e7",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T17:44:43.330Z",
+      "title": "Karma Police",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_cada9595eff6",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T17:44:41.741Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_c813412ee061",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T17:37:28.925Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_33f87bbdfd12",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T17:37:28.173Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_5295a05cdafe",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T17:34:31.892Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_4c2e3d98e878",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T17:34:31.280Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_7251530a03cd",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T17:34:13.839Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_468c9b83356d",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-24T17:01:35.215Z",
+      "title": "Michael Jackson - They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_da16499db736",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T16:58:58.788Z",
+      "title": "12ème Lettre",
+      "artist": "Lino"
+    },
+    {
+      "id": "activity_d8f5b100478a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T16:58:55.618Z",
+      "title": "Karma Police",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_d43dbbd7dbea",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T12:08:28.444Z",
+      "title": "Michael Jackson - They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_716130e27639",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T12:07:33.599Z",
+      "title": "Michael Jackson - They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_34c8085da608",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-24T12:07:18.564Z",
+      "title": "Karma Police",
+      "artist": "Radiohead"
+    },
+    {
+      "id": "activity_e34d7ca2bd3e",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T12:06:08.896Z",
+      "title": "Karma Police",
+      "artist": "Radiohead"
+    },
+    {
+      "id": "activity_2cdfa84c2694",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T12:06:08.323Z",
+      "title": "Karma Police",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_2fbd58edb50d",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T12:04:57.205Z",
+      "title": "Something In The Way (Audio)",
+      "artist": "Nirvana"
+    },
+    {
+      "id": "activity_435a8049193d",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T12:04:55.447Z",
+      "title": "Silhouette",
+      "artist": "KANA-BOON"
+    },
+    {
+      "id": "activity_d3fa5110db8d",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T12:04:52.635Z",
+      "title": "HURACAN",
+      "artist": "KAARIS"
+    },
+    {
+      "id": "activity_43859db56d92",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:46:23.924Z",
+      "title": "Réseaux (Clip Officiel)",
+      "artist": "Niska"
+    },
+    {
+      "id": "activity_415d9928d3f3",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:46:22.219Z",
+      "title": "Silhouette",
+      "artist": "KANA-BOON"
+    },
+    {
+      "id": "activity_b66b05abaacd",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:46:20.633Z",
+      "title": "12ème Lettre",
+      "artist": "Lino"
+    },
+    {
+      "id": "activity_c1d1f5c5bf7e",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:45:26.061Z",
+      "title": "KAARIS - HURACAN",
+      "artist": "Kaaris"
+    },
+    {
+      "id": "activity_abfb8f609486",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:39:00.409Z",
+      "title": "Runaway",
+      "artist": "AURORA"
+    },
+    {
+      "id": "activity_74ab306792cb",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:20:56.100Z",
+      "title": "Lose Yourself",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_e10a3211bf27",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T11:17:37.658Z",
+      "title": "Michael Jackson - They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_75079a6ce274",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T11:17:37.512Z",
+      "title": "They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_d96c496d0015",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T10:53:50.954Z",
+      "title": "Silhouette",
+      "artist": "KANA-BOON"
+    },
+    {
+      "id": "activity_bd91e0b6bb99",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T10:17:27.161Z",
+      "title": "They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_8929b8dbe59b",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T10:17:10.083Z",
+      "title": "They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_071e02238e26",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-24T10:14:52.725Z",
+      "title": "They Don't Care About Us",
+      "artist": "Michael Jackson"
+    },
+    {
+      "id": "activity_c693d4be1aff",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T09:18:40.124Z",
+      "title": "Silhouette",
+      "artist": "KANA-BOON"
+    },
+    {
+      "id": "activity_831c7c5b8e40",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T09:16:24.502Z",
+      "title": "KAARIS - HURACAN",
+      "artist": "Kaaris"
+    },
+    {
+      "id": "activity_3a6db091f6a2",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T08:37:53.345Z",
+      "title": "Lose Yourself",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_61db5ac791e6",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-24T08:37:49.194Z",
+      "title": "Runaway",
+      "artist": "AURORA"
+    },
+    {
+      "id": "activity_fc976de03a47",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-23T21:43:39.813Z",
+      "title": "12ème Lettre",
+      "artist": "Lino"
+    },
+    {
+      "id": "activity_1f5f0a4d9924",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-23T20:37:16.987Z",
+      "title": "AURORA - Runaway",
+      "artist": "AURORA"
+    },
+    {
+      "id": "activity_6bf5a613a1c6",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-23T20:37:16.557Z",
+      "title": "Runaway",
+      "artist": "AURORA"
+    },
+    {
+      "id": "activity_b445d1b21170",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-23T19:47:36.176Z",
+      "title": "12ème Lettre",
+      "artist": "Lino"
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "diag_2c65e300cafc",
+      "userId": "guest",
+      "category": "discovery",
+      "method": "GET",
+      "statusCode": 500,
+      "occurredAt": "2026-10-24T17:00:02.216Z"
+    },
+    {
+      "id": "diag_ba65ab4134f7",
+      "userId": "guest",
+      "category": "discovery",
+      "method": "GET",
+      "statusCode": 500,
+      "occurredAt": "2026-10-24T16:59:09.332Z"
+    },
+    {
+      "id": "diag_381122db3ab0",
+      "userId": "guest",
+      "category": "discovery",
+      "method": "GET",
+      "statusCode": 500,
+      "occurredAt": "2026-10-24T16:57:54.586Z"
+    },
+    {
+      "id": "diag_7728da273b3c",
+      "userId": "guest",
+      "category": "telemetry",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-24T10:17:27.733Z"
+    },
+    {
+      "id": "diag_d153a906a327",
+      "userId": "guest",
+      "category": "telemetry",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-24T10:17:10.525Z"
+    },
+    {
+      "id": "diag_1f41aea8d427",
+      "userId": "guest",
+      "category": "library",
+      "method": "POST",
+      "statusCode": 404,
+      "occurredAt": "2026-10-23T21:23:11.963Z"
+    },
+    {
+      "id": "diag_7fb0705f7bfa",
+      "userId": "guest",
+      "category": "library",
+      "method": "POST",
+      "statusCode": 404,
+      "occurredAt": "2026-10-23T21:14:14.378Z"
+    },
+    {
+      "id": "diag_38b43b8d5196",
+      "userId": "guest",
+      "category": "library",
+      "method": "POST",
+      "statusCode": 404,
+      "occurredAt": "2026-10-23T20:56:45.603Z"
+    }
+  ],
+  "downloads": [
+    {
+      "id": "dl_5ac57adc2ccfd1aa",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\standalone-server\\downloads\\наколки [dl_5ac57adc2ccfd1aa].mp3",
+      "fileName": "наколки [dl_5ac57adc2ccfd1aa].mp3",
+      "fileSize": 3891661,
+      "coverFile": "cover-a655a890b665908e4d6fbc91.jpg",
+      "cover": "/api/covers/cover-a655a890b665908e4d6fbc91.jpg",
+      "coverChecked": true,
+      "downloadedAt": "2026-10-24T17:37:28.171Z"
+    },
+    {
+      "id": "dl_05e4b926aba62644",
+      "userId": "guest",
+      "title": "They Don't Care About Us",
+      "artist": "Michael Jackson",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\standalone-server\\downloads\\Michael Jackson - They Don't Care About Us [dl_05e4b926aba62644].mp3",
+      "fileName": "Michael Jackson - They Don't Care About Us [dl_05e4b926aba62644].mp3",
+      "fileSize": 8362640,
+      "coverFile": "cover-b01862e7b1cf9e4de7a75bef.jpg",
+      "cover": "/api/covers/cover-b01862e7b1cf9e4de7a75bef.jpg",
+      "coverChecked": true,
+      "downloadedAt": "2026-10-24T11:17:37.510Z"
+    }
+  ],
+  "play_history_preferences": [],
+  "settings": {
+    "version": "1.2.0",
+    "initializedAt": "2026-10-21T10:51:23.593Z"
+  }
+}
