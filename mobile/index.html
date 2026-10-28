@@ -848,7 +848,7 @@
         playlists:(savedPlaylists||[]).map(playlist=>({id:String(playlist.id||''),name:String(playlist.name||''),description:String(playlist.description||''),tracks:(playlist.tracks||[]).map(safeBackupTrack)}))
       }};
     }
-    const $=s=>document.querySelector(s);const content=$('#content'),message=$('#message'),audio=$('#audio');let queue=[],index=-1,liked=[],likedArtists=[],playlists=[],downloads=[],authToken=localStorage.getItem('aura_jwt')||'',selectedSong=null,shuffleOn=false,repeatMode='off';
+    const $=s=>document.querySelector(s);const content=$('#content'),message=$('#message'),audio=$('#audio');let queue=[],index=-1,liked=[],likedArtists=[],playlists=[],downloads=[],authToken=localStorage.getItem('aura_jwt')||'',selectedSong=null,shuffleOn=false,repeatMode='off',failedShuffle=new Set();
     let debugConsole,debugLogs=[];
     let currentLyrics = null;
     let activeDownloads = new Set();
@@ -1457,7 +1457,7 @@
       albumButton.disabled=!track;
       disc.replaceChildren(visual,albumButton);
     }
-    function playIndex(i){if(!queue.length||i<0||i>=queue.length)return;index=i;const t=queue[index];if(!t.url){playItem({...t.source,title:t.title,artist:t.artist},i);return}t.url=apiResourceUrl(t.url);t.cover=t.cover||likedArtwork(t.source||t)||'';playbackProgress={key:`${i}|${t.url}|${t.title}|${t.artist}`,listenedSeconds:0,lastMediaTime:null,recorded:false,pending:false};audio.src=t.url;$('#trackTitle').textContent=t.title;$('#trackTitle').classList.toggle('long-text',t.title.length>25);$('#trackArtist').textContent=t.artist||'AuraAudio';renderPlayerCover(t);renderQueue();updateMediaSession(t);audio.play().catch(e=>say(`Playback error: ${e.message}`,true));say('Now playing');const isLiked=liked.some(x=>`${x.title}|${x.artist}`===`${t.title}|${t.artist}`);$('#playerLikeBtn').classList.toggle('liked',isLiked);
+    function playIndex(i){if(!queue.length||i<0||i>=queue.length)return;index=i;const t=queue[index];if(!t.url){playItem({...t.source,title:t.title,artist:t.artist},i);return}t.url=apiResourceUrl(t.url);t.cover=t.cover||likedArtwork(t.source||t)||'';playbackProgress={key:`${i}|${t.url}|${t.title}|${t.artist}`,listenedSeconds:0,lastMediaTime:null,recorded:false,pending:false};audio.src=t.url;$('#trackTitle').textContent=t.title;$('#trackTitle').classList.toggle('long-text',t.title.length>25);$('#trackArtist').textContent=t.artist||'AuraAudio';renderPlayerCover(t);renderQueue();updateMediaSession(t);audio.play().catch(e=>{say(`Playback error: ${e.message}`,true);if(shuffleOn&&queue.length>1){failedShuffle.add(index);let ni,attempts=0;do{ni=Math.floor(Math.random()*queue.length);attempts++}while((ni===index||failedShuffle.has(ni))&&attempts<queue.length*2);if(attempts<queue.length*2&&!failedShuffle.has(ni))setTimeout(()=>playIndex(ni),250)}});say('Now playing');const isLiked=liked.some(x=>`${x.title}|${x.artist}`===`${t.title}|${t.artist}`);$('#playerLikeBtn').classList.toggle('liked',isLiked);
       currentLyrics = null;
       fetchLyrics(t).then(lines=>{ currentLyrics = lines; updateLiveSubtitles(audio.currentTime||0); });
       updateLiveSubtitles(0);
@@ -1996,7 +1996,7 @@
       return detailRequestIsCurrent(token);
     }
     const closeDetail=()=>{detailRequestId++;clearInterval(detailCountdownTimer);detailCountdownTimer=null;hideSheet($('#detailSheet'))};
-    function playTracks(tracks,i=0){queue=tracks.map(t=>({title:tName(t),artist:t.artist||'',url:t.streamUrl||'',source:t,cover:tCover(t)}));closeDetail();playIndex(i)}
+    function playTracks(tracks,i=0){queue=tracks.map(t=>({title:tName(t),artist:t.artist||'',url:t.streamUrl||'',source:t,cover:tCover(t)}));failedShuffle=new Set();closeDetail();playIndex(i)}
     const mixTrackKey=track=>`${String(tName(track)||'').trim().toLowerCase()}|${String(track?.artist||'').trim().toLowerCase()}`;
     const getLockedMixTracks=mixId=>{const saved=LS('aura_locked_mix_tracks',{});return Array.isArray(saved?.[mixId])?saved[mixId]:[]};
     const saveLockedMixTrack=(mixId,track,locked)=>{const saved=LS('aura_locked_mix_tracks',{}),tracks=Array.isArray(saved?.[mixId])?saved[mixId]:[],key=mixTrackKey(track);const updated=locked?[...tracks.filter(item=>mixTrackKey(item)!==key),track]:tracks.filter(item=>mixTrackKey(item)!==key);if(updated.length)saved[mixId]=updated;else delete saved[mixId];setLS('aura_locked_mix_tracks',saved)};
@@ -2633,7 +2633,7 @@
     $('#toggle').onclick=()=>audio.paused?audio.play():audio.pause();
     $('#next').onclick=()=>nextTrack();
     $('#prev').onclick=()=>prevTrack();
-    $('#shuffleBtn').onclick=()=>{shuffleOn=!shuffleOn;$('#shuffleBtn').classList.toggle('active',shuffleOn);$('#shuffleBtn').dataset.shuffle=String(shuffleOn)};
+    $('#shuffleBtn').onclick=()=>{shuffleOn=!shuffleOn;failedShuffle=new Set();$('#shuffleBtn').classList.toggle('active',shuffleOn);$('#shuffleBtn').dataset.shuffle=String(shuffleOn)};
     $('#repeatBtn').onclick=()=>{const modes=['off','all','one'];const next=modes[(modes.indexOf(repeatMode)+1)%3];repeatMode=next;$('#repeatBtn').classList.toggle('active',next!=='off');$('#repeatBtn').dataset.repeat=next;$('#repeatBtn').title=next==='off'?'Repeat':next==='all'?'Repeat all':'Repeat one';const indicator=$('#repeatIndicator');if(next==='one'){indicator.textContent='1';indicator.classList.remove('hidden')}else if(next==='all'){indicator.textContent='∞';indicator.classList.remove('hidden')}else{indicator.classList.add('hidden')}};
     async function recordEligiblePlay(){
       const state=playbackProgress;
@@ -2749,6 +2749,7 @@
       }
     };
     audio.onended=()=>{if(repeatMode==='one'){audio.currentTime=0;audio.play().catch(error=>say(`Playback error: ${error.message}`,true))}else nextTrack()};
+audio.onerror=()=>{if(shuffleOn&&queue.length>1){failedShuffle.add(index);let ni,attempts=0;do{ni=Math.floor(Math.random()*queue.length);attempts++}while((ni===index||failedShuffle.has(ni))&&attempts<queue.length*2);if(attempts<queue.length*2&&!failedShuffle.has(ni))setTimeout(()=>playIndex(ni),250)}};
     $('#seek').oninput=e=>{if(audio.duration)audio.currentTime=e.target.value/100*audio.duration;e.target.style.setProperty('--seek-progress',`${e.target.value}%`)};
     
     const displayModeMedia=window.matchMedia?.('(display-mode: standalone)');
