@@ -6,6 +6,7 @@
 const url = require('url');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const MusicMetadataService = require('./music-metadata');
 const { matchKey } = require('./music-metadata');
 
@@ -41,7 +42,7 @@ class ApiRouter {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range'
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key'
         });
         res.end(JSON.stringify(data));
     }
@@ -125,11 +126,23 @@ class ApiRouter {
             res.writeHead(204, {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key',
                 'Access-Control-Allow-Private-Network': 'true',
                 'Access-Control-Max-Age': '86400'
             });
             return res.end();
+        }
+
+        const publicAccessKey = String(process.env.AURA_PUBLIC_ACCESS_KEY || '');
+        if (pathname.startsWith('/api/') && publicAccessKey) {
+            // Desktop/mobile clients send the header; <audio>/<img> elements cannot, so also accept ?accessKey=.
+            const bearerKey = /^ApiKey\s+(.+)$/i.exec(String(req.headers.authorization || ''))?.[1] || '';
+            const suppliedKey = req.headers['x-aura-access-key'] || (query && query.accessKey) || bearerKey || '';
+            const supplied = Buffer.from(String(suppliedKey));
+            const expected = Buffer.from(publicAccessKey);
+            if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) {
+                return this.sendError(res, 401, 'This server requires its current external access key.');
+            }
         }
 
         // GET /api/lyrics (Proxied to LRCLIB)
@@ -137,36 +150,46 @@ class ApiRouter {
             let title = String(query.title || '').trim();
             const artist = String(query.artist || '').trim();
             if (!title) return this.sendJson(res, 200, { lines: [] });
-            
-            // Clean raw YouTube titles (e.g. remove "(Clip Officiel)")
-            title = title.replace(/\((?:official\s+)?(?:music\s+)?video\)|\[(?:official\s+)?(?:music\s+)?video\]|\(clip officiel\)|\(audio\)|\(lyrics?\)/gi, '').trim();
 
-            const fetchLyrics = async (url) => {
+            const cleanTitle = value => String(value || '').replace(/[[(](?:[^)\]]*(?:official|video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version)[^)]*)[)\]]/gi, ' ')
+                .replace(/\s+-\s+(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ').replace(/\s+/g, ' ').trim();
+            title = cleanTitle(title);
+            const normalize = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+            const titleKey = normalize(title);
+            const artistKey = /^(?:unknown artist|youtube(?: audio)?)$/i.test(artist) ? '' : normalize(artist);
+
+            const fetchLyrics = async url => {
                 try {
-                    const lrcRes = await fetch(url, { 
-                        headers: { 'User-Agent': 'AuraAudio/1.2.0 (https://github.com/auraplayer)' },
+                    const lrcRes = await fetch(url, {
+                        headers: { 'User-Agent': 'AuraAudio/1.5.0 (https://github.com/auraplayer)' },
                         signal: AbortSignal.timeout(5000)
                     });
                     if (!lrcRes.ok) return null;
                     const data = await lrcRes.json();
-                    if (!Array.isArray(data) || data.length === 0) return null;
-                    return data.find(item => item.syncedLyrics) || data[0];
+                    return Array.isArray(data) ? data : data && typeof data === 'object' ? [data] : [];
                 } catch { return null; }
             };
 
             try {
-                // Strategy 1: Exact Title + Artist
-                let bestMatch = await fetchLyrics(`https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(artist)}`);
-                
-                // Strategy 2: Title only (if Artist failed)
-                if (!bestMatch && artist) {
-                    bestMatch = await fetchLyrics(`https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}`);
+                const candidates = [], artistMatches = [];
+                const queries = [
+                    `track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(artist)}`,
+                    `track_name=${encodeURIComponent(title)}`,
+                    `q=${encodeURIComponent(title + (artist ? ` ${artist}` : ''))}`
+                ];
+                for (const params of queries) {
+                    const matches = await fetchLyrics(`https://lrclib.net/api/search?${params}`);
+                    for (const item of matches || []) {
+                        if (normalize(cleanTitle(item.trackName)) !== titleKey) continue;
+                        const candidateArtist = normalize(item.artistName);
+                        candidates.push(item);
+                        if (!artistKey || !candidateArtist || candidateArtist === artistKey
+                            || candidateArtist.includes(artistKey) || artistKey.includes(candidateArtist)) artistMatches.push(item);
+                    }
+                    if (candidates.length) break;
                 }
-
-                // Strategy 3: Generic text query (helps with French accents/spelling variants)
-                if (!bestMatch) {
-                    bestMatch = await fetchLyrics(`https://lrclib.net/api/search?q=${encodeURIComponent(title + ' ' + artist)}`);
-                }
+                const bestMatch = artistMatches.find(item => item.syncedLyrics) || artistMatches.find(item => item.plainLyrics)
+                    || candidates.find(item => item.syncedLyrics) || candidates.find(item => item.plainLyrics);
 
                 if (!bestMatch) return this.sendJson(res, 200, { lines: [] });
 
@@ -199,6 +222,39 @@ class ApiRouter {
                 if (!fs.existsSync(mobileFile)) return this.sendError(res, 404, 'Mobile app is not installed.');
                 res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
                 return fs.createReadStream(mobileFile).pipe(res);
+            }
+            if (method === 'GET' && ['/autonomousclientmobile', '/autonomousclientmobile/'].includes(pathname)) {
+                const filePath = path.resolve(__dirname, '..', 'autonomousclientmobile', 'index.html');
+                if (!fs.existsSync(filePath)) return this.sendError(res, 404, 'Autonomous mobile client is not installed.');
+                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+                return fs.createReadStream(filePath).pipe(res);
+            }
+            if (method === 'GET' && /^\/autonomousclientmobile\/(?:client\.js|service-worker\.js|manifest\.webmanifest|aura-icon\.png)$/.test(pathname)) {
+                const fileName = path.basename(pathname);
+                const filePath = path.resolve(__dirname, '..', 'autonomousclientmobile', fileName);
+                if (!fs.existsSync(filePath)) return this.sendError(res, 404, 'Autonomous mobile client resource not found.');
+                const contentType = fileName.endsWith('.js') ? 'application/javascript; charset=utf-8'
+                    : fileName.endsWith('.webmanifest') ? 'application/manifest+json; charset=utf-8'
+                        : fileName.endsWith('.png') ? 'image/png'
+                        : 'application/octet-stream';
+                res.writeHead(200, {
+                    'Content-Type': contentType,
+                    'Cache-Control': 'no-cache',
+                    ...(fileName === 'service-worker.js' ? { 'Service-Worker-Allowed': '/autonomousclientmobile/' } : {})
+                });
+                return fs.createReadStream(filePath).pipe(res);
+            }
+            if (method === 'GET' && pathname.startsWith('/autonomousclientmobile/assets/')) {
+                let requestedAsset;
+                try { requestedAsset = decodeURIComponent(pathname.slice('/autonomousclientmobile/assets/'.length)); }
+                catch { return this.sendError(res, 400, 'Invalid autonomous client asset path.'); }
+                const assetRoot = path.resolve(__dirname, '..', 'autonomousclientmobile', 'assets');
+                const assetPath = path.resolve(assetRoot, requestedAsset);
+                if (!assetPath.startsWith(assetRoot + path.sep)) return this.sendError(res, 400, 'Invalid autonomous client asset path.');
+                if (!fs.existsSync(assetPath) || !fs.statSync(assetPath).isFile()) return this.sendError(res, 404, 'Autonomous client asset not found.');
+                const contentType = { '.png': 'image/png', '.ico': 'image/x-icon', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' }[path.extname(assetPath).toLowerCase()] || 'application/octet-stream';
+                res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' });
+                return fs.createReadStream(assetPath).pipe(res);
             }
             if (method === 'GET' && (pathname === '/manifest.webmanifest' || pathname === '/service-worker.js')) {
                 const mobileDistPath = path.resolve(__dirname, '..', 'mobile-dist', path.basename(pathname));
@@ -234,11 +290,24 @@ class ApiRouter {
             // -------------------------------------------------------------
             // SYSTEM & STATUS
             // -------------------------------------------------------------
+            if (pathname === '/api/mobile/sync' && method === 'POST') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const body = await this.parseBody(req);
+                if (!Array.isArray(body.actions)) return this.sendError(res, 400, 'Sync actions must be an array.');
+                if (body.actions.length > 200) return this.sendError(res, 413, 'A sync batch may contain at most 200 actions.');
+                const result = this.db.syncMobileActions(userId, body.actions);
+                return this.sendJson(res, 200, {
+                    ...result,
+                    likedSongs: this.db.getLikedSongs(userId),
+                    likedArtists: this.db.getLikedArtists(userId)
+                });
+            }
             if (pathname === '/api/status' && method === 'GET') {
                 return this.sendJson(res, 200, {
                     status: 'online',
                     app: 'AuraAudio Engine Backend',
-                    version: '1.2.0',
+                    version: '1.5.0',
                     node: process.version,
                     uptimeSeconds: Math.floor(process.uptime()),
                     downloadsDir: this.downloadsDir,
@@ -429,15 +498,27 @@ class ApiRouter {
             if (dynamicArtistMatch && method === 'GET') return this.sendJson(res, 200, await this.musicMetadata.getArtistProfile(dynamicArtistMatch[1]));
 
             if (pathname === '/api/music/track-metadata' && method === 'GET') {
-                const result = await this.musicMetadata.lookupTrack(query.title || '', query.artist || '');
-                return this.sendJson(res, 200, result || { found: false, message: 'No matching recording was found.' });
+                try {
+                    const artist = /^(unknown artist|youtube(?: audio)?)$/i.test(String(query.artist || '').trim()) ? '' : query.artist || '';
+                    const result = await this.musicMetadata.lookupTrack(query.title || '', artist);
+                    return this.sendJson(res, 200, result || { found: false, message: 'No matching recording was found.' });
+                } catch (error) {
+                    console.warn('[Metadata] Track lookup failed:', error.message);
+                    return this.sendJson(res, 200, { found: false, title: query.title || '', artist: query.artist || '', album: '', cover: '', message: 'Track metadata is temporarily unavailable.' });
+                }
             }
 
             if ((pathname === '/api/music/album' || pathname === '/api/albums') && method === 'GET') {
-                const result = pathname === '/api/albums'
-                    ? await this.musicMetadata.lookupAlbumByName(query.title || query.name || '', query.artist || '')
-                    : await this.musicMetadata.lookupAlbum(query.title || '', query.artist || '');
-                return this.sendJson(res, 200, result || { found: false, message: 'No matching album was found.' });
+                try {
+                    const artist = /^(unknown artist|youtube(?: audio)?)$/i.test(String(query.artist || '').trim()) ? '' : query.artist || '';
+                    const result = pathname === '/api/albums'
+                        ? await this.musicMetadata.lookupAlbumByName(query.title || query.name || '', artist)
+                        : await this.musicMetadata.lookupAlbum(query.title || '', artist);
+                    return this.sendJson(res, 200, result || { found: false, message: 'No matching album was found.' });
+                } catch (error) {
+                    console.warn('[Metadata] Album lookup failed:', error.message);
+                    return this.sendJson(res, 200, { found: false, title: query.title || query.name || '', artist: query.artist || '', cover: '', tracks: [], message: 'Album metadata is temporarily unavailable.' });
+                }
             }
 
             // GET /api/discovery/daily-mix
@@ -745,7 +826,7 @@ class ApiRouter {
                     return this.sendError(res, 404, 'Cover image not found.');
                 }
                 const contentType = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[path.extname(fileName).slice(1)];
-                res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' });
+                res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff', 'Access-Control-Allow-Origin': '*' });
                 return fs.createReadStream(filePath).pipe(res);
             }
 

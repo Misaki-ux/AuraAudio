@@ -2,6 +2,109 @@
   "users": [],
   "liked_songs": [
     {
+      "id": "like_faa1e71a4182",
+      "userId": "guest",
+      "trackId": "eIw5r6v2L00",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "duration": "02:03",
+      "durationFormatted": "--:--",
+      "url": "https://www.youtube.com/watch?v=eIw5r6v2L00",
+      "fileName": "",
+      "localAudioId": "",
+      "source": "youtube",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/6b/55/87/6b55879a-dba6-1f7a-de5b-9d7a65603880/cover.jpg/600x600bb.jpg",
+      "addedAt": "2026-10-27T20:17:59.324Z",
+      "album": "наколки - Single"
+    },
+    {
+      "id": "like_1aaf2d807d70",
+      "userId": "guest",
+      "trackId": "484a4e90-6899-4e4b-a948-a2255d365340",
+      "title": "AURORA",
+      "artist": "Person · trance · synthpop",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "fileName": "",
+      "localAudioId": "",
+      "source": "artists",
+      "cover": null,
+      "addedAt": "2026-10-27T10:42:26.973Z"
+    },
+    {
+      "id": "like_d32829bf4b55",
+      "userId": "guest",
+      "trackId": "online_EuGRKqTwbVI",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "fileName": "",
+      "localAudioId": "",
+      "source": "local",
+      "cover": null,
+      "addedAt": "2026-10-27T08:06:30.465Z"
+    },
+    {
+      "id": "like_a766fa61d047",
+      "userId": "guest",
+      "trackId": "online_K_xTet06SUo",
+      "title": "和楽器バンド / 千本桜",
+      "artist": "YouTube",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "fileName": "",
+      "localAudioId": "",
+      "source": "local",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/0d/6e/3d/0d6e3d36-1d70-4f86-4c61-ebb3758a1a25/ss_01.jpg/600x600bb.jpg",
+      "addedAt": "2026-10-26T09:31:41.713Z",
+      "album": "千本桜 - Single"
+    },
+    {
+      "id": "like_158be0fe42ba",
+      "userId": "guest",
+      "trackId": "online_YWO_tTJmkh8",
+      "title": "Wagakki Band - 01 - Tengaku",
+      "artist": "YouTube",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "fileName": "",
+      "localAudioId": "",
+      "source": "local",
+      "cover": null,
+      "addedAt": "2026-10-26T09:29:03.421Z"
+    },
+    {
+      "id": "like_8f02b9d3594e",
+      "userId": "guest",
+      "trackId": "dl_f1e830356f22c09f",
+      "title": "Supertramp - Breakfast In America (Official Audio)",
+      "artist": "YouTube",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "source": "local",
+      "cover": null,
+      "addedAt": "2026-10-21T10:29:31.515Z"
+    },
+    {
+      "id": "like_edccc4b63680",
+      "userId": "guest",
+      "trackId": "AIOAlaACuv4",
+      "title": "Tracy Chapman - Fast Car (Official Music Video)",
+      "artist": "Unknown Artist",
+      "duration": 0,
+      "durationFormatted": "--:--",
+      "url": "",
+      "source": "youtube",
+      "cover": null,
+      "addedAt": "2026-10-21T10:29:05.774Z"
+    },
+    {
       "id": "like_8901b5bce1bc",
       "userId": "guest",
       "trackId": "qn4gwho7u",
@@ -11,8 +114,9 @@
       "durationFormatted": "--:--",
       "url": "",
       "source": "local",
-      "cover": null,
-      "addedAt": "2026-10-18T19:09:02.036Z"
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/6b/55/87/6b55879a-dba6-1f7a-de5b-9d7a65603880/cover.jpg/600x600bb.jpg",
+      "addedAt": "2026-10-18T19:09:02.036Z",
+      "album": "наколки - Single"
     }
   ],
   "liked_artists": [
@@ -21,7 +125,7 @@
       "key": "9282c8b4-ca0b-4c6b-b7e3-4f7762dfc4d6",
       "id": "9282c8b4-ca0b-4c6b-b7e3-4f7762dfc4d6",
       "name": "Nirvana",
-      "image": "",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/46/24/33/462433f9-ee74-2d60-4538-859826a7bed7/00720642472729.rgb.jpg/600x600bb.jpg",
       "likedAt": "2026-10-19T15:54:29.102Z"
     },
     {
@@ -29,7 +133,7 @@
       "key": "33ff8a92-2f3b-4cac-8ea0-5eebfa995626",
       "id": "33ff8a92-2f3b-4cac-8ea0-5eebfa995626",
       "name": "KANA-BOON",
-      "image": "",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/9a/7b/3c/9a7b3c49-a51a-ef46-cf8e-fb2dafbc3e62/jacket_KSXX00937B00Z_550.jpg/600x600bb.jpg",
       "likedAt": "2026-10-19T13:33:23.980Z"
     },
     {
@@ -37,13 +141,713 @@
       "key": "cb54014a-d728-4e8d-8934-15426a3ddd5d",
       "id": "cb54014a-d728-4e8d-8934-15426a3ddd5d",
       "name": "Dooz Kawa",
-      "image": "",
+      "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Dooz_Kawa_en_concert_%C3%A0_Marseille_le_22_f%C3%A9vrier_2020_%28cropped%29.jpg/330px-Dooz_Kawa_en_concert_%C3%A0_Marseille_le_22_f%C3%A9vrier_2020_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
       "likedAt": "2026-10-19T10:13:04.762Z"
     }
   ],
   "playlists": [],
   "imported_media": [],
   "play_events": [
+    {
+      "id": "play_5c98df724b08",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T14:11:41.190Z"
+    },
+    {
+      "id": "play_5166e65e351c",
+      "userId": "guest",
+      "title": "Baby Melo - ОРВИ",
+      "artist": "baby melo",
+      "playedAt": "2026-10-28T14:10:33.836Z"
+    },
+    {
+      "id": "play_65e1b5dd53bc",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T14:10:30.820Z"
+    },
+    {
+      "id": "play_3d119022d057",
+      "userId": "guest",
+      "title": "Baby Melo - ОРВИ",
+      "artist": "baby melo",
+      "playedAt": "2026-10-28T14:10:24.568Z"
+    },
+    {
+      "id": "play_0adcf637d072",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T14:09:33.935Z"
+    },
+    {
+      "id": "play_a203d25b4728",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-28T13:58:43.369Z"
+    },
+    {
+      "id": "play_9de9c12f1676",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-28T13:58:41.244Z"
+    },
+    {
+      "id": "play_7b8509ad3c8e",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-28T13:56:44.136Z"
+    },
+    {
+      "id": "play_9ecb219a4034",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-28T11:23:10.625Z"
+    },
+    {
+      "id": "play_a070b55885ef",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-28T10:32:41.121Z"
+    },
+    {
+      "id": "play_4dc29dd9fd49",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-28T10:30:36.567Z"
+    },
+    {
+      "id": "play_9ee75772d7d1",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-28T10:28:31.607Z"
+    },
+    {
+      "id": "play_1f284b00282f",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T10:25:27.706Z"
+    },
+    {
+      "id": "play_ed36f6fb33c6",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T22:06:53.862Z"
+    },
+    {
+      "id": "play_dd18288c077c",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T22:04:50.878Z"
+    },
+    {
+      "id": "play_81688e3616eb",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T22:02:47.896Z"
+    },
+    {
+      "id": "play_e5790bd8e3b5",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T22:00:44.915Z"
+    },
+    {
+      "id": "play_f097c46f7149",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:58:41.923Z"
+    },
+    {
+      "id": "play_9b9014b45911",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:56:38.934Z"
+    },
+    {
+      "id": "play_515d2c8ce8a8",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:54:35.942Z"
+    },
+    {
+      "id": "play_6deb0a70cebd",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:52:32.961Z"
+    },
+    {
+      "id": "play_11486dfad452",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:50:29.978Z"
+    },
+    {
+      "id": "play_01196381a152",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:48:26.978Z"
+    },
+    {
+      "id": "play_23c5a6410ff7",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:46:23.985Z"
+    },
+    {
+      "id": "play_cfd3b7fa9c18",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:44:21.002Z"
+    },
+    {
+      "id": "play_c7b21bd9dcf1",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:42:18.014Z"
+    },
+    {
+      "id": "play_1cbd7ca773c9",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:40:15.022Z"
+    },
+    {
+      "id": "play_3c7193e32772",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:38:12.031Z"
+    },
+    {
+      "id": "play_f434a6db3e54",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:36:09.043Z"
+    },
+    {
+      "id": "play_0a088f955b22",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:34:06.051Z"
+    },
+    {
+      "id": "play_9acdf2ed3344",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:32:03.057Z"
+    },
+    {
+      "id": "play_23e2e6435963",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:30:00.068Z"
+    },
+    {
+      "id": "play_90e961256416",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:27:57.078Z"
+    },
+    {
+      "id": "play_5229e11461e9",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:25:54.088Z"
+    },
+    {
+      "id": "play_a9530c669551",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:23:51.091Z"
+    },
+    {
+      "id": "play_22dd3559a79b",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:21:48.104Z"
+    },
+    {
+      "id": "play_6508f902a1f1",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:19:45.113Z"
+    },
+    {
+      "id": "play_db2e4b27bbdc",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:17:42.122Z"
+    },
+    {
+      "id": "play_3c588a42956c",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:15:39.120Z"
+    },
+    {
+      "id": "play_70ad4c44cfb8",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:13:36.129Z"
+    },
+    {
+      "id": "play_e6c33474e161",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:11:33.137Z"
+    },
+    {
+      "id": "play_d89b76f5c7a7",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:09:30.141Z"
+    },
+    {
+      "id": "play_2634d1b95b30",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:07:27.131Z"
+    },
+    {
+      "id": "play_e28a4f2e1635",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:05:24.136Z"
+    },
+    {
+      "id": "play_405a9b1b8e2d",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:03:21.147Z"
+    },
+    {
+      "id": "play_684f6a32b8d9",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T21:01:18.135Z"
+    },
+    {
+      "id": "play_37b3b59de6a5",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:59:15.146Z"
+    },
+    {
+      "id": "play_96d16ff3c014",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:57:12.149Z"
+    },
+    {
+      "id": "play_1a456f722cce",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:55:09.148Z"
+    },
+    {
+      "id": "play_23c219d25d7c",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:53:06.146Z"
+    },
+    {
+      "id": "play_e8bba94567da",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:51:03.143Z"
+    },
+    {
+      "id": "play_33711dc3bf4f",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:49:00.134Z"
+    },
+    {
+      "id": "play_198946492c57",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:46:57.134Z"
+    },
+    {
+      "id": "play_4e721e7f72b8",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:44:54.131Z"
+    },
+    {
+      "id": "play_5c458def7792",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:42:51.131Z"
+    },
+    {
+      "id": "play_6234b0ddf52f",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:40:48.129Z"
+    },
+    {
+      "id": "play_100ab6c8bc5b",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:38:45.130Z"
+    },
+    {
+      "id": "play_e0a70fa717d5",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:36:42.124Z"
+    },
+    {
+      "id": "play_85bccc35f2ef",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:34:39.123Z"
+    },
+    {
+      "id": "play_525ec2f10907",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:32:36.125Z"
+    },
+    {
+      "id": "play_bbae8e3a1ba4",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:30:33.121Z"
+    },
+    {
+      "id": "play_a73b467220f7",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:28:30.120Z"
+    },
+    {
+      "id": "play_9a46e869949f",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:26:27.120Z"
+    },
+    {
+      "id": "play_b5a710c6e06f",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:24:24.124Z"
+    },
+    {
+      "id": "play_d66798d9ec86",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:22:21.111Z"
+    },
+    {
+      "id": "play_1587f351f173",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:20:18.121Z"
+    },
+    {
+      "id": "play_9c27a9c9aeaf",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-27T20:18:15.101Z"
+    },
+    {
+      "id": "play_a51661e64879",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T20:17:02.888Z"
+    },
+    {
+      "id": "play_d78b821f6c1b",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T20:14:58.513Z"
+    },
+    {
+      "id": "play_a1781063d9db",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T20:12:54.136Z"
+    },
+    {
+      "id": "play_02ced4a70d28",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T20:10:49.750Z"
+    },
+    {
+      "id": "play_38679e414d13",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T20:08:45.375Z"
+    },
+    {
+      "id": "play_0d2b57903cee",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T19:35:48.651Z"
+    },
+    {
+      "id": "play_ed1a1789ff60",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-27T10:38:43.393Z"
+    },
+    {
+      "id": "play_b68b4c5799c0",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-27T10:38:42.736Z"
+    },
+    {
+      "id": "play_f9342a6290a2",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-27T10:38:27.172Z"
+    },
+    {
+      "id": "play_4a13a0c3648b",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-27T10:35:48.149Z"
+    },
+    {
+      "id": "play_9fd3021aa2b8",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-27T10:33:43.781Z"
+    },
+    {
+      "id": "play_27bb92599d83",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-27T10:24:49.630Z"
+    },
+    {
+      "id": "play_bf3514f71a95",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-27T10:23:07.369Z"
+    },
+    {
+      "id": "play_dc2d722d8502",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-27T10:17:13.451Z"
+    },
+    {
+      "id": "play_262d4ef5eab8",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-27T10:17:02.693Z"
+    },
+    {
+      "id": "play_80228ecab6ad",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-27T10:03:21.486Z"
+    },
+    {
+      "id": "play_0670a2ddea06",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-27T09:18:38.318Z"
+    },
+    {
+      "id": "play_f8d0a62e3450",
+      "userId": "guest",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-27T08:42:00.341Z"
+    },
+    {
+      "id": "play_3e83997fe589",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T08:40:19.666Z"
+    },
+    {
+      "id": "play_775dc5037cab",
+      "userId": "guest",
+      "title": "Save Your Tears (Official Music Video)",
+      "artist": "The Weeknd",
+      "playedAt": "2026-10-27T08:40:09.130Z"
+    },
+    {
+      "id": "play_f24d5feb3bca",
+      "userId": "guest",
+      "title": "Starboy ft. Daft Punk (Official Video) ft. Daft Punk",
+      "artist": "The Weeknd",
+      "playedAt": "2026-10-27T08:40:07.809Z"
+    },
+    {
+      "id": "play_b75fece9c8dd",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-27T08:38:52.377Z"
+    },
+    {
+      "id": "play_105c14d8b6db",
+      "userId": "guest",
+      "title": "Dancing In The Flames (Official Music Video)",
+      "artist": "The Weeknd",
+      "playedAt": "2026-10-27T08:06:03.082Z"
+    },
+    {
+      "id": "play_1ab846e001b7",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-27T08:02:58.791Z"
+    },
+    {
+      "id": "play_bdc12ca76981",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-25T10:15:31.914Z"
+    },
+    {
+      "id": "play_18f0942380e2",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-25T10:15:30.247Z"
+    },
+    {
+      "id": "play_0614201f8b04",
+      "userId": "guest",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra",
+      "playedAt": "2026-10-25T09:56:34.212Z"
+    },
+    {
+      "id": "play_7852dc6dd6a9",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-25T09:53:17.682Z"
+    },
+    {
+      "id": "play_a19c2a57196c",
+      "userId": "guest",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-25T09:12:49.857Z"
+    },
+    {
+      "id": "play_10fdfda615ae",
+      "userId": "guest",
+      "title": "VAN HALEN (Clip Officiel)",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-25T09:12:49.115Z"
+    },
+    {
+      "id": "play_d75c5f958f02",
+      "userId": "guest",
+      "title": "Harder, Better, Faster, Stronger (Official Video)",
+      "artist": "Daft Punk",
+      "playedAt": "2026-10-25T09:08:10.271Z"
+    },
+    {
+      "id": "play_99736e2d3046",
+      "userId": "guest",
+      "title": "Supertramp - Breakfast In America (Official Audio)",
+      "artist": "YouTube",
+      "playedAt": "2026-10-21T10:29:27.437Z"
+    },
+    {
+      "id": "play_491ae30dac96",
+      "userId": "guest",
+      "title": "Tracy Chapman - Fast Car",
+      "artist": "YouTube",
+      "playedAt": "2026-10-21T10:21:09.189Z"
+    },
     {
       "id": "play_5b553f907673",
       "userId": "guest",
@@ -178,7 +982,1112 @@
       "playedAt": "2026-10-18T19:07:18.357Z"
     }
   ],
+  "activity_events": [
+    {
+      "id": "activity_929026eb76d8",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T14:11:41.190Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_cb2761f51fb1",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T14:10:33.836Z",
+      "title": "Baby Melo - ОРВИ",
+      "artist": "baby melo"
+    },
+    {
+      "id": "activity_7c0ddddd5ebe",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T14:10:30.820Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_79d671846ab2",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T14:10:24.568Z",
+      "title": "Baby Melo - ОРВИ",
+      "artist": "baby melo"
+    },
+    {
+      "id": "activity_02d88dfc6bf9",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-28T14:10:24.454Z",
+      "title": "ОРВИ",
+      "artist": "Baby Melo"
+    },
+    {
+      "id": "activity_648e30d1ba27",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T14:09:33.936Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_3985ed769c99",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T13:58:43.369Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_3299e7e81684",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T13:58:41.244Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_74ba04985895",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T13:56:44.137Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_3ff2368b7c4a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T11:23:10.626Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_d7c56abd4279",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T10:32:41.121Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_cd32a21ab8e4",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T10:30:36.567Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_38fd33957704",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T10:28:31.607Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_24f68b17ea81",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T10:25:27.706Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_ff789eeeb49b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T22:06:53.862Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_27df3ae06af7",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T22:04:50.878Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_317f660e4b73",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T22:02:47.896Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_3cf7f6f86009",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T22:00:44.915Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_db5303772a5c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:58:41.924Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_2a54031c2804",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:56:38.934Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_1d263a499a3b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:54:35.942Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_37572b94b7e5",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:52:32.961Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_873ef3b0da35",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:50:29.978Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_eafe4e535ecc",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:48:26.978Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_462e324f781a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:46:23.985Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_c6f83026704c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:44:21.002Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_d482036407c9",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:42:18.014Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_239e2f5f65f9",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:40:15.022Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_f00972428f6c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:38:12.031Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_8d97018a308a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:36:09.043Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_270bc98e1ad7",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:34:06.051Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_acdfa879c504",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:32:03.057Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_09a969b0fb43",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:30:00.069Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_a3c341437031",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:27:57.078Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_ec8e02a6b86c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:25:54.088Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_51e05626faad",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:23:51.091Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_b26ce41edf45",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:21:48.105Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_29ed0521bf5b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:19:45.113Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_4a00de797de2",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:17:42.122Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_d59d67282167",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:15:39.120Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_b6e6f540e89c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:13:36.129Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_96c7c672eaba",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:11:33.137Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_c9da85ea5b7d",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:09:30.142Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_acbf8ea98520",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:07:27.131Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_1b4957ffeaea",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:05:24.137Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_9cd316135413",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:03:21.147Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_8714b11b5c38",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T21:01:18.135Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_710d6f2e4422",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:59:15.146Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_0c5994c94e3a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:57:12.149Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_844f2033b201",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:55:09.148Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_32918c85897a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:53:06.146Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_69637d20892b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:51:03.143Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_aa3910be82b8",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:49:00.134Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_2930cfb2a22b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:46:57.135Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_d031907345e8",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:44:54.131Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_4ae101bf8c24",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:42:51.131Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_277a0f4ea05f",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:40:48.129Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_546c1588aace",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:38:45.130Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_7204c9644d74",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:36:42.124Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_b97b756323fb",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:34:39.123Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_54d925e57c46",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:32:36.125Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_48fedab3f7fb",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:30:33.121Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_654cde51f568",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:28:30.120Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_795d59ad2e9b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:26:27.120Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_084f0ca1e1bd",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:24:24.125Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_5b335946a05a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:22:21.112Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_442ee8e58f64",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:20:18.121Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_2b1caf97cf84",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:18:15.101Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_e0c0f8a521ca",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-27T20:18:14.274Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_887a7302afe7",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-27T20:17:59.326Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_ddb921bf6df5",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:17:02.888Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_a9a272f5a33f",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:14:58.514Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_4f9f5f9fc8b3",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:12:54.136Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_6fec6600ab03",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:10:49.751Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_5d77389fa920",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T20:08:45.375Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_4987230fd429",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T19:35:48.651Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_7cf6d065c422",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-27T10:42:26.975Z",
+      "title": "AURORA",
+      "artist": "Person · trance · synthpop",
+      "name": "AURORA"
+    },
+    {
+      "id": "activity_b5450db1e7e8",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-27T10:42:01.914Z",
+      "title": "AURORA",
+      "artist": "Person · trance · synthpop",
+      "name": "AURORA"
+    },
+    {
+      "id": "activity_7b88f8600405",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:38:43.393Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_77568db99609",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:38:42.736Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_ad114f0157b1",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:38:27.172Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_a16d3fbd8a05",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:35:48.149Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_fea7becea182",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:33:43.781Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_c553b7e98c4e",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:24:49.630Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_62d72f966359",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:23:07.369Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_a09afd0ac31a",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:17:13.452Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_817513845bbf",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:17:02.693Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_f3bf3414014e",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-27T10:04:09.675Z",
+      "title": "AURORA",
+      "artist": "Person · trance · synthpop",
+      "name": "AURORA"
+    },
+    {
+      "id": "activity_d7e395e6e3b6",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T10:03:21.486Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_a6397307a968",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T09:18:38.318Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_4d83b3f19a22",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:42:00.341Z",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS"
+    },
+    {
+      "id": "activity_3d76d8fd59ba",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:40:19.667Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_7c0f3a19cdfd",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:40:09.130Z",
+      "title": "Save Your Tears (Official Music Video)",
+      "artist": "The Weeknd"
+    },
+    {
+      "id": "activity_859d310885cb",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:40:07.809Z",
+      "title": "Starboy ft. Daft Punk (Official Video) ft. Daft Punk",
+      "artist": "The Weeknd"
+    },
+    {
+      "id": "activity_ae5f9d9b649b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:38:52.377Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube"
+    },
+    {
+      "id": "activity_e5d2f68de6ee",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-10-27T08:38:51.948Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_db35e760fa8c",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-27T08:06:37.607Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "Unknown Artist",
+      "name": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)"
+    },
+    {
+      "id": "activity_61a35f6e70f8",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-27T08:06:30.467Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube",
+      "name": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)"
+    },
+    {
+      "id": "activity_17b89ad7b2eb",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:06:03.082Z",
+      "title": "Dancing In The Flames (Official Music Video)",
+      "artist": "The Weeknd"
+    },
+    {
+      "id": "activity_96592225adfe",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-27T08:05:55.565Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "name": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)"
+    },
+    {
+      "id": "activity_3c9322a6f521",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-27T08:02:58.791Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_bc85da794909",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-26T09:31:41.714Z",
+      "title": "和楽器バンド / 千本桜",
+      "artist": "YouTube",
+      "name": "和楽器バンド / 千本桜"
+    },
+    {
+      "id": "activity_9d38f42eb090",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-26T09:29:03.422Z",
+      "title": "Wagakki Band - 01 - Tengaku",
+      "artist": "YouTube",
+      "name": "Wagakki Band - 01 - Tengaku"
+    },
+    {
+      "id": "activity_bef2c9d6033d",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-26T09:28:57.775Z",
+      "title": "Wagakki Band - 01 - Tengaku",
+      "name": "Wagakki Band - 01 - Tengaku"
+    },
+    {
+      "id": "activity_f6e824e88b3e",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-26T09:28:55.385Z",
+      "title": "Wagakki Band - 01 - Tengaku",
+      "name": "Wagakki Band - 01 - Tengaku"
+    },
+    {
+      "id": "activity_77dcbbb54c26",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T10:15:31.914Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_ecb4f086894d",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T10:15:30.247Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_64fb16d4e29e",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T09:56:34.213Z",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra"
+    },
+    {
+      "id": "activity_b79d93e0d7a8",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T09:53:17.682Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_b6cf482cdfbb",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T09:12:49.857Z",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS"
+    },
+    {
+      "id": "activity_40aeb367d9fc",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T09:12:49.115Z",
+      "title": "VAN HALEN (Clip Officiel)",
+      "artist": "KAARIS"
+    },
+    {
+      "id": "activity_dd8394413814",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-25T09:08:10.272Z",
+      "title": "Harder, Better, Faster, Stronger (Official Video)",
+      "artist": "Daft Punk"
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "diag_4b5e9527c36e",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-28T13:57:34.811Z"
+    },
+    {
+      "id": "diag_203591792990",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-28T13:57:34.808Z"
+    },
+    {
+      "id": "diag_4e7ccf15e2b7",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-28T11:23:55.667Z"
+    },
+    {
+      "id": "diag_cef9ee775db9",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-28T11:23:55.664Z"
+    },
+    {
+      "id": "diag_99dea70451c3",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-27T10:03:40.007Z"
+    },
+    {
+      "id": "diag_530f8ae2dc8d",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-27T10:03:40.005Z"
+    },
+    {
+      "id": "diag_c18309cba5f7",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-27T10:02:02.826Z"
+    },
+    {
+      "id": "diag_0b3e7f50ab4d",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-27T10:02:02.822Z"
+    },
+    {
+      "id": "diag_5c4fc180b0ab",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-27T09:55:48.204Z"
+    },
+    {
+      "id": "diag_f4c3f73d1c0e",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-27T09:55:48.200Z"
+    },
+    {
+      "id": "diag_97a993642d9a",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-26T09:27:55.741Z"
+    },
+    {
+      "id": "diag_f4d0e68e8d59",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-26T09:27:55.738Z"
+    },
+    {
+      "id": "diag_9b9240f8a1a7",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-25T10:15:20.988Z"
+    },
+    {
+      "id": "diag_7d0cf57ecd3b",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-25T10:15:20.984Z"
+    },
+    {
+      "id": "diag_ff7b117f1290",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-25T10:13:58.718Z"
+    },
+    {
+      "id": "diag_bc0bf2478c1f",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-25T10:13:58.714Z"
+    },
+    {
+      "id": "diag_e939c8657652",
+      "userId": "guest",
+      "category": "api",
+      "method": "GET",
+      "statusCode": 500,
+      "occurredAt": "2026-10-24T20:49:05.665Z"
+    },
+    {
+      "id": "diag_53f4de5978e1",
+      "userId": "guest",
+      "category": "api",
+      "method": "GET",
+      "statusCode": 500,
+      "occurredAt": "2026-10-24T20:49:03.534Z"
+    }
+  ],
   "downloads": [
+    {
+      "id": "dl_b59b8086cb6de30c",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\наколки [dl_b59b8086cb6de30c].mp3",
+      "fileName": "наколки [dl_b59b8086cb6de30c].mp3",
+      "fileSize": 3891661,
+      "coverFile": "cover-4bcd8596e01db5c63f83bf1a.jpg",
+      "cover": "/api/covers/cover-4bcd8596e01db5c63f83bf1a.jpg",
+      "coverChecked": true,
+      "downloadedAt": "2026-10-27T20:18:14.272Z"
+    },
+    {
+      "id": "dl_6039f5177fee7515",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА) [dl_6039f5177fee7515].mp3",
+      "fileName": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА) [dl_6039f5177fee7515].mp3",
+      "fileSize": 4015693,
+      "coverFile": "cover-94bde8bcec6cf076f6d15915.jpg",
+      "cover": "/api/covers/cover-94bde8bcec6cf076f6d15915.jpg",
+      "coverChecked": true,
+      "downloadedAt": "2026-10-27T08:38:51.945Z"
+    },
+    {
+      "id": "dl_f1e830356f22c09f",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Supertramp - Breakfast In America (Official Audio) [dl_f1e830356f22c09f].mp3",
+      "fileName": "Supertramp - Breakfast In America (Official Audio) [dl_f1e830356f22c09f].mp3",
+      "fileSize": 4995682,
+      "fileSizeFormatted": "4.76 MB",
+      "downloadedAt": "2026-10-21T10:29:27.250Z",
+      "coverFile": "cover-d38a49a5608214c81b5abbf6.jpg",
+      "cover": "/api/covers/cover-d38a49a5608214c81b5abbf6.jpg",
+      "coverChecked": true
+    },
+    {
+      "id": "dl_1d343d2414bed1a2",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Tracy Chapman - Fast Car (Official Music Video) [dl_1d343d2414bed1a2].mp3",
+      "fileName": "Tracy Chapman - Fast Car (Official Music Video) [dl_1d343d2414bed1a2].mp3",
+      "fileSize": 7964855,
+      "fileSizeFormatted": "7.60 MB",
+      "downloadedAt": "2026-10-21T10:21:08.886Z",
+      "coverFile": "cover-2cdc4c5ee32f16e2b495e769.jpg",
+      "cover": "/api/covers/cover-2cdc4c5ee32f16e2b495e769.jpg",
+      "coverChecked": true
+    },
     {
       "id": "dl_d5c7f19d14bf86ad",
       "userId": "guest",
@@ -188,7 +2097,10 @@
       "fileName": "Kekra - 9 Milli (Clip Officiel) [dl_d5c7f19d14bf86ad].mp3",
       "fileSize": 7451547,
       "fileSizeFormatted": "7.11 MB",
-      "downloadedAt": "2026-10-19T13:44:11.347Z"
+      "downloadedAt": "2026-10-19T13:44:11.347Z",
+      "coverFile": "cover-f934f8c0d372aa79f0efed89.jpg",
+      "cover": "/api/covers/cover-f934f8c0d372aa79f0efed89.jpg",
+      "coverChecked": true
     },
     {
       "id": "dl_0dc55e1da62bf937",
@@ -199,18 +2111,10 @@
       "fileName": "Julie Pietri - Eve lève toi (Clip Officiel - avec paroles) [dl_0dc55e1da62bf937].mp3",
       "fileSize": 6933652,
       "fileSizeFormatted": "6.61 MB",
-      "downloadedAt": "2026-10-19T13:38:38.126Z"
-    },
-    {
-      "id": "dl_2dcbf2a6862dbde6",
-      "userId": "guest",
-      "title": "Harder, Better, Faster, Stronger (Official Video)",
-      "artist": "Daft Punk",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Daft Punk - Harder, Better, Faster, Stronger (Official Video) [dl_2dcbf2a6862dbde6].mp3",
-      "fileName": "Daft Punk - Harder, Better, Faster, Stronger (Official Video) [dl_2dcbf2a6862dbde6].mp3",
-      "fileSize": 6815511,
-      "fileSizeFormatted": "6.50 MB",
-      "downloadedAt": "2026-10-19T12:04:57.811Z"
+      "downloadedAt": "2026-10-19T13:38:38.126Z",
+      "coverFile": "cover-59618e9d83e478024efa698c.jpg",
+      "cover": "/api/covers/cover-59618e9d83e478024efa698c.jpg",
+      "coverChecked": true
     },
     {
       "id": "dl_f2250abb315f2a0d",
@@ -221,7 +2125,10 @@
       "fileName": "KAARIS - VAN HALEN (Clip Officiel) [dl_f2250abb315f2a0d].mp3",
       "fileSize": 6941351,
       "fileSizeFormatted": "6.62 MB",
-      "downloadedAt": "2026-10-19T10:04:04.845Z"
+      "downloadedAt": "2026-10-19T10:04:04.845Z",
+      "coverFile": "cover-0e79ca101f5eb0fa3a3c29d8.jpg",
+      "cover": "/api/covers/cover-0e79ca101f5eb0fa3a3c29d8.jpg",
+      "coverChecked": true
     },
     {
       "id": "dl_f77757b08d71cda8",
@@ -232,7 +2139,10 @@
       "fileName": "KAARIS - HURACAN (Clip Officiel) [dl_f77757b08d71cda8].mp3",
       "fileSize": 8459723,
       "fileSizeFormatted": "8.07 MB",
-      "downloadedAt": "2026-10-19T10:04:00.503Z"
+      "downloadedAt": "2026-10-19T10:04:00.503Z",
+      "coverFile": "cover-8324a60f5f2daa4b8b36e65d.jpg",
+      "cover": "/api/covers/cover-8324a60f5f2daa4b8b36e65d.jpg",
+      "coverChecked": true
     },
     {
       "id": "dl_62bef4dcd1b3800a",
@@ -243,18 +2153,10 @@
       "fileName": "Top 50 Hits Music Spotify 2026🩶｜｜ The Hottest Trending Songs on TikTok -- Best Healing Acoustic 2026 [dl_62bef4dcd1b3800a].mp3",
       "fileSize": 210743699,
       "fileSizeFormatted": "200.98 MB",
-      "downloadedAt": "2026-10-19T10:04:00.228Z"
-    },
-    {
-      "id": "dl_dc343ffb899f119b",
-      "userId": "guest",
-      "title": "Top Pop Songs 2025 - Billboard Top 100 🎧🔥 Justin Bieber Billie Eilish Miley Cyrus",
-      "artist": "Pop Music 2025",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Pop Music 2025 - Top Pop Songs 2025 - Billboard Top 100 🎧🔥 Justin Bieber Billie Eilish Miley Cyrus [dl_dc343ffb899f119b].mp3",
-      "fileName": "Pop Music 2025 - Top Pop Songs 2025 - Billboard Top 100 🎧🔥 Justin Bieber Billie Eilish Miley Cyrus [dl_dc343ffb899f119b].mp3",
-      "fileSize": 238051294,
-      "fileSizeFormatted": "227.02 MB",
-      "downloadedAt": "2026-10-19T10:03:58.116Z"
+      "downloadedAt": "2026-10-19T10:04:00.228Z",
+      "coverFile": "",
+      "cover": "",
+      "coverChecked": true
     },
     {
       "id": "dl_70b3952cdd1d3706",
@@ -265,73 +2167,10 @@
       "fileName": "KAARIS - LA CHEVRE (CLIP OFFICIEL) [dl_70b3952cdd1d3706].mp3",
       "fileSize": 5248789,
       "fileSizeFormatted": "5.01 MB",
-      "downloadedAt": "2026-10-19T10:03:52.619Z"
-    },
-    {
-      "id": "dl_8456f71bdcc47d67",
-      "userId": "guest",
-      "title": "Zoo",
-      "artist": "Kaaris",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Kaaris - Zoo [dl_8456f71bdcc47d67].mp3",
-      "fileName": "Kaaris - Zoo [dl_8456f71bdcc47d67].mp3",
-      "fileSize": 9767759,
-      "fileSizeFormatted": "9.32 MB",
-      "downloadedAt": "2026-10-19T10:03:46.204Z"
-    },
-    {
-      "id": "dl_eb58672a23785edf",
-      "userId": "guest",
-      "title": "Top 200 Most Viewed Rock Songs On YouTube(101-200). Best Rock Songs.",
-      "artist": "YouTube Audio",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Top 200 Most Viewed Rock Songs On YouTube(101-200). Best Rock Songs. [dl_eb58672a23785edf].mp3",
-      "fileName": "Top 200 Most Viewed Rock Songs On YouTube(101-200). Best Rock Songs. [dl_eb58672a23785edf].mp3",
-      "fileSize": 17546233,
-      "fileSizeFormatted": "16.73 MB",
-      "downloadedAt": "2026-10-19T10:03:37.404Z"
-    },
-    {
-      "id": "dl_35ede204edd0b17c",
-      "userId": "guest",
-      "title": "Music Mix 2026 ｜ Party Club Dance 2026 ｜ Best Remixes Of Popular Songs 2026 MEGAMIX (DJ Silviu M)",
-      "artist": "YouTube Audio",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Music Mix 2026 ｜ Party Club Dance 2026 ｜ Best Remixes Of Popular Songs 2026 MEGAMIX (DJ Silviu M) [dl_35ede204edd0b17c].mp3",
-      "fileName": "Music Mix 2026 ｜ Party Club Dance 2026 ｜ Best Remixes Of Popular Songs 2026 MEGAMIX (DJ Silviu M) [dl_35ede204edd0b17c].mp3",
-      "fileSize": 165474182,
-      "fileSizeFormatted": "157.81 MB",
-      "downloadedAt": "2026-10-19T10:03:24.929Z"
-    },
-    {
-      "id": "dl_03f89d1fde7cbe89",
-      "userId": "guest",
-      "title": "Out of Time",
-      "artist": "The Weeknd",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Out of Time [dl_03f89d1fde7cbe89].mp3",
-      "fileName": "The Weeknd - Out of Time [dl_03f89d1fde7cbe89].mp3",
-      "fileSize": 7472975,
-      "fileSizeFormatted": "7.13 MB",
-      "downloadedAt": "2026-10-19T10:02:10.157Z"
-    },
-    {
-      "id": "dl_46316bf870406642",
-      "userId": "guest",
-      "title": "Starboy ft. Daft Punk (Official Video) ft. Daft Punk",
-      "artist": "The Weeknd",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Starboy ft. Daft Punk (Official Video) ft. Daft Punk [dl_46316bf870406642].mp3",
-      "fileName": "The Weeknd - Starboy ft. Daft Punk (Official Video) ft. Daft Punk [dl_46316bf870406642].mp3",
-      "fileSize": 8893598,
-      "fileSizeFormatted": "8.48 MB",
-      "downloadedAt": "2026-10-19T10:02:08.125Z"
-    },
-    {
-      "id": "dl_276856efcb6d1338",
-      "userId": "guest",
-      "title": "Save Your Tears (Official Music Video)",
-      "artist": "The Weeknd",
-      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\The Weeknd - Save Your Tears (Official Music Video) [dl_276856efcb6d1338].mp3",
-      "fileName": "The Weeknd - Save Your Tears (Official Music Video) [dl_276856efcb6d1338].mp3",
-      "fileSize": 8635288,
-      "fileSizeFormatted": "8.24 MB",
-      "downloadedAt": "2026-10-19T10:02:06.890Z"
+      "downloadedAt": "2026-10-19T10:03:52.619Z",
+      "coverFile": "cover-86d3cf0afc7850899933f6c1.jpg",
+      "cover": "/api/covers/cover-86d3cf0afc7850899933f6c1.jpg",
+      "coverChecked": true
     },
     {
       "id": "dl_31c0db12176f4826",
@@ -342,7 +2181,10 @@
       "fileName": "The HU - Yuve Yuve Yu (Official Music Video) [dl_31c0db12176f4826].mp3",
       "fileSize": 11779819,
       "fileSizeFormatted": "11.23 MB",
-      "downloadedAt": "2026-10-19T10:01:59.888Z"
+      "downloadedAt": "2026-10-19T10:01:59.888Z",
+      "coverFile": "cover-8391ba07a85eda39acc6b782.jpg",
+      "cover": "/api/covers/cover-8391ba07a85eda39acc6b782.jpg",
+      "coverChecked": true
     },
     {
       "id": "dl_0cdd09c6a505840e",
@@ -353,9 +2195,14 @@
       "fileName": "The Weeknd - Dancing In The Flames (Official Music Video) [dl_0cdd09c6a505840e].mp3",
       "fileSize": 8531336,
       "fileSizeFormatted": "8.14 MB",
-      "downloadedAt": "2026-10-19T10:01:58.593Z"
+      "downloadedAt": "2026-10-19T10:01:58.593Z",
+      "coverFile": "cover-57d9b781e5a914f5ee5142e0.jpg",
+      "cover": "/api/covers/cover-57d9b781e5a914f5ee5142e0.jpg",
+      "coverChecked": true
     }
   ],
+  "play_history_preferences": [],
+  "mobile_sync_actions": [],
   "settings": {
     "version": "1.2.0",
     "initializedAt": "2026-10-18T09:44:24.843Z"

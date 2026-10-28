@@ -82,6 +82,7 @@ class AuraServer {
 
             this.server.listen(port, this.host, () => {
                 this.activePort = port;
+                const clientHost = this.host === '0.0.0.0' ? '127.0.0.1' : this.host;
                 console.log(`[AuraAudio Server] Running online at http://${this.host}:${this.activePort}`);
                 console.log(`[AuraAudio Server] API Status: http://${this.host}:${this.activePort}/api/status`);
                 console.log(`[AuraAudio Server] OAuth Config: http://${this.host}:${this.activePort}/api/auth/config`);
@@ -89,7 +90,7 @@ class AuraServer {
                 resolve({
                     port: this.activePort,
                     host: this.host,
-                    url: `http://${this.host}:${this.activePort}`
+                    url: `http://${clientHost}:${this.activePort}`
                 });
             });
         });

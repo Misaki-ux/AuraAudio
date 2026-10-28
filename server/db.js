@@ -33,6 +33,7 @@ class Database {
             diagnostics: [],
             downloads: [],
             play_history_preferences: [],
+            mobile_sync_actions: [],
             settings: {
                 version: "1.2.0",
                 initializedAt: new Date().toISOString()
@@ -166,6 +167,30 @@ class Database {
         collection.unshift(entry);
         this.save();
         return { liked: true, artist: entry };
+    }
+
+    setLikedArtist(userId = 'guest', artist = {}, liked = true) {
+        const collection = this.data.liked_artists || (this.data.liked_artists = []);
+        const name = String(artist.name || '').trim().slice(0, 180);
+        const id = String(artist.id || name).trim();
+        if (!name || !id) return false;
+        const key = id.toLowerCase();
+        const matches = item => item.userId === userId && (
+            String(item.id || item.key || '').toLowerCase() === key
+            || String(item.name || '').trim().toLowerCase() === name.toLowerCase()
+        );
+        const existing = collection.find(matches);
+        if (!liked) {
+            if (!existing) return false;
+            this.data.liked_artists = collection.filter(item => !matches(item));
+            return true;
+        }
+        if (existing) {
+            if (!existing.image && artist.image) existing.image = String(artist.image).slice(0, 1000);
+            return false;
+        }
+        collection.unshift({ userId, key, id, name, image: String(artist.image || '').slice(0, 1000), likedAt: new Date().toISOString() });
+        return true;
     }
 
     importLikedArtists(userId = 'guest', artists = []) {
@@ -482,6 +507,68 @@ class Database {
             this.save();
             return { liked: true, track: likedTrack };
         }
+    }
+
+    setLikeSong(userId = 'guest', track = {}, liked = true) {
+        const title = String(track.title || track.name || '').trim().slice(0, 240);
+        const artist = String(track.artist || 'Unknown Artist').trim().slice(0, 180);
+        if (!title) return false;
+        const trackId = String(track.id || track.trackId || `${title}|${artist}`).trim().slice(0, 240);
+        const identity = likedSongIdentity({ title, artist });
+        const matches = item => item.userId === userId && (
+            String(item.trackId || '').toLowerCase() === trackId.toLowerCase()
+            || (identity && likedSongIdentity(item) === identity)
+        );
+        const existing = this.data.liked_songs.find(matches);
+        if (!liked) {
+            if (!existing) return false;
+            this.data.liked_songs = this.data.liked_songs.filter(item => !matches(item));
+            return true;
+        }
+        if (existing) {
+            for (const field of ['cover', 'album', 'duration', 'durationFormatted']) {
+                if (!existing[field] && track[field]) existing[field] = track[field];
+            }
+            return false;
+        }
+        this.data.liked_songs.unshift({
+            id: 'like_' + crypto.randomBytes(6).toString('hex'), userId, trackId, title, artist,
+            duration: Number(track.duration) || 0,
+            durationFormatted: String(track.durationFormatted || '').slice(0, 24),
+            url: '', fileName: '', source: String(track.source || 'external').slice(0, 40),
+            cover: typeof track.cover === 'string' ? track.cover.slice(0, 1500) : null,
+            addedAt: new Date().toISOString()
+        });
+        return true;
+    }
+
+    syncMobileActions(userId = 'guest', actions = []) {
+        if (!Array.isArray(actions)) return { accepted: [], duplicates: 0 };
+        const log = this.data.mobile_sync_actions || (this.data.mobile_sync_actions = []);
+        const known = new Set(log.filter(item => item.userId === userId).map(item => item.id));
+        const accepted = [];
+        let duplicates = 0;
+        for (const action of actions.slice(0, 200)) {
+            const id = String(action?.id || '').trim();
+            if (!id || id.length > 120 || !['track-like', 'artist-like'].includes(action.type)) continue;
+            if (known.has(id)) { duplicates++; continue; }
+            let applied = false;
+            if (action.type === 'track-like' && action.track && typeof action.track === 'object') {
+                applied = this.setLikeSong(userId, action.track, action.liked === true);
+            } else if (action.type === 'artist-like' && action.artist && typeof action.artist === 'object') {
+                applied = this.setLikedArtist(userId, action.artist, action.liked === true);
+            } else continue;
+            log.push({ userId, id, applied, syncedAt: new Date().toISOString() });
+            known.add(id);
+            accepted.push(id);
+        }
+        const userRows = log.filter(item => item.userId === userId);
+        if (userRows.length > 2000) {
+            const keep = new Set(userRows.slice(-2000).map(item => item.id));
+            this.data.mobile_sync_actions = log.filter(item => item.userId !== userId || keep.has(item.id));
+        }
+        if (accepted.length) this.save();
+        return { accepted, duplicates };
     }
 
     importLikedSongs(userId = 'guest', tracks = []) {

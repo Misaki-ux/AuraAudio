@@ -11,10 +11,15 @@ let mainWindow = null;
 let auraServerInstance = null;
 let serverInfo = { active: false, port: 3456, host: '127.0.0.1', url: 'http://127.0.0.1:3456' };
 
+const SERVER_START_TIMEOUT_MS = 10000;
+
 async function initEmbeddedServer() {
   try {
     auraServerInstance = new AuraServer(app.isPackaged ? { storageRoot: app.getPath('userData') } : {});
-    const info = await auraServerInstance.start();
+    const info = await Promise.race([
+      auraServerInstance.start(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Embedded server start timed out')), SERVER_START_TIMEOUT_MS))
+    ]);
     serverInfo = {
       active: true,
       port: info.port,
@@ -45,11 +50,13 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      webSecurity: false
+      webSecurity: false,
+      // Keep Web Audio running when the window is reduced or temporarily occluded.
+      backgroundThrottling: false
     }
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // Forward window state events to renderer
   mainWindow.on('blur', () => {
@@ -85,111 +92,113 @@ function createWindow() {
 }
 
 // -------------------------------------------------------------
-// IPC HANDLERS: WINDOW MANAGEMENT & 3-STATE DYNAMIC REDUCTION
+// IPC HANDLERS SETUP
 // -------------------------------------------------------------
-ipcMain.on('window-minimize', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.minimize();
-  }
-});
+function setupIpcHandlers() {
+  // WINDOW MANAGEMENT
+  ipcMain.on('window-minimize', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.minimize();
+    }
+  });
 
-ipcMain.on('window-maximize-toggle', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  ipcMain.on('window-maximize-toggle', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    }
+  });
+
+  ipcMain.on('window-close', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.close();
+    }
+  });
+
+  // Update the native Windows taskbar/window icon when the user changes theme.
+  ipcMain.on('window-set-palette', (event, palette) => {
+    const allowedPalettes = new Set(['royal-blue', 'spotify-green', 'cyber-violet', 'vibrant-amber', 'hot-pink']);
+    if (!allowedPalettes.has(palette) || !mainWindow || mainWindow.isDestroyed()) return;
+
+    const paletteIcon = path.join(__dirname, 'assets', palette, 'x.ico');
+    if (require('fs').existsSync(paletteIcon)) mainWindow.setIcon(paletteIcon);
+  });
+
+  ipcMain.on('window-set-mode', (event, mode) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+
     if (mainWindow.isMaximized()) {
       mainWindow.unmaximize();
-    } else {
-      mainWindow.maximize();
     }
-  }
-});
 
-ipcMain.on('window-close', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.close();
-  }
-});
+    if (mode === 'micro') {
+      mainWindow.setMinimumSize(300, 52);
+      mainWindow.setHasShadow(false);
+      mainWindow.setSize(380, 58, true);
+    } else if (mode === 'compact') {
+      mainWindow.setMinimumSize(460, 180);
+      mainWindow.setHasShadow(true);
+      mainWindow.setSize(520, 220, true);
+    } else {
+      // 'full'
+      mainWindow.setMinimumSize(720, 480);
+      mainWindow.setHasShadow(true);
+      mainWindow.setSize(960, 600, true);
+    }
 
-// Update the native Windows taskbar/window icon when the user changes theme.
-ipcMain.on('window-set-palette', (event, palette) => {
-  const allowedPalettes = new Set(['royal-blue', 'spotify-green', 'cyber-violet', 'vibrant-amber', 'hot-pink']);
-  if (!allowedPalettes.has(palette) || !mainWindow || mainWindow.isDestroyed()) return;
+    event.sender.send('window-mode-changed', mode);
+  });
 
-  const paletteIcon = path.join(__dirname, 'assets', palette, 'x.ico');
-  if (require('fs').existsSync(paletteIcon)) mainWindow.setIcon(paletteIcon);
-});
+  ipcMain.on('window-set-size', (event, { width, height }) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.setMinimumSize(Math.min(width, 300), Math.min(height, 52));
+    mainWindow.setSize(width, height, true);
+  });
 
-ipcMain.on('window-set-mode', (event, mode) => {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
+  ipcMain.on('window-set-always-on-top', (event, flag) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.setAlwaysOnTop(Boolean(flag), 'floating');
+    event.sender.send('window-always-on-top-changed', mainWindow.isAlwaysOnTop());
+  });
 
-  if (mainWindow.isMaximized()) {
-    mainWindow.unmaximize();
-  }
+  ipcMain.handle('window-get-state', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      return { isMaximized: false, isAlwaysOnTop: false, width: 960, height: 600 };
+    }
+    const [width, height] = mainWindow.getSize();
+    return {
+      isMaximized: mainWindow.isMaximized(),
+      isAlwaysOnTop: mainWindow.isAlwaysOnTop(),
+      width,
+      height
+    };
+  });
 
-  if (mode === 'micro') {
-    mainWindow.setMinimumSize(300, 52);
-    mainWindow.setHasShadow(false);
-    mainWindow.setSize(380, 58, true);
-  } else if (mode === 'compact') {
-    mainWindow.setMinimumSize(460, 180);
-    mainWindow.setHasShadow(true);
-    mainWindow.setSize(520, 220, true);
-  } else {
-    // 'full'
-    mainWindow.setMinimumSize(720, 480);
-    mainWindow.setHasShadow(true);
-    mainWindow.setSize(960, 600, true);
-  }
+  // SERVER & OS SYSTEM INTEGRATION
+  ipcMain.handle('server-get-info', () => {
+    return serverInfo;
+  });
 
-  event.sender.send('window-mode-changed', mode);
-});
+  ipcMain.on('shell-open-external', (event, targetUrl) => {
+    if (targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
+      shell.openExternal(targetUrl);
+    }
+  });
 
-ipcMain.on('window-set-size', (event, { width, height }) => {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  mainWindow.setMinimumSize(Math.min(width, 300), Math.min(height, 52));
-  mainWindow.setSize(width, height, true);
-});
-
-ipcMain.on('window-set-always-on-top', (event, flag) => {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  mainWindow.setAlwaysOnTop(Boolean(flag), 'floating');
-  event.sender.send('window-always-on-top-changed', mainWindow.isAlwaysOnTop());
-});
-
-ipcMain.handle('window-get-state', () => {
-  if (!mainWindow || mainWindow.isDestroyed()) {
-    return { isMaximized: false, isAlwaysOnTop: false, width: 960, height: 600 };
-  }
-  const [width, height] = mainWindow.getSize();
-  return {
-    isMaximized: mainWindow.isMaximized(),
-    isAlwaysOnTop: mainWindow.isAlwaysOnTop(),
-    width,
-    height
-  };
-});
-
-// -------------------------------------------------------------
-// IPC HANDLERS: SERVER & OS SYSTEM INTEGRATION
-// -------------------------------------------------------------
-ipcMain.handle('server-get-info', () => {
-  return serverInfo;
-});
-
-ipcMain.on('shell-open-external', (event, targetUrl) => {
-  if (targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
-    shell.openExternal(targetUrl);
-  }
-});
-
-ipcMain.on('library-open-downloads-folder', () => {
-  const downloadsPath = auraServerInstance?.downloadsDir || path.resolve(__dirname, 'downloads');
-  shell.openPath(downloadsPath);
-});
+  ipcMain.on('library-open-downloads-folder', () => {
+    const downloadsPath = auraServerInstance?.downloadsDir || path.resolve(__dirname, 'downloads');
+    shell.openPath(downloadsPath);
+  });
+}
 
 // -------------------------------------------------------------
 // APP LIFECYCLE
 // -------------------------------------------------------------
 app.whenReady().then(async () => {
+  setupIpcHandlers();
   await initEmbeddedServer();
   createWindow();
 

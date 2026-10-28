@@ -2,7 +2,7 @@
   "server": {
     "port": 3456,
     "host": "0.0.0.0",
-    "jwtSecret": "aura_audio_jwt_super_secret_key_2026_dev",
+    "jwtSecret": "9e763d34407fbf59753b0c1cb705d42627f51e6039591dc74e2697cf1f79b7ec",
     "tokenExpiryHours": 72
   },
   "storage": {

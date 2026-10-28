@@ -227,11 +227,17 @@ class YouTubeService {
     }
 
     downloadAudio(targetUrl, customTitle = null, onStarted = null) {
+        // Allocate the job before it enters the serialized yt-dlp queue. Callers
+        // need a stable progress id even while another download is active.
+        const downloadId = 'dl_' + crypto.randomBytes(8).toString('hex');
+        this.activeDownloads.set(downloadId, { id: downloadId, status: 'queued', progress: 0, targetUrl, title: customTitle || 'Downloading…', stage: 'Queued' });
+        if (onStarted) onStarted(downloadId);
         return new Promise((resolve, reject) => {
             this.queue.push({
                 task: () => new Promise((res, rej) => {
                     this.ensureDir();
-                    const downloadId = 'dl_' + crypto.randomBytes(8).toString('hex');
+                    const job = this.activeDownloads.get(downloadId);
+                    if (job) { job.status = 'downloading'; job.stage = 'Starting'; }
                     const outputTemplate = path.join(this.downloadsDir, `%(title)s [${downloadId}].%(ext)s`);
                     const isSearch = !/^https?:\/\//i.test(targetUrl);
                     const downloadTarget = isSearch ? `ytsearch3:${targetUrl}` : targetUrl;
@@ -242,9 +248,6 @@ class YouTubeService {
                         '--no-warnings', '--ignore-config', '--newline', '--progress', '--add-metadata', '-o', outputTemplate
                     ];
                     if (this.proxy) args.push('--proxy', this.proxy);
-
-                    this.activeDownloads.set(downloadId, { id: downloadId, status: 'downloading', progress: 0, targetUrl, title: customTitle || 'Downloading…', stage: 'Starting' });
-                    if (onStarted) onStarted(downloadId);
 
                     let process;
                     try {

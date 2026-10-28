@@ -112,6 +112,93 @@
         .theme-glow { box-shadow: 0 0 22px var(--color-glow) !important; }
         .theme-glow-sm { box-shadow: 0 0 12px var(--color-glow) !important; }
 
+        /* Spotify-style Mix Cards */
+        .mix-card-spotify {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            padding: 10px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+            transition: transform .15s, box-shadow .15s;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%);
+        }
+        .mix-card-spotify:hover {
+            transform: scale(.98);
+        }
+        .mix-card-badge {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            opacity: 0.85;
+            text-transform: uppercase;
+        }
+        .mix-card-title {
+            font-size: 14px;
+            line-height: 1.15;
+            font-weight: 800;
+            max-width: 78%;
+        }
+        .mix-card-desc {
+            font-size: 10px;
+            opacity: 0.82;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-width: 80%;
+        }
+        .mix-card-art {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: min(35%, 80px);
+            height: auto;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 18px #0008;
+            background: #0004;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+        }
+        .mix-card-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+        .mix-card-play {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 14px #0007;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .mix-card-heart {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .mix-card-heart.liked { color: #ff6681; }
+
         /* Draggable Frameless Topbar */
         .window-topbar {
             min-height: 38px;
@@ -128,18 +215,11 @@
 
         .window-brand { min-width: 0; grid-column: 2; grid-row: 1; justify-self: center; }
         .window-brand img { flex: 0 0 auto; filter: drop-shadow(0 0 5px var(--color-glow)); }
-        #quickThemePresets { grid-column: 1; grid-row: 1; justify-self: start; gap: 9px; }
+        #quickThemePresets { grid-column: 1; grid-row: 1; justify-self: start; gap: 9px; padding-left: 6px; position: relative; }
         #quickThemePresets > img { width: 16px; height: 16px; flex: 0 0 auto; object-fit: contain; }
-        #quickThemePresets button {
-            width: 14px; height: 14px; flex: 0 0 auto;
-            border: 1px solid rgba(255,255,255,.14);
-            box-shadow: inset 0 1px 1px rgba(255,255,255,.2), 0 1px 3px rgba(0,0,0,.45);
-        }
-        #quickThemePresets button:hover { transform: scale(1.16); }
-        #quickThemePresets button[aria-pressed="true"] {
-            outline: 1.5px solid rgba(255,255,255,.88);
-            outline-offset: 3px;
-        }
+        #themeColorPresets { z-index: 100; }
+        #themeColorPresets button { width: 24px; height: 24px; border: 2px solid #ffffff30; box-shadow: inset 0 0 0 1px #0003; cursor: pointer; }
+        #themeColorPresets button[aria-pressed="true"] { outline: 2px solid #fff; outline-offset: 2px; }
         .window-actions { grid-column: 3; grid-row: 1; justify-self: end; gap: 2px; }
         .window-actions > button { min-width: 28px; height: 27px; display: inline-flex; align-items: center; justify-content: center; }
         #serverStatusBadge { min-height: 26px; }
@@ -149,6 +229,10 @@
         }
 
         .server-download-bar { transition: width 180ms ease-out; }
+        /* Liked artist collapsible details styling */
+        details.liked-artist-details summary { list-style: none; cursor: pointer; }
+        details.liked-artist-details summary::-webkit-details-marker { display: none; }
+        details.liked-artist-details[open] > summary { margin-bottom: 0.5rem; }
         @media (max-width: 720px) {
             #queueControlsHeader { align-items: flex-start; }
             #queueControlsHeader > div:last-child { justify-content: flex-start; }
@@ -429,23 +513,26 @@
                 <span class="font-bold tracking-wide">AURA AUDIO</span>
             </div>
 
-            <!-- Topbar Center: Quick Color Presets Only (3-view UI removed as requested) -->
-            <div id="quickThemePresets" role="group" aria-label="Accent color" class="no-drag flex items-center">
-                <img src="assets/settings/color-wheel.png" alt="" aria-hidden="true">
-                <button data-quick-color="#2563eb" data-palette="royal-blue" aria-label="Aura Royal Blue" aria-pressed="true" title="Aura Royal Blue" class="rounded-full bg-[#2563eb] transition"></button>
-                <button data-quick-color="#1ed760" data-palette="spotify-green" aria-label="Spotify Emerald" aria-pressed="false" title="Spotify Emerald" class="rounded-full bg-[#1ed760] transition"></button>
-                <button data-quick-color="#a855f7" data-palette="cyber-violet" aria-label="Cyber Violet" aria-pressed="false" title="Cyber Violet" class="rounded-full bg-[#a855f7] transition"></button>
-                <button data-quick-color="#f97316" data-palette="vibrant-amber" aria-label="Vibrant Amber" aria-pressed="false" title="Vibrant Amber" class="rounded-full bg-[#f97316] transition"></button>
-                <button data-quick-color="#ec4899" data-palette="hot-pink" aria-label="Hot Pink" aria-pressed="false" title="Hot Pink" class="rounded-full bg-[#ec4899] transition"></button>
+            <!-- Topbar Center: Quick Color Presets (hidden until color wheel clicked) -->
+            <div id="quickThemePresets" role="group" aria-label="Accent color" class="no-drag flex items-center gap-2 ml-2">
+                <img id="themeColorWheelBtn" src="assets/settings/color-wheel.png" alt="" aria-hidden="true" class="cursor-pointer hover:opacity-80">
+                <div id="themeColorPresets" class="hidden flex items-center gap-2 absolute top-full left-0 bg-zinc-900 border border-zinc-700 rounded-lg p-1 shadow-2xl z-50">
+                    <button data-quick-color="#2563eb" data-palette="royal-blue" aria-label="Aura Royal Blue" aria-pressed="true" title="Aura Royal Blue" class="rounded-full bg-[#2563eb] transition w-6 h-6"></button>
+                    <button data-quick-color="#1ed760" data-palette="spotify-green" aria-label="Spotify Emerald" aria-pressed="false" title="Spotify Emerald" class="rounded-full bg-[#1ed760] transition w-6 h-6"></button>
+                    <button data-quick-color="#a855f7" data-palette="cyber-violet" aria-label="Cyber Violet" aria-pressed="false" title="Cyber Violet" class="rounded-full bg-[#a855f7] transition w-6 h-6"></button>
+                    <button data-quick-color="#f97316" data-palette="vibrant-amber" aria-label="Vibrant Amber" aria-pressed="false" title="Vibrant Amber" class="rounded-full bg-[#f97316] transition w-6 h-6"></button>
+                    <button data-quick-color="#ec4899" data-palette="hot-pink" aria-label="Hot Pink" aria-pressed="false" title="Hot Pink" class="rounded-full bg-[#ec4899] transition w-6 h-6"></button>
+                </div>
             </div>
 
             <!-- Topbar Right Actions -->
             <div class="window-actions no-drag flex items-center shrink-0">
-                <!-- Server Status Indicator Badge -->
-                <div id="serverStatusBadge" title="AuraAudio Server: Connecting..." class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400 cursor-pointer hover:border-zinc-700 transition">
-                    <span id="serverDot" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <!-- Server Switcher / Status Button (prominent) -->
+                <button id="serverStatusBadge" title="Switch AuraAudio Server (click to change URL / access key)" aria-label="Server switcher" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-[10px] font-mono text-zinc-300 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 transition">
+                    <span id="serverDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                     <span id="serverText" class="hidden sm:inline">3456</span>
-                </div>
+                    <i class="fa-solid fa-server text-[10px] ml-0.5 opacity-70"></i>
+                </button>
 
                 <!-- User Profile / Auth Pill -->
                 <button id="userAuthBtn" title="Guest account, sign in and cloud library" aria-label="Open guest account and cloud library" class="flex items-center gap-1.5 px-2 py-1 text-xs text-zinc-300 hover:text-white hover:bg-zinc-800 rounded transition border border-zinc-800">
@@ -497,10 +584,11 @@
             <!-- LEFT PANEL: MEDIA ALBUM CARD & CONTROLS (5 COLS) -->
             <div class="md:col-span-5 p-5 bg-dark-card border-r border-dark-border flex flex-col justify-between overflow-y-auto">
                 
-                <!-- ALBUM CARD WITH DISK DISPLAYED (State 1 - Authentic Vinyl Disc, No App Logo) -->
+                <!-- ALBUM COVER (State 1 - No Rotating Disc) -->
                 <div id="artworkBox" class="w-full py-2 flex flex-col items-center justify-center relative">
-                    <div class="w-44 h-44 sm:w-48 sm:h-48 rounded-2xl bg-black/60 border border-zinc-800/90 flex items-center justify-center p-3 relative overflow-hidden shadow-2xl">
-                        <div id="vinylDisc" class="vinyl-disc w-40 h-40 sm:w-44 sm:h-44">
+                    <div class="w-36 h-36 sm:w-40 sm:h-40 rounded-2xl bg-black/60 border border-zinc-800/90 flex items-center justify-center p-3 relative overflow-hidden shadow-2xl">
+                        <img id="desktopAlbumCover" src="assets/icon_128x128.png" alt="Album cover" class="w-full h-full object-cover rounded-xl border border-zinc-700/60 bg-zinc-950 shadow-lg transition-opacity duration-300">
+                        <div id="vinylDisc" class="vinyl-disc hidden w-32 h-32 sm:w-36 sm:h-36 absolute inset-0 z-10">
                             <div class="vinyl-center-label w-14 h-14">
                                 <div class="vinyl-accent-ring"></div>
                                 <div class="vinyl-spindle-hole w-2.5 h-2.5"></div>
@@ -508,6 +596,11 @@
                         </div>
                     </div>
                 </div>
+
+                <button id="desktopLyricsPreview" type="button" class="hidden w-full rounded-lg border border-zinc-800 bg-zinc-950/70 px-3 py-2 text-left hover:border-zinc-700" aria-label="Open full lyrics">
+                    <span class="block text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">Lyrics</span>
+                    <span id="desktopLyricsPreviewText" class="mt-1 block truncate text-xs text-zinc-300">Open lyrics</span>
+                </button>
 
                 <!-- VISUALIZER CANVAS -->
                 <div class="w-full h-9 my-1 bg-black/40 rounded-lg p-1 border border-zinc-800/60">
@@ -521,6 +614,8 @@
                             <h2 id="currentTrackTitle" class="font-bold text-sm sm:text-base text-white truncate">Select or Drop Audio Files</h2>
                         </div>
                         <p id="currentTrackArtist" class="text-xs text-zinc-400 truncate hidden"></p>
+                        <!-- STATE 1: 1 LINE LYRICS DISPLAY -->
+                        <div id="state1LyricsLine" class="hidden mt-1 text-[10px] text-zinc-400 truncate italic leading-none">♫ No lyrics found</div>
                     </div>
                     <button id="likeCurrentTrackBtn" title="Like Song (Add to Liked Songs)" class="p-1.5 text-zinc-500 hover:text-red-500 transition text-base shrink-0">
                         <i id="likeCurrentTrackIcon" class="fa-regular fa-heart"></i>
@@ -529,7 +624,7 @@
 
                 <!-- SEEK & TIME BAR -->
                 <div class="space-y-1 my-2">
-                    <input id="seekBar" type="range" min="0" max="100" value="0" class="w-full">
+                    <input id="seekBar" type="range" min="0" max="100" value="0" class="w-full opacity-50 cursor-not-allowed" disabled>
                     <div class="flex justify-between text-[11px] text-zinc-500 font-mono">
                         <span id="currentTime">00:00</span>
                         <span id="durationTime">00:00</span>
@@ -560,7 +655,6 @@
                         <button id="volumeToggleBtn" title="Volume Control (Scroll or Drag)" class="text-zinc-400 hover:text-white p-2 text-sm transition">
                             <i id="volumeIcon" class="fa-solid fa-volume-high"></i>
                         </button>
-
                         <!-- VERTICAL POPUP CARD -->
                         <div id="volumePopup" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-zinc-900/95 border border-zinc-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 flex flex-col items-center space-y-2 z-30">
                             <span id="volumePercentText" class="text-[10px] font-mono font-bold theme-accent-text">80%</span>
@@ -570,6 +664,10 @@
                             <i class="fa-solid fa-sliders text-[10px] text-zinc-500"></i>
                         </div>
                     </div>
+                    <!-- Lyrics Button (outside volume wrapper to avoid click conflict) -->
+                    <button id="desktopLyricsButton" type="button" title="View lyrics from AuraAudio server" aria-label="View lyrics" class="text-zinc-400 hover:text-white p-2 text-sm transition ml-1">
+                        <i class="fa-solid fa-music"></i>
+                    </button>
                 </div>
 
             </div>
@@ -579,11 +677,17 @@
                 
                 <!-- OMNI-VIEW TAB NAVIGATION BAR -->
                 <div class="pb-2.5 border-b border-dark-border shrink-0">
-                    <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar text-xs font-semibold">
+                    <div class="flex items-center space-x-1.5 overflow-x-auto text-xs font-semibold" id="mainTabNav">
                         <button data-main-tab="queue" class="main-tab-btn active px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-white bg-zinc-800 border border-zinc-700/80 shrink-0">
-                            <img src="assets/nav/music-library.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
+                            <i class="fa-solid fa-list text-zinc-200"></i>
                             <span>Queue</span>
                             <span id="tabQueueBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700 font-mono">0</span>
+                        </button>
+                        <button data-main-tab="playlists" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
+                            <img src="assets/nav/playlists.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0"><span>Playlists</span>
+                        </button>
+                        <button data-main-tab="library" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
+                            <img src="assets/nav/music-library.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0"><span>Library</span>
                         </button>
                         <button data-main-tab="search" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
                             <img src="assets/nav/search.png" alt="" aria-hidden="true" class="w-3.5 h-3.5 object-contain shrink-0">
@@ -602,6 +706,9 @@
                             <span>Liked</span>
                             <span id="tabLikedBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700 font-mono">0</span>
                         </button>
+                        <button data-main-tab="telemetry" class="main-tab-btn px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition text-zinc-400 hover:text-white hover:bg-zinc-800/60 shrink-0">
+                            <i class="fa-solid fa-chart-line text-zinc-400"></i><span>Telemetry</span>
+                        </button>
                     </div>
                 </div>
 
@@ -614,6 +721,7 @@
                     <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-zinc-800"><div id="serverDownloadProgressBar" class="server-download-bar h-full w-0 rounded-full bg-blue-500" style="width:0%"></div></div>
                     <div id="serverDownloadStage" class="mt-1 truncate text-[9px] text-zinc-500">Connecting to download service…</div>
                 </div>
+                <div id="desktopOperationStatus" class="mx-1 mt-2 hidden shrink-0 truncate rounded-md border border-zinc-800 bg-zinc-900/70 px-2.5 py-1.5 text-[10px] text-zinc-400" role="status" aria-live="polite"></div>
 
                 <!-- ============================================== -->
                 <!-- TAB 1: PLAYLIST QUEUE & LOCAL IMPORTER         -->
@@ -644,6 +752,9 @@
                                 <button id="clearPlaylistBtn" title="Clear Playlist Queue" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-red-950/40 text-zinc-400 hover:text-red-400 text-xs transition border border-zinc-700/50">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                <button id="clearDownloadedBtn" title="Remove downloaded tracks from queue" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-blue-950/40 text-blue-400 hover:text-blue-300 text-xs transition border border-zinc-700/50">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -668,6 +779,14 @@
 
                         <ul id="playlistItems" class="space-y-1"></ul>
                     </div>
+                </div>
+
+                <div id="tabContentLibrary" class="tab-content-panel hidden flex-1 flex-col overflow-y-auto py-3 pr-1">
+                    <div class="mb-3 flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/70 px-3 py-2">
+                        <div><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-200">Server Library</h3><p class="mt-0.5 text-[10px] text-zinc-500">Saved downloads and imported audio available on this server.</p></div>
+                        <button id="refreshLibraryContentsBtn" type="button" class="rounded-md border border-zinc-700 px-2 py-1 text-[10px] text-zinc-300 hover:text-white"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    </div>
+                    <div id="desktopLibraryList" class="space-y-1.5"></div>
                 </div>
 
                 <!-- ============================================== -->
@@ -870,6 +989,37 @@
                             <summary class="mb-1 flex cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 hover:bg-zinc-900/70 hover:text-zinc-300"><i class="fa-solid fa-chevron-right text-[9px] transition-transform group-open:rotate-90"></i><span>Liked Songs</span><span id="likedSongsCountBadge" class="font-mono"></span></summary>
                             <ul id="likedSongsList" class="space-y-1"></ul>
                         </details>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- TAB: TELEMETRY / ANALYTICS                     -->
+                <!-- ============================================== -->
+                <div id="tabContentTelemetry" class="tab-content-panel hidden flex-1 flex-col overflow-y-auto py-2 space-y-4 pr-1">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-chart-line theme-accent-text"></i> Listening Telemetry
+                            </h3>
+                            <button id="refreshTelemetryBtn" class="rounded-md border border-zinc-800 px-2 py-1 text-[10px] text-zinc-400 hover:text-white" title="Refresh Telemetry"><i class="fa-solid fa-rotate"></i></button>
+                        </div>
+                        <div id="telemetryStatsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-clock text-blue-400"></i> Recently Played
+                            </h3>
+                        </div>
+                        <div id="telemetryRecentList" class="space-y-1.5"></div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-heart text-red-400"></i> Top Liked Artists
+                            </h3>
+                        </div>
+                        <div id="telemetryTopArtists" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
                     </div>
                 </div>
 
@@ -1096,12 +1246,13 @@
                         <div id="compactTrackTitle" class="text-sm font-bold text-white truncate">No Track Loaded</div>
                     </div>
                     <p id="compactTrackArtist" class="text-[11px] text-zinc-400 truncate hidden"></p>
+                    <div id="compactLyricsLine" class="hidden text-[9px] text-zinc-500 truncate italic leading-none">♫ No lyrics</div>
                 </div>
             </div>
 
             <!-- Compact Seekbar & Time -->
             <div class="my-1 space-y-0.5">
-                <input id="compactSeekBar" type="range" min="0" max="100" value="0" class="w-full">
+                <input id="compactSeekBar" type="range" min="0" max="100" value="0" class="w-full opacity-50 cursor-not-allowed" disabled>
                 <div class="flex justify-between text-[10px] font-mono text-zinc-500">
                     <span id="compactCurrentTime">00:00</span>
                     <span id="compactDurationTime">00:00</span>
@@ -1174,6 +1325,14 @@
                     <i class="fa-solid fa-forward-step text-xs"></i>
                 </button>
                 
+                <!-- Micro Volume Slider -->
+                <div class="flex items-center space-x-1">
+                    <button id="microVolumeIconBtn" class="text-zinc-400 hover:text-white text-[9px]">
+                        <i id="microVolumeIcon" class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <input id="microVolumeBar" type="range" min="0" max="1" step="0.01" value="0.8" class="w-14 h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+
                 <div class="h-3 w-px bg-zinc-800 mx-0.5"></div>
 
                 <!-- Pin (Always on top) -->
@@ -1333,7 +1492,7 @@
             <!-- Settings Modal Footer -->
             <div class="flex items-center justify-center space-x-2 text-xs text-zinc-500 font-mono pt-4 border-t border-zinc-800">
                 <img src="assets/icon_24x24.png" alt="Aura Logo" class="w-4 h-4 rounded-full">
-                <span>AuraAudio Engine v1.2.0 • 3-State Smart Reduction</span>
+                <span>AuraAudio Engine v1.5.0 • 3-State Smart Reduction</span>
             </div>
         </div>
 
@@ -1375,6 +1534,50 @@
         </section>
     </div>
 
+    <div id="desktopLyricsModal" class="hidden fixed inset-0 z-[90] bg-black/95 backdrop-blur-[20px] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="desktopLyricsTitle">
+        <section class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl">
+            <header class="flex items-start justify-between gap-3 border-b border-zinc-800 p-4 shrink-0"><div class="min-w-0"><h2 id="desktopLyricsTitle" class="truncate text-lg font-bold text-white">Lyrics</h2><p id="desktopLyricsArtist" class="truncate text-xs text-zinc-400"></p></div><button id="closeDesktopLyrics" type="button" aria-label="Close lyrics" class="rounded-lg px-2 py-1 text-xl text-zinc-400 hover:bg-zinc-800 hover:text-white">×</button></header>
+            <div class="flex items-center justify-center gap-2 border-b border-zinc-800 p-2 shrink-0" role="group" aria-label="Lyrics display size"><button data-desktop-lyrics-lines="1" class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-300">1 line</button><button data-desktop-lyrics-lines="3" class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-300">3 lines</button><button data-desktop-lyrics-lines="5" class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-300">5 lines</button></div>
+            <div id="desktopLyricsBody" class="flex-1 overflow-y-auto px-8 py-8 text-center text-sm leading-8 text-zinc-300">Select a track to load lyrics.</div>
+        </section>
+    </div>
+
+    <!-- FULLSCREEN LYRICS OVERLAY (mobile-dist style) -->
+    <div id="desktopLyricsFullscreenOverlay" class="hidden fixed inset-0 z-[95] bg-black/98 backdrop-blur-[30px] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="desktopLyricsFsTitle">
+        <section class="flex flex-col items-center justify-center w-full h-full max-w-2xl overflow-y-auto text-center">
+            <button id="closeDesktopLyricsFs" type="button" class="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:bg-zinc-800 hover:text-white transition z-10" aria-label="Close fullscreen lyrics">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+            <button id="toggleLyricsFsLines" type="button" class="absolute top-4 left-4 px-4 py-2 rounded-full border border-zinc-600 bg-zinc-900/90 text-sm text-white hover:text-white hover:bg-zinc-800 shadow-lg transition-all" aria-label="Toggle lyrics lines">
+                <span id="toggleLyricsFsLinesText">1 Line</span>
+            </button>
+            <div id="desktopLyricsFsContent" class="max-w-lg w-full px-4">
+                <h2 id="desktopLyricsFsTitle" class="text-2xl font-bold text-white mb-2">Track Title</h2>
+                <p id="desktopLyricsFsArtist" class="text-zinc-400 text-sm mb-8">Artist</p>
+                <div id="desktopLyricsFsBody" class="text-xl leading-relaxed text-zinc-200 font-medium min-h-[200px] flex flex-col items-center justify-center gap-2">Loading lyrics…</div>
+            </div>
+        </section>
+    </div>
+
+    <div id="desktopMixDetailModal" class="hidden fixed inset-0 z-[90] items-center justify-center bg-black/80 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="desktopMixDetailTitle">
+        <section class="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl">
+            <header class="flex items-start justify-between gap-3 border-b border-zinc-800 p-4"><div class="min-w-0"><h2 id="desktopMixDetailTitle" class="truncate text-lg font-bold text-white">Mix Detail</h2><p id="desktopMixDetailSubtitle" class="truncate text-xs text-zinc-400"></p></div><button id="closeDesktopMixDetail" type="button" aria-label="Close mix detail" class="rounded-lg px-2 py-1 text-xl text-zinc-400 hover:bg-zinc-800 hover:text-white">×</button></header>
+            <div class="px-4 py-2"><button id="desktopMixDetailPlayAll" type="button" class="w-full rounded-lg theme-accent-bg text-white text-xs font-semibold flex items-center justify-center gap-1 shadow py-1.5"><i class="fa-solid fa-play"></i> Play All Mix Tracks</button></div>
+            <div id="desktopMixDetailBody" class="min-h-0 overflow-y-auto px-6 py-4 space-y-2">Loading mix tracks…</div>
+        </section>
+    </div>
+
+    <div id="serverConnectionModal" class="hidden fixed inset-0 z-[85] items-center justify-center bg-black/75 p-4" role="dialog" aria-modal="true" aria-labelledby="serverConnectionTitle">
+        <form id="serverConnectionForm" class="w-full max-w-md space-y-4 rounded-2xl border border-zinc-700 bg-zinc-950 p-5 shadow-2xl">
+            <div class="flex items-center justify-between"><h2 id="serverConnectionTitle" class="text-sm font-bold text-white">AuraAudio server</h2><button id="closeServerConnection" type="button" aria-label="Close" class="px-2 text-xl text-zinc-400">×</button></div>
+            <label class="block text-xs text-zinc-400">Server URL<input id="desktopServerUrlInput" type="url" required placeholder="https://auraaudio.duckdns.org" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-500"></label>
+            <p class="text-[9px] text-zinc-500 mt-1">Enter your AuraAudio server address, e.g. https://auraaudio.duckdns.org or http://192.168.1.100:3456</p>
+            <label class="block text-xs text-zinc-400">External API access key<input id="desktopServerKeyInput" type="password" autocomplete="off" placeholder="Per-run server key" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-500"></label>
+            <p id="desktopServerConnectionStatus" class="text-xs text-zinc-500" role="status"></p>
+            <div class="flex justify-between gap-2"><button id="resetDesktopServer" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-300">Use this PC</button><button type="submit" class="rounded-lg theme-accent-bg px-3 py-2 text-xs font-semibold text-white">Connect</button></div>
+        </form>
+    </div>
+
     <div id="playlistNameModal" class="hidden fixed inset-0 z-[80] items-center justify-center bg-black/75 p-4" role="dialog" aria-modal="true" aria-labelledby="playlistNameHeading">
         <form id="playlistNameForm" class="w-full max-w-sm space-y-4 rounded-2xl border border-zinc-700 bg-zinc-950 p-5 shadow-2xl">
             <h2 id="playlistNameHeading" class="text-sm font-bold text-white">Create playlist</h2>
@@ -1397,6 +1600,72 @@
             }
         } catch (e) {
             console.log('Running in standalone browser mode without Electron IPC');
+        }
+
+        // API URL RESOLUTION — mirrors mobile-dist pattern.
+        // In Electron (file://), we rely on IPC to get the embedded server URL.
+        // In a browser context (http/https), we use location.origin.
+        // The resolved URL is stored in window.apiUrl so apiResourceUrl() works the same
+        // way as in mobile-dist throughout the entire app lifecycle.
+        (function initApiUrl() {
+            const stored = localStorage.getItem('aura_desktop_server_url');
+            if (stored) {
+                window.apiUrl = stored.replace(/\/+$/, '');
+            } else if (/^https?:$/.test(location.protocol)) {
+                // Running in a real browser against the standalone server
+                window.apiUrl = location.origin;
+            } else {
+                // Electron file:// context — default, overridden after IPC resolves below
+                window.apiUrl = 'http://127.0.0.1:3456';
+            }
+        })();
+
+        /**
+         * Resolve a server-relative path (e.g. "/api/status") to an absolute URL
+         * using window.apiUrl as the base.  Absolute URLs (http/https/blob/data) are
+         * passed through unchanged.  Mirrors the mobile-dist apiResourceUrl() helper.
+         */
+        function apiResourceUrl(value) {
+            const url = String(value || '');
+            if (!url || /^(?:blob:|data:|https?:)/i.test(url)) return url;
+            try {
+                const baseUrl = window.apiUrl?.replace(/\/+$/, '') || 'http://127.0.0.1:3456';
+                const resolved = new URL(url, baseUrl + '/');
+                // <audio>/<img> cannot send headers, so pass the external access key as a query parameter.
+                const key = localStorage.getItem('aura_desktop_server_key') || '';
+                if (key && resolved.pathname.startsWith('/api/')) resolved.searchParams.set('accessKey', key);
+                return resolved.href;
+            } catch (error) {
+                console.warn('[apiResourceUrl] Failed to resolve URL:', error.message, 'value:', url, 'apiUrl:', window.apiUrl);
+                return url;
+            }
+        }
+
+        // How long the client skips automatic retries after the server is known unreachable.
+        // Keeps the UI responsive instead of serial-stalling on 8s request timeouts.
+        const SERVER_PROBE_COOLDOWN_MS = 8000;
+
+        /**
+         * Fast reachability probe: true only if /api/status answers within timeoutMs.
+         * Uses raw fetch (not serverFetch) so it is never blocked by the offline cooldown.
+         */
+        async function probeServer(url, timeoutMs = 4000) {
+            if (!url) return false;
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(`${url.replace(/\/+$/, '')}/api/status`, {
+                    method: 'GET',
+                    headers: serverRequestHeaders(),
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                return response.ok;
+            } catch (_) {
+                return false;
+            } finally {
+                clearTimeout(timer);
+            }
         }
 
         // PRELOAD APP ICON FOR PICTURE-IN-PICTURE CANVAS
@@ -1474,7 +1743,7 @@
             isMuted: false,
             isAlwaysOnTop: false,
             currentMode: 'full', // 'full' | 'compact' | 'micro'
-            audio: new Audio(),
+            audio: (() => { const a = new Audio(); a.crossOrigin = 'anonymous'; return a; })(),
             audioCtx: null,
             analyser: null,
             dataArray: null,
@@ -1493,8 +1762,13 @@
             },
 
             // Server, Auth & Omni-View Hub
-            serverUrl: 'http://127.0.0.1:3456',
+            serverUrl: window.apiUrl || 'http://127.0.0.1:3456',
+            serverKey: localStorage.getItem('aura_desktop_server_key') || '',
             serverConnected: false,
+            serverDownAt: 0,
+            desktopLyrics: [],
+            desktopLyricsTrackId: '',
+            desktopLyricsLineCount: 3,
             activeMainTab: 'queue',
             user: {
                 id: 'guest',
@@ -1514,6 +1788,16 @@
             lastRecordedPlaybackId: null,
             oauthProviders: {}
         };
+
+        // Auto-reduction timer state — declared early so setupAutoReductionEngine()
+        // (called during DOMContentLoaded, before the original declaration site)
+        // never hits the temporal-dead-zone ReferenceError that froze the app.
+        let idleTimer = null;
+        let countdownTimer = null;
+        let isCountdownActive = false;
+
+        console.log('[Init] Initial API URL:', window.apiUrl);
+        console.log('[Init] Initial server URL:', state.serverUrl);
 
         // DOM ELEMENTS
         const appViewport = document.getElementById('appViewport');
@@ -1612,6 +1896,9 @@
         const microPrevBtn = document.getElementById('microPrevBtn');
         const microNextBtn = document.getElementById('microNextBtn');
         const microResizeBtn = document.getElementById('microResizeBtn');
+        const microVolumeIconBtn = document.getElementById('microVolumeIconBtn');
+        const microVolumeIcon = document.getElementById('microVolumeIcon');
+        const microVolumeBar = document.getElementById('microVolumeBar');
 
         // Settings & Modals
         const settingsPanel = document.getElementById('settingsPanel');
@@ -1641,13 +1928,75 @@
         // -------------------------------------------------------------
         // APPLICATION INITIALIZATION
         // -------------------------------------------------------------
-        window.addEventListener('DOMContentLoaded', async () => {
-            if (ipcRenderer) {
-                try { const serverInfo = await ipcRenderer.invoke('server-get-info'); if (serverInfo?.url) state.serverUrl = serverInfo.url; }
-                catch (error) { console.debug('Using default local API URL:', error.message); }
+
+        /**
+         * Resolve and probe a reachable server URL before setup-time fetches run.
+         * Order: configured/localStorage URL -> embedded server (Electron IPC) ->
+         * http://127.0.0.1:3456 -> offline mode. Each probe is short (4s) so startup
+         * stays fast even when every candidate is unreachable.
+         */
+        async function probeAndResolveServer() {
+            const localFallback = 'http://127.0.0.1:3456';
+            let url = window.apiUrl || localFallback;
+            let ok = await probeServer(url, 4000);
+            if (!ok && ipcRenderer) {
+                try {
+                    const serverInfo = await ipcRenderer.invoke('server-get-info');
+                    const embedded = serverInfo?.url?.replace(/\/+$/, '');
+                    if (embedded && embedded !== url) {
+                        console.warn('[Init] Configured server unreachable, trying embedded server:', embedded);
+                        url = embedded;
+                        window.apiUrl = embedded;
+                        state.serverUrl = embedded;
+                        ok = await probeServer(url, 4000);
+                    }
+                } catch (_) {}
             }
+            if (!ok && url !== localFallback) {
+                console.warn('[Init] Server unreachable, falling back to', localFallback);
+                url = localFallback;
+                window.apiUrl = localFallback;
+                state.serverUrl = localFallback;
+                ok = await probeServer(localFallback, 4000);
+            }
+            state.serverConnected = ok;
+            state.serverDownAt = ok ? 0 : Date.now();
+            if (!ok) {
+                console.warn('[Init] Server unreachable — running in offline (local-only) mode.');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => { try {
+            const savedServerUrl = (localStorage.getItem('aura_desktop_server_url') || '').replace(/\/+$/, '');
+            if (savedServerUrl) {
+                state.serverUrl = savedServerUrl;
+                window.apiUrl = savedServerUrl;
+                console.log('[Init] Using configured server URL:', window.apiUrl);
+            } else if (ipcRenderer) {
+                try {
+                    const serverInfo = await ipcRenderer.invoke('server-get-info');
+                    if (serverInfo?.active && serverInfo?.url) {
+                        state.serverUrl = serverInfo.url;
+                        window.apiUrl = serverInfo.url.replace(/\/+$/, '');
+                        console.log('[Init] Using embedded server:', window.apiUrl);
+                    }
+                } catch (error) {
+                    console.debug('[Init] IPC server info error:', error.message);
+                }
+            } else {
+                state.serverUrl = window.apiUrl || 'http://127.0.0.1:3456';
+                window.apiUrl = state.serverUrl;
+                console.log('[Init] Using default server:', window.apiUrl);
+            }
+            // --- Early reachability probe: resolve a working server URL BEFORE any
+            // setup-time fetches run, so a dead configured URL cannot serial-stall
+            // startup on repeated 8s timeouts (the "app freezing" P0 failure mode). ---
+            await probeAndResolveServer();
+            console.log('[Init] Server reachable:', state.serverConnected, '->', window.apiUrl);
             loadPreferences();
-            await initDB();
+            // Wire all UI handlers synchronously first: awaiting initDB() before setup
+            // left a stalled/failed DB unable to attach handlers, freezing the frameless
+            // window with no close path (user had to kill the task).
             setupWindowControls();
             setup3StateReduction();
             setupAutoReductionEngine();
@@ -1657,13 +2006,22 @@
             setupGlobalSearch();
             setupYouTubeDownloader();
             setupPlaybackControls();
+            setupDesktopLyrics();
+            setupDesktopServerConnection();
             setupVolumeControl();
             setupResolutionPresets();
             setupKeyboardShortcuts();
             setupEmailPinAuth();
-            setupLibraryLikes();
+            initDB().catch(() => {});
+            setupLibraryLikes().catch(() => {});
+            console.log('[Init] Checking server connection...');
+            await checkServerStatus();
             await refreshQueueFromLibrary({ startup: true });
-        });
+            console.log('[Init] Final API URL:', window.apiUrl);
+        } catch (error) {
+            console.error('[Init] Startup error:', error);
+        }
+    });
 
         // -------------------------------------------------------------
         // LOCAL PREFERENCES PERSISTENCE
@@ -1738,7 +2096,7 @@
             requestForm.addEventListener('submit', async event => {
                 event.preventDefault();
                 try {
-                    const response = await fetch(`${state.serverUrl}/api/auth/email/request`, {
+                    const response = await serverFetch(`/api/auth/email/request`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: emailInput.value, username: usernameInput.value })
@@ -1756,7 +2114,7 @@
             verifyForm.addEventListener('submit', async event => {
                 event.preventDefault();
                 try {
-                    const response = await fetch(`${state.serverUrl}/api/auth/email/verify`, {
+                    const response = await serverFetch(`/api/auth/email/verify`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: emailInput.value, code: codeInput.value })
@@ -1796,15 +2154,14 @@
                 document.querySelector('[data-main-tab="queue"]')?.click();
             });
 
-            document.getElementById('authCheckStatusBtn').addEventListener('click', checkServerStatus);
-            checkServerStatus();
+            document.getElementById('authCheckStatusBtn').addEventListener('click', () => void checkServerStatus(true, true));
             restoreAuthSession();
         }
 
         async function restoreAuthSession() {
             if (!state.user.token) return;
             try {
-                const response = await fetch(`${state.serverUrl}/api/auth/me`, {
+                const response = await serverFetch(`/api/auth/me`, {
                     headers: { Authorization: `Bearer ${state.user.token}` }
                 });
                 if (response.status === 401) {
@@ -1827,25 +2184,55 @@
             }
         }
 
-        async function checkServerStatus() {
+        async function checkServerStatus(allowFallback = true, bypassCoolDown = false) {
             const badge = document.getElementById('authCheckStatusBtn');
             const statusLabel = document.querySelector('#tabContentAuth h4 span + span');
+            const urlLabel = document.getElementById('authServerUrlText');
+            if (urlLabel) urlLabel.textContent = window.apiUrl || state.serverUrl || 'Not configured';
+            console.log('[Server Status] Checking:', window.apiUrl || state.serverUrl);
             try {
-                const response = await fetch(`${state.serverUrl}/api/status`);
-                if (!response.ok) throw new Error('offline');
+                const response = await serverFetch(`/api/status`, { bypassCoolDown });
+                if (!response.ok) throw new Error(`offline (${response.status})`);
+                state.serverDownAt = 0;
                 state.serverConnected = true;
                 serverDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
-                serverStatusBadge.title = 'AuraAudio Server: Online';
+                serverStatusBadge.title = `AuraAudio Server: Online (${window.apiUrl || state.serverUrl})`;
+                if (serverText) {
+                    try {
+                        const parsed = new URL(window.apiUrl || state.serverUrl);
+                        serverText.textContent = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
+                    } catch {}
+                }
                 if (statusLabel) {
                     statusLabel.textContent = 'ONLINE';
                     statusLabel.className = 'text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-500/30';
                 }
                 if (badge) badge.textContent = 'Online';
                 await loadLikedSongs();
-            } catch (_) {
+                await loadPlaylistChoices();
+                console.log('[Server Status] Connected successfully to', window.apiUrl || state.serverUrl);
+            } catch (error) {
+                console.debug('[Server Status] Connection failed:', error.message);
+                if (allowFallback && ipcRenderer) {
+                    try {
+                        const serverInfo = await ipcRenderer.invoke('server-get-info');
+                        const localUrl = serverInfo?.url?.replace(/\/+$/, '');
+                        if (localUrl && localUrl !== (window.apiUrl || state.serverUrl)) {
+                            console.warn('[Server Status] Remote server offline/failed, falling back to embedded local server:', localUrl);
+                            state.serverUrl = localUrl;
+                            window.apiUrl = localUrl;
+                            if (urlLabel) urlLabel.textContent = localUrl;
+                            return checkServerStatus(false, bypassCoolDown);
+                        }
+                    } catch (fallbackErr) {
+                        console.debug('[Server Status] Local fallback check failed:', fallbackErr.message);
+                    }
+                }
+                state.serverDownAt = Date.now();
                 state.serverConnected = false;
                 serverDot.className = 'w-1.5 h-1.5 rounded-full bg-zinc-500';
                 serverStatusBadge.title = 'AuraAudio Server: Offline';
+                if (serverText) serverText.textContent = 'off';
                 if (statusLabel) {
                     statusLabel.textContent = 'OFFLINE';
                     statusLabel.className = 'text-[9px] px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700';
@@ -1883,7 +2270,7 @@
                 try {
                     const headers = {};
                     if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-                    const response = await fetch(`${state.serverUrl}/api/library/liked`, { headers });
+                    const response = await serverFetch(`/api/library/liked`, { headers });
                     if (!response.ok) throw new Error('Could not load likes');
                     const serverLikes = await response.json();
                     state.likedSongs = Array.isArray(serverLikes) ? serverLikes : [];
@@ -1917,7 +2304,11 @@
                 const row = document.createElement('li');
                 row.className = 'group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 transition hover:border-zinc-800 hover:bg-zinc-900/80';
                 const sourceUrl = /^https?:\/\//i.test(liked.sourceUrl || '') ? liked.sourceUrl : '';
-                row.innerHTML = `<button class="liked-play h-8 w-8 shrink-0 rounded-lg bg-zinc-800 text-zinc-300 transition hover:bg-blue-600 hover:text-white disabled:opacity-40" title="${localTrack ? 'Play track' : sourceUrl ? 'Open in original music service' : 'Track is not imported on this device'}" ${localTrack || sourceUrl ? '' : 'disabled'}><i class="fa-${localTrack ? 'solid fa-play' : sourceUrl ? 'solid fa-arrow-up-right-from-square' : 'solid fa-play'} text-[10px]"></i></button><div class="min-w-0 flex-1"><p class="truncate text-xs font-semibold text-zinc-200">${escapeHtml(title)}</p><p class="truncate text-[10px] text-zinc-500">${escapeHtml(artist)}</p></div><span class="hidden text-[9px] uppercase tracking-wider text-zinc-600 sm:block">${localTrack ? 'On this device' : sourceUrl ? escapeHtml(liked.source || 'Favorite') : 'Cloud favorite'}</span><button class="liked-remove rounded-md p-2 text-red-400 transition hover:bg-red-950/50 hover:text-red-300" title="Remove from liked" aria-label="Remove ${escapeHtml(title)} from liked"><i class="fa-solid fa-heart"></i></button>`;
+                row.innerHTML = `<div class="relative min-w-[34px]"><img class="liked-song-img w-8 h-8 rounded-lg object-cover border border-zinc-700/50 bg-zinc-900 shadow-sm" src="assets/icon_128x128.png" alt="Cover" data-cover="${liked.cover || liked.artwork || liked.artworkUrl || ''}">${localTrack ? '<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>' : ''}</div><button class="liked-play h-8 w-8 shrink-0 rounded-lg bg-zinc-800 text-zinc-300 transition hover:bg-blue-600 hover:text-white disabled:opacity-40" title="${localTrack ? 'Play track' : sourceUrl ? 'Open in original music service' : 'Track is not imported on this device'}" ${localTrack || sourceUrl ? '' : 'disabled'}><i class="fa-${localTrack ? 'solid fa-play' : sourceUrl ? 'solid fa-arrow-up-right-from-square' : 'solid fa-play'} text-[10px]"></i></button><div class="min-w-0 flex-1"><p class="truncate text-xs font-semibold text-zinc-200">${escapeHtml(title)}</p><p class="truncate text-[10px] text-zinc-500">${escapeHtml(artist)}</p></div><span class="hidden text-[9px] uppercase tracking-wider text-zinc-600 sm:block">${localTrack ? 'On this device' : sourceUrl ? escapeHtml(liked.source || 'Favorite') : 'Cloud favorite'}</span><button class="liked-remove rounded-md p-2 text-red-400 transition hover:bg-red-950/50 hover:text-red-300" title="Remove from liked" aria-label="Remove ${escapeHtml(title)} from liked"><i class="fa-solid fa-heart"></i></button>`;
+                // Resolve album artwork via API (setDesktopImage handles auth headers & caching)
+                const imgEl = row.querySelector('.liked-song-img');
+                const coverUrl = imgEl?.dataset.cover;
+                if (coverUrl) setDesktopImage(imgEl, coverUrl);
                 row.querySelector('.liked-play').addEventListener('click', () => {
                     const trackIndex = localTrack ? state.playlist.findIndex(track => track.id === localTrack.id) : -1;
                     if (trackIndex >= 0) { loadTrack(trackIndex); playAudio(); }
@@ -1936,27 +2327,129 @@
             section.classList.toggle('hidden', state.likedArtists.length === 0);
             if (count) count.textContent = String(state.likedArtists.length);
             list.innerHTML = '';
+            list.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2';
             document.getElementById('likedCountBadge').textContent = String(state.likedSongs.length + state.likedArtists.length);
             document.getElementById('tabLikedBadge').textContent = String(state.likedSongs.length + state.likedArtists.length);
             state.likedArtists.forEach(artist => {
-                const row = document.createElement('li');
-                row.className = 'group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 transition hover:border-zinc-800 hover:bg-zinc-900/80';
-                const open = document.createElement('button'); open.type = 'button';
-                open.className = 'flex min-w-0 flex-1 items-center gap-3 text-left';
-                if (artist.image) { const image = document.createElement('img'); image.src = artist.image; image.alt = ''; image.loading = 'lazy'; image.className = 'h-8 w-8 shrink-0 rounded-full bg-zinc-800 object-cover'; open.appendChild(image); }
-                else { const placeholder = document.createElement('span'); placeholder.className = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-500'; placeholder.innerHTML = '<i class="fa-solid fa-music text-[10px]"></i>'; open.appendChild(placeholder); }
-                const text = document.createElement('span'); text.className = 'flex min-w-0 flex-1 flex-col';
-                const name = document.createElement('span'); name.className = 'truncate text-xs font-semibold text-zinc-200'; name.textContent = artist.name || 'Unknown artist'; text.appendChild(name);
-                const subtitle = document.createElement('span'); subtitle.className = 'truncate text-[10px] text-zinc-500'; subtitle.textContent = 'Artist'; text.appendChild(subtitle); open.appendChild(text);
-                open.addEventListener('click', () => {
-                    if (artist.source === 'spotify' && /^https?:\/\//i.test(artist.sourceUrl || '')) {
-                        if (ipcRenderer) ipcRenderer.send('shell-open-external', artist.sourceUrl); else window.open(artist.sourceUrl, '_blank', 'noopener');
-                    } else openArtistDetail(artist);
-                });
-                const unlike = document.createElement('button'); unlike.type = 'button'; unlike.className = 'rounded-md p-2 text-red-400 transition hover:bg-red-950/50 hover:text-red-300'; unlike.title = 'Remove artist from favorites'; unlike.innerHTML = '<i class="fa-solid fa-heart"></i>';
-                unlike.addEventListener('click', () => toggleArtistFavorite(artist));
-                row.append(open, unlike); list.appendChild(row);
+                const details = document.createElement('details');
+                details.className = 'group flex flex-col items-center rounded-xl border border-zinc-800 bg-zinc-900/60 p-2 text-center transition hover:border-zinc-700 hover:bg-zinc-900';
+                details.classList.add('liked-artist-details');
+                const summary = document.createElement('summary');
+                summary.className = 'flex flex-col items-center gap-1.5 cursor-pointer select-none';
+                summary.style.listStyle = 'none';
+                if (artist.image) { const image = document.createElement('img'); image.alt = ''; image.loading = 'lazy'; image.className = 'h-14 w-14 shrink-0 rounded-full bg-zinc-800 object-cover ring-2 ring-zinc-700'; setDesktopImage(image, artist.image); summary.appendChild(image); }
+                else { const placeholder = document.createElement('span'); placeholder.className = 'flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-500 ring-2 ring-zinc-700'; placeholder.innerHTML = '<i class="fa-solid fa-music text-sm"></i>'; summary.appendChild(placeholder); }
+                const name = document.createElement('span'); name.className = 'truncate text-xs font-semibold text-zinc-200'; name.textContent = artist.name || 'Unknown artist'; summary.appendChild(name);
+                const subtitle = document.createElement('span'); subtitle.className = 'truncate text-[9px] text-zinc-500'; subtitle.textContent = 'Artist'; summary.appendChild(subtitle);
+                details.appendChild(summary);
+                // Albums and songs content
+                const content = document.createElement('div');
+                content.className = 'p-2 pt-1 space-y-2';
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between mb-1';
+                const descTitle = document.createElement('span'); descTitle.className = 'text-xs font-bold text-zinc-300'; descTitle.textContent = 'Albums & Songs';
+                header.appendChild(descTitle);
+                content.appendChild(header);
+                const albumsList = document.createElement('div');
+                albumsList.className = 'space-y-1';
+                // Try to load artist details
+                (async () => {
+                    try {
+                        const aid = artist.id || artist.name;
+                        const isMbid = /^[a-f0-9-]{36}$/i.test(aid);
+                        const endpoint = isMbid ? `/api/discovery/artist/${aid}` : `/api/discovery/artists/search?q=${encodeURIComponent(aid)}`;
+                        const data = await apiGet(endpoint);
+                        if (isMbid && data.releases) {
+                            (data.releases || []).slice(0, 6).forEach(rel => {
+                                const row = document.createElement('div');
+                                row.className = 'flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 p-1.5 text-left';
+                                const art = document.createElement('div'); art.className = 'w-8 h-8 rounded-md bg-zinc-800 object-cover relative overflow-hidden'; art.innerHTML = '♫';
+                                if (rel.cover) { const img = document.createElement('img'); img.className = 'w-full h-full object-cover'; img.src = rel.cover; img.onerror = () => art.innerHTML = '♫'; art.appendChild(img); }
+                                const info = document.createElement('div'); info.className = 'min-w-0 flex-1';
+                                const rtitle = document.createElement('span'); rtitle.className = 'text-xs font-semibold text-zinc-200 block truncate'; rtitle.textContent = rel.title || 'Untitled';
+                                const rmeta = document.createElement('span'); rmeta.className = 'text-[9px] text-zinc-500 block truncate'; rmeta.textContent = (rel.date || '') + (rel.type ? ' · ' + rel.type : '');
+                                info.append(rtitle, rmeta);
+                                row.append(art, info);
+                                albumsList.appendChild(row);
+                            });
+                        }
+                        if (data.artist) {
+                            const bio = document.createElement('p');
+                            bio.className = 'mt-2 text-[10px] text-zinc-500 leading-relaxed';
+                            bio.textContent = data.artist.disambiguation || data.artist.bio || '';
+                            if (bio.textContent) content.appendChild(bio);
+                        }
+                    } catch (e) { /* silent */ }
+                    content.appendChild(albumsList);
+                })();
+                details.appendChild(content);
+                list.appendChild(details);
             });
+        }
+
+        // -------------------------------------------------------------
+        // TELEMETRY
+        // -------------------------------------------------------------
+        async function loadTelemetry() {
+            const statsGrid = document.getElementById('telemetryStatsGrid');
+            const recentList = document.getElementById('telemetryRecentList');
+            const topArtists = document.getElementById('telemetryTopArtists');
+            if (!statsGrid || !recentList || !topArtists) return;
+            statsGrid.innerHTML = '<p class="col-span-full py-4 text-center text-xs text-zinc-500">Loading telemetry…</p>';
+            recentList.innerHTML = '<p class="py-2 text-center text-xs text-zinc-500">Loading…</p>';
+            topArtists.innerHTML = '<p class="col-span-full py-4 text-center text-xs text-zinc-500">Loading…</p>';
+            try {
+                const [statsResult, recentResult, artistsResult] = await Promise.allSettled([
+                    apiGet('/api/library/telemetry/stats'),
+                    apiGet('/api/library/telemetry/recent'),
+                    apiGet('/api/library/artists/liked')
+                ]);
+                const stats = statsResult.status === 'fulfilled' ? statsResult.value : {};
+                const recent = recentResult.status === 'fulfilled' ? recentResult.value : [];
+                const likedArtists = artistsResult.status === 'fulfilled' ? artistsResult.value : [];
+
+                statsGrid.innerHTML = '';
+                const statCards = [
+                    { label: 'Total Plays', value: stats.totalPlays || 0, color: 'text-blue-400' },
+                    { label: 'Total Time', value: stats.totalTimeFormatted || '0m', color: 'text-emerald-400' },
+                    { label: 'Unique Artists', value: stats.uniqueArtists || 0, color: 'text-pink-400' },
+                    { label: 'Unique Tracks', value: stats.uniqueTracks || 0, color: 'text-amber-400' }
+                ];
+                statCards.forEach(card => {
+                    const el = document.createElement('div');
+                    el.className = 'rounded-lg border border-zinc-800 bg-zinc-900/70 p-2.5';
+                    el.innerHTML = `<p class="text-[9px] text-zinc-500 uppercase tracking-wider">${card.label}</p><p class="text-xs font-bold text-white ${card.color}">${card.value}</p>`;
+                    statsGrid.appendChild(el);
+                });
+
+                recentList.innerHTML = '';
+                if (!recent.length) recentList.innerHTML = '<p class="py-2 text-center text-xs text-zinc-500">No recent plays.</p>';
+                else recent.slice(0, 8).forEach(track => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2';
+                    row.innerHTML = `<div class="w-8 h-8 shrink-0 rounded bg-zinc-800 flex items-center justify-center text-[9px] font-bold text-zinc-400">${track.trackNumber ?? '?'}</div><div class="min-w-0 flex-1"><p class="truncate text-xs font-semibold text-zinc-200">${escapeHtml(track.title || track.name || 'Untitled')}</p><p class="truncate text-[10px] text-zinc-500">${escapeHtml(track.artist || 'Unknown artist')}</p></div><span class="text-[9px] text-zinc-600 font-mono">${track.playCount ?? 1} plays</span>`;
+                    recentList.appendChild(row);
+                });
+
+                topArtists.innerHTML = '';
+                if (!likedArtists.length) topArtists.innerHTML = '<p class="col-span-full py-4 text-center text-xs text-zinc-500">No liked artists.</p>';
+                else likedArtists.slice(0, 8).forEach(artist => {
+                    const card = document.createElement('div');
+                    card.className = 'group relative flex min-w-0 flex-col items-center rounded-xl border border-zinc-800 bg-zinc-900/60 p-2 text-center transition hover:border-zinc-700 hover:bg-zinc-900';
+                    const open = document.createElement('button'); open.type = 'button';
+                    open.className = 'flex w-full min-w-0 flex-col items-center gap-1 text-center';
+                    if (artist.image) { const image = document.createElement('img'); image.alt = ''; image.loading = 'lazy'; image.className = 'h-10 w-10 shrink-0 rounded-full bg-zinc-800 object-cover ring-1 ring-zinc-700'; setDesktopImage(image, artist.image); open.appendChild(image); }
+                    else { const placeholder = document.createElement('span'); placeholder.className = 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-500 ring-1 ring-zinc-700'; placeholder.innerHTML = '<i class="fa-solid fa-music text-xs"></i>'; open.appendChild(placeholder); }
+                    const name = document.createElement('span'); name.className = 'truncate text-xs font-semibold text-zinc-200'; name.textContent = artist.name || 'Unknown artist'; open.appendChild(name);
+                    const count = document.createElement('span'); count.className = 'truncate text-[9px] text-zinc-500'; count.textContent = `${artist.playCount ?? 0} plays`; open.appendChild(count);
+                    card.append(open);
+                    topArtists.appendChild(card);
+                });
+            } catch (error) {
+                statsGrid.innerHTML = '<p class="col-span-full py-4 text-center text-xs text-red-400">Telemetry unavailable.</p>';
+                recentList.innerHTML = '<p class="py-2 text-center text-xs text-red-400">Could not load recent plays.</p>';
+                topArtists.innerHTML = '<p class="col-span-full py-4 text-center text-xs text-red-400">Could not load artists.</p>';
+            }
         }
 
         function escapeHtml(value) {
@@ -1976,10 +2469,19 @@
             try {
                 const headers = { 'Content-Type': 'application/json' };
                 if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-                const response = await fetch(`${state.serverUrl}/api/library/liked/toggle`, { method: 'POST', headers, body: JSON.stringify({ track: payload }) });
+                const response = await serverFetch(`/api/library/liked/toggle`, { method: 'POST', headers, body: JSON.stringify({ track: payload }) });
                 if (!response.ok) throw new Error('likes API unavailable');
                 await loadLikedSongs();
                 invalidateDiscoveryCache();
+                // Re-render search results to update like button states
+                if (document.getElementById('globalSearchResults')) {
+                    const searchInput = document.getElementById('globalSearchInput');
+                    if (searchInput && searchInput.value.trim()) {
+                        // Trigger re-render of current search
+                        const event = new Event('input');
+                        searchInput.dispatchEvent(event);
+                    }
+                }
             } catch (_) {
                 if (existingIndex >= 0) state.likedSongs.splice(existingIndex, 1);
                 else state.likedSongs.unshift({ ...payload, id: payload.id || `local_${Date.now()}`, trackId: payload.id || `local_${Date.now()}` });
@@ -1995,7 +2497,7 @@
             localStorage.removeItem(`aura_discovery_cache_${state.user.id || 'guest'}`);
         }
 
-        function setupLibraryLikes() {
+        async function setupLibraryLikes() {
             likeCurrentTrackBtn.addEventListener('click', () => {
                 const track = state.playlist[state.currentIndex];
                 if (track) {
@@ -2006,6 +2508,7 @@
             document.getElementById('playAllLikedBtn').addEventListener('click', () => playLikedSongs(false));
             document.getElementById('shuffleLikedBtn').addEventListener('click', () => playLikedSongs(true));
             loadLikedSongs();
+            await loadArtistFavorites();
         }
 
         function playLikedSongs(shuffle) {
@@ -2234,10 +2737,6 @@
         // -------------------------------------------------------------
         // AUTO-REDUCTION ENGINE (Inactivity / Idle Manager)
         // -------------------------------------------------------------
-        let idleTimer = null;
-        let countdownTimer = null;
-        let isCountdownActive = false;
-
         function setupAutoReductionEngine() {
             // Settings UI Listeners
             idleAutoReduceToggle.addEventListener('change', (e) => {
@@ -2443,6 +2942,25 @@
             settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('translate-x-full'));
             closeSettingsBtn.addEventListener('click', () => settingsPanel.classList.add('translate-x-full'));
 
+            // Theme color wheel: toggle presets panel
+            const themeWheel = document.getElementById('themeColorWheelBtn');
+            const themePresets = document.getElementById('themeColorPresets');
+            if (themeWheel && themePresets) {
+                themeWheel.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isHidden = themePresets.classList.contains('hidden');
+                    themePresets.classList.toggle('hidden');
+                    if (!isHidden) {
+                        document.addEventListener('click', function closePresets(ev) {
+                            if (!themePresets.contains(ev.target) && ev.target !== themeWheel) {
+                                themePresets.classList.add('hidden');
+                                document.removeEventListener('click', closePresets);
+                            }
+                        });
+                    }
+                });
+            }
+
             primaryColorPicker.addEventListener('input', (e) => updateThemeColors(e.target.value, glowColorPicker.value));
             primaryHexInput.addEventListener('change', (e) => updateThemeColors(e.target.value, glowColorPicker.value));
             
@@ -2494,10 +3012,13 @@
         function setupMainNavigation() {
             const panelIds = {
                 queue: 'tabContentQueue',
+                playlists: 'tabContentPlaylists',
+                library: 'tabContentLibrary',
                 search: 'tabContentSearch',
                 discover: 'tabContentDiscover',
                 youtube: 'tabContentYouTube',
                 liked: 'tabContentLiked',
+                telemetry: 'tabContentTelemetry',
                 auth: 'tabContentAuth'
             };
             const buttons = Array.from(document.querySelectorAll('[data-main-tab]'));
@@ -2521,46 +3042,263 @@
                     panel.setAttribute('aria-hidden', String(key !== tab));
                 }
                 if (tab === 'discover') loadDiscoveryView();
+                if (tab === 'playlists') void loadPlaylistChoices();
+                if (tab === 'library') void loadDesktopLibrary();
+                if (tab === 'telemetry') void loadTelemetry();
             };
 
             for (const button of buttons) {
                 button.setAttribute('role', 'tab');
                 button.addEventListener('click', () => activateTab(button.dataset.mainTab));
             }
+            // Horizontal mouse-wheel scroll for nav tabs
+            const navBar = document.getElementById('mainTabNav');
+            if (navBar) {
+                navBar.addEventListener('wheel', (e) => {
+                    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                        e.preventDefault();
+                        navBar.scrollLeft += e.deltaY;
+                    }
+                }, { passive: false });
+            }
             setupArtistDiscovery();
             setupQueuePlaylists();
             setupCacheControls();
+            document.getElementById('refreshLibraryContentsBtn')?.addEventListener('click', () => void loadDesktopLibrary());
+            document.getElementById('refreshTelemetryBtn')?.addEventListener('click', () => void loadTelemetry());
             userAuthBtn.addEventListener('click', () => activateTab('auth'));
             activateTab(panelIds[state.activeMainTab] ? state.activeMainTab : 'queue');
         }
 
+        function serverRequestHeaders(extra = {}) {
+            const headers = new Headers(extra);
+            const key = state.serverKey || localStorage.getItem('aura_desktop_server_key') || '';
+            if (key) headers.set('X-Aura-Access-Key', key);
+            if (state.user.token) headers.set('Authorization', `Bearer ${state.user.token}`);
+            return headers;
+        }
+
+        async function serverFetch(path, options = {}) {
+            const { bypassCoolDown, ...fetchOptions } = options;
+            // When the server is known unreachable, skip automatic retries within the
+            // cooldown window so the UI stays responsive instead of serial-stalling on
+            // 8s request timeouts. Explicit user actions (status check / reconnect)
+            // bypass via options.bypassCoolDown = true.
+            if (!bypassCoolDown && state.serverConnected === false && state.serverDownAt && Date.now() - state.serverDownAt < SERVER_PROBE_COOLDOWN_MS) {
+                throw new Error('Server unavailable (offline mode)');
+            }
+            // Bound every API call so a stalled server cannot hang the UI indefinitely.
+            return fetch(apiResourceUrl(path), { ...fetchOptions, headers: serverRequestHeaders(fetchOptions.headers || {}), signal: fetchOptions.signal || AbortSignal.timeout(8000) });
+        }
+
         async function apiGet(path) {
-            const headers = {};
-            if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-            const response = await fetch(`${state.serverUrl}${path}`, { headers, cache: 'no-store' });
-            const result = await response.json();
+            const response = await serverFetch(path, { cache: 'no-store' });
+            const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.message || result.error || `Request failed (${response.status})`);
             return result;
         }
 
         async function apiPost(path, body = {}) {
-            const headers = { 'Content-Type': 'application/json' };
-            if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-            const response = await fetch(`${state.serverUrl}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
-            const result = await response.json();
+            const response = await serverFetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.message || result.error || `Request failed (${response.status})`);
             return result;
         }
 
         async function apiDelete(path, body = {}) {
-            const headers = { 'Content-Type': 'application/json' };
-            if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-            const response = await fetch(`${state.serverUrl}${path}`, {
-                method: 'DELETE', headers, body: JSON.stringify(body)
+            const response = await serverFetch(path, {
+                method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
             });
-            const result = await response.json();
+            const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.message || result.error || `Request failed (${response.status})`);
             return result;
+        }
+
+        function setupDesktopServerConnection() {
+            const modal = document.getElementById('serverConnectionModal');
+            const close = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+            const open = () => {
+                document.getElementById('desktopServerUrlInput').value = state.serverUrl;
+                document.getElementById('desktopServerKeyInput').value = state.serverKey;
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            };
+            serverStatusBadge.addEventListener('click', open);
+            document.getElementById('closeServerConnection').addEventListener('click', close);
+            modal.addEventListener('click', event => { if (event.target === modal) close(); });
+            document.getElementById('serverConnectionForm').addEventListener('submit', async event => {
+                event.preventDefault();
+                const input = document.getElementById('desktopServerUrlInput');
+                try {
+                    const parsed = new URL(input.value.trim());
+                    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Use an HTTP or HTTPS server URL.');
+                    state.serverUrl = parsed.origin.replace(/\/$/, '');
+                    window.apiUrl = state.serverUrl;
+                    state.serverKey = document.getElementById('desktopServerKeyInput').value.trim();
+                    localStorage.setItem('aura_desktop_server_url', state.serverUrl);
+                    localStorage.setItem('aura_desktop_server_key', state.serverKey);
+                    document.getElementById('desktopServerConnectionStatus').textContent = 'Checking your server…';
+                    await checkServerStatus(true, true);
+                    state.dailyMixesLoaded = false; state.discoveryCache = null;
+                    close();
+                    if (state.activeMainTab === 'discover') await loadDiscoveryView({ force: true });
+                } catch (error) { document.getElementById('desktopServerConnectionStatus').textContent = error.message; }
+            });
+            document.getElementById('resetDesktopServer').addEventListener('click', async () => {
+                localStorage.removeItem('aura_desktop_server_url'); localStorage.removeItem('aura_desktop_server_key'); state.serverKey = '';
+                if (ipcRenderer) {
+                    try {
+                        const info = await ipcRenderer.invoke('server-get-info');
+                        if (info?.active && info?.url) {
+                            state.serverUrl = info.url;
+                            window.apiUrl = info.url.replace(/\/+$/, '');
+                            console.log('[Reset Server] Using embedded server:', window.apiUrl);
+                        } else {
+                            state.serverUrl = 'http://127.0.0.1:3456';
+                            window.apiUrl = 'http://127.0.0.1:3456';
+                        }
+                    } catch (error) {
+                        console.debug('[Reset Server] IPC error:', error.message);
+                        state.serverUrl = 'http://127.0.0.1:3456';
+                        window.apiUrl = 'http://127.0.0.1:3456';
+                    }
+                } else {
+                    state.serverUrl = 'http://127.0.0.1:3456';
+                    window.apiUrl = 'http://127.0.0.1:3456';
+                }
+                close(); await checkServerStatus(true, true);
+            });
+        }
+
+        function cleanLyricsQuery(track) {
+            let title = String(track?.name || track?.title || '').replace(/\s*\[(?:dl_)?[a-f0-9]{8,}\]\s*/gi, ' ').trim();
+            let artist = String(track?.artist || track?.channel || track?.uploader || '').trim();
+            const split = title.match(/^(.{1,100}?)\s+-\s+(.{1,180})$/);
+            if (split && /^(?:unknown(?: artist)?|youtube(?: audio)?|local(?: track| audio)?)$/i.test(artist)) { artist = split[1].trim(); title = split[2].trim(); }
+            // Remove YouTube / streaming junk from title
+            title = title
+                .replace(/[[(](?:[^)\]]*(?:official|video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version|hd|hq|4k|1080p|720p|full\s+album|live\s+version|cover|remix|mix|extended|edited|clean|dirty|uncensored|instrumental|karaoke|acoustic|performance|session|reaction|trailer|teaser|preview|teaser|behind\s+the\s+scenes|making\s+of|featurette|clip|promo|teaser|music\s+video|lyric\s+video|visualizer|visualiser|animated|official\s+audio|lyrics\s+video)[^)]*)[)\]]/gi, ' ')
+                .replace(/\s*[|–—]\s*(?:official|lyrics?|music video|audio|video).*$/i, ' ')
+                .replace(/\s*-\s*(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ')
+                .replace(/\b(?:ft\.|feat\.|featuring|with|vs\.|versus|x|and|&)\s+[^\s-]+/gi, ' ')
+                .replace(/\((?:Official|Audio|Video|Lyrics|HD|HQ|Full|Live|Remix|Cover|Instrumental|Karaoke|Acoustic|Performance|Session|Reaction|Trailer|Teaser|Preview|Clip|Promo|Music Video|Lyric Video|Visualizer|Animated|Official Audio|Lyrics Video)[^)]*\)/gi, ' ')
+                .replace(/\s+/g, ' ').trim();
+            artist = artist.replace(/\s*(?:-\s*)?(?:VEVO|Topic|Official|Records|Music|Entertainment|Label|Studio|Productions|Sounds|Beats)$/i, '').trim();
+            if (/^(?:unknown(?: artist)?|youtube(?: audio)?|local(?: track| audio)?)$/i.test(artist)) artist = '';
+            return { title, artist };
+        }
+
+        function renderDesktopLyrics() {
+            const body = document.getElementById('desktopLyricsBody');
+            const rows = state.desktopLyrics;
+            const preview = document.getElementById('desktopLyricsPreview');
+            const previewText = document.getElementById('desktopLyricsPreviewText');
+            preview.classList.toggle('hidden', !rows.length);
+            if (!rows.length) { body.textContent = 'No lyrics found for this track.'; previewText.textContent = 'No lyrics found'; return; }
+            const synced = rows.some(line => Number(line.t) > 0);
+            if (!synced) { previewText.textContent = rows[0]?.text || 'Lyrics available'; body.replaceChildren(); rows.forEach(line => { const p = document.createElement('p'); p.className = 'my-2 text-zinc-400'; p.textContent = line.text; body.append(p); }); return; }
+            let active = 0; const now = state.audio.currentTime || 0;
+            for (let i = 0; i < rows.length; i++) { if (Number(rows[i].t) <= now) active = i; else break; }
+            previewText.textContent = rows[active]?.text || 'Lyrics available';
+            const count = state.desktopLyricsLineCount, start = Math.max(0, Math.min(rows.length - count, active - Math.floor(count / 2)));
+            body.replaceChildren();
+            for (let i = start; i < Math.min(rows.length, start + count); i++) {
+                const line = document.createElement('p');
+                line.className = 'my-2 transition-colors select-none';
+                line.style.fontSize = count === 1 ? '24px' : count === 3 ? '16px' : '13px';
+                line.style.color = i === active ? '#ffffff' : count === 3 ? '#94a3b8' : '#747a87';
+                line.style.opacity = i === active ? '1' : count === 3 ? '.5' : '.35';
+                line.textContent = rows[i].text; body.append(line);
+            }
+            // In 1-line mode, center vertically and show only the active line large
+            if (count === 1) {
+                body.classList.add('flex', 'flex-col', 'justify-center', 'items-center');
+            } else {
+                body.classList.remove('flex', 'flex-col', 'justify-center', 'items-center');
+            }
+        }
+
+        async function openDesktopLyrics() {
+            // Open fullscreen overlay like mobile-dist
+            await openDesktopLyricsFullscreen();
+        }
+
+        function setupDesktopLyrics() {
+            const modal = document.getElementById('desktopLyricsModal');
+            const fsOverlay = document.getElementById('desktopLyricsFullscreenOverlay');
+            const fsBody = document.getElementById('desktopLyricsFsBody');
+            const fsTitle = document.getElementById('desktopLyricsFsTitle');
+            const fsArtist = document.getElementById('desktopLyricsFsArtist');
+            let fsLineCount = 1;
+
+            document.getElementById('desktopLyricsButton').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try { await openDesktopLyrics(); }
+                catch (err) { console.error('[Lyrics] Failed to open lyrics:', err.message); const fsOverlay = document.getElementById('desktopLyricsFullscreenOverlay'); if (fsOverlay) { fsOverlay.classList.remove('hidden'); fsOverlay.classList.add('flex'); document.getElementById('desktopLyricsFsBody').textContent = 'Lyrics error: ' + err.message; } }
+            });
+            document.getElementById('desktopLyricsPreview').addEventListener('click', () => void openDesktopLyrics());
+            document.getElementById('closeDesktopLyrics').addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
+            modal.addEventListener('click', event => { if (event.target === modal) document.getElementById('closeDesktopLyrics').click(); });
+            document.querySelectorAll('[data-desktop-lyrics-lines]').forEach(button => button.addEventListener('click', () => {
+                state.desktopLyricsLineCount = Number(button.dataset.desktopLyricsLines);
+                document.querySelectorAll('[data-desktop-lyrics-lines]').forEach(item => item.classList.toggle('theme-accent-bg', item === button)); renderDesktopLyrics();
+            }));
+            state.audio.addEventListener('timeupdate', () => {
+                if (state.desktopLyrics.length && (!modal.classList.contains('hidden') || state.desktopLyrics.some(line => Number(line.t) > 0))) renderDesktopLyrics();
+                // Fullscreen overlay lyrics sync
+                const fsBodyEl = document.getElementById('desktopLyricsFsBody');
+                if (fsOverlay && !fsOverlay.classList.contains('hidden') && state.desktopLyrics.length && fsBodyEl) {
+                    const now = state.audio.currentTime || 0;
+                    let activeIdx = 0;
+                    for (let i = 0; i < state.desktopLyrics.length; i++) {
+                        if (Number(state.desktopLyrics[i].t || 0) <= now) activeIdx = i;
+                        else break;
+                    }
+                    const lineCount = fsLineCount === 5 ? 5 : fsLineCount === 3 ? 3 : 1;
+                    const lines = lineCount === 1 ? [state.desktopLyrics[activeIdx]?.text || ''] : state.desktopLyrics.slice(Math.max(0, activeIdx - Math.floor(lineCount / 2)), activeIdx + Math.ceil(lineCount / 2)).map(l => l?.text || '');
+                    fsBodyEl.replaceChildren(...lines.map(t => {
+                        const p = document.createElement('div');
+                        p.className = 'my-3 transition-colors';
+                    p.style.fontSize = lineCount === 1 ? '32px' : lineCount === 3 ? (i === activeIdx ? '22px' : '18px') : '14px';
+                    p.style.color = lines.length === 1 ? '#ffffff' : (i === activeIdx ? '#ffffff' : lineCount === 3 ? '#94a3b8' : '#747a87');
+                    p.style.opacity = lines.length === 1 ? '1' : (i === activeIdx ? '1' : lineCount === 3 ? '.4' : '.3');
+                        p.textContent = t;
+                        return p;
+                    }));
+                }
+            });
+
+            // Fullscreen overlay controls
+            document.getElementById('closeDesktopLyricsFs').addEventListener('click', () => { fsOverlay.classList.add('hidden'); fsOverlay.classList.remove('flex'); state.autoReduction.idleEnabled = true; });
+            fsOverlay.addEventListener('click', event => { if (event.target === fsOverlay) document.getElementById('closeDesktopLyricsFs').click(); });
+            document.getElementById('toggleLyricsFsLines').addEventListener('click', () => {
+                fsLineCount = fsLineCount === 1 ? 3 : fsLineCount === 3 ? 5 : 1;
+                document.getElementById('toggleLyricsFsLinesText').textContent = fsLineCount === 1 ? '1 Line' : fsLineCount === 3 ? '3 Lines' : '5 Lines';
+                renderDesktopLyrics();
+            });
+        }
+
+        async function openDesktopLyricsFullscreen() {
+            const fsOverlay = document.getElementById('desktopLyricsFullscreenOverlay');
+            const track = state.playlist[state.currentIndex];
+            const fsTitle = document.getElementById('desktopLyricsFsTitle');
+            const fsArtist = document.getElementById('desktopLyricsFsArtist');
+            const fsBodyEl = document.getElementById('desktopLyricsFsBody');
+            if (!track) { fsTitle.textContent = 'No track'; fsArtist.textContent = 'Choose a track first'; fsOverlay.classList.remove('hidden'); fsOverlay.classList.add('flex'); return; }
+            const query = cleanLyricsQuery(track);
+            fsTitle.textContent = query.title || track.name || 'Unknown';
+            fsArtist.textContent = query.artist || track.artist || 'Unknown artist';
+            fsBodyEl.textContent = 'Loading lyrics…';
+            fsOverlay.classList.remove('hidden');
+            fsOverlay.classList.add('flex');
+            // Disable idle reduction while fullscreen lyrics open
+            state.autoReduction.idleEnabled = false;
+            try {
+                const data = await apiGet(`/api/lyrics?title=${encodeURIComponent(query.title)}&artist=${encodeURIComponent(query.artist)}`);
+                state.desktopLyrics = (data.lines || []).filter(line => line?.text);
+                if (!state.desktopLyrics.length) fsBodyEl.textContent = 'No lyrics found for this track.';
+            } catch (error) {
+                fsBodyEl.textContent = `Lyrics unavailable: ${error.message}`;
+            }
         }
 
         async function refreshQueueFromLibrary({ startup = false } = {}) {
@@ -2594,7 +3332,7 @@
             for (const saved of downloads) {
                 if (!saved.fileName) continue;
                 const existing = state.playlist.find(track => track.fileName === saved.fileName);
-                const mediaUrl = `${state.serverUrl}${saved.streamUrl || `/api/media/${encodeURIComponent(saved.fileName)}`}`;
+                const mediaUrl = apiResourceUrl(saved.streamUrl || `/api/media/${encodeURIComponent(saved.fileName)}`);
                 if (existing) {
                     existing.name = saved.title || existing.name;
                     existing.artist = saved.artist || existing.artist;
@@ -2749,9 +3487,9 @@
                 id: `online_${track.id || Math.random().toString(36).slice(2)}`,
                 name: title,
                 artist,
-                url: track.streamUrl
-                    ? (track.streamUrl.startsWith('http') ? track.streamUrl : `${state.serverUrl}${track.streamUrl}`)
-                    : (track.fileName ? `${state.serverUrl}/api/media/${encodeURIComponent(track.fileName)}` : ''),
+                url: track.url || (track.streamUrl
+                    ? apiResourceUrl(track.streamUrl)
+                    : (track.fileName ? apiResourceUrl(`/api/media/${encodeURIComponent(track.fileName)}`) : '')),
                 playQuery: track.playQuery || (track.streamUrl || track.fileName ? '' : `${title} ${artist}`),
                 fileName: track.fileName || '',
                 source: track.source || 'youtube'
@@ -2844,7 +3582,7 @@
             track.mixStatus = 'Downloading';
             renderPlaylist();
             updateServerDownloadIndicator({ title: track.name, stage: 'Starting server download…', progress: 0 });
-            const response = await fetch(`${state.serverUrl}/api/ytb/download`, {
+            const response = await serverFetch(`/api/ytb/download`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: track.playQuery, title: track.name })
             });
@@ -2853,7 +3591,7 @@
             track.downloadId = started.id;
             while (true) {
                 await new Promise(resolve => setTimeout(resolve, 900));
-                const statusResponse = await fetch(`${state.serverUrl}/api/ytb/progress/${encodeURIComponent(started.id)}`, { cache: 'no-store' });
+                const statusResponse = await serverFetch(`/api/ytb/progress/${encodeURIComponent(started.id)}`, { cache: 'no-store' });
                 const status = await statusResponse.json();
                 if (!statusResponse.ok) throw new Error(status.message || 'Could not read download status.');
                 track.mixProgress = Math.max(0, Math.min(100, Number(status.progress) || 0));
@@ -2865,7 +3603,7 @@
                 const statusLine = queueRow?.querySelector('.queue-mix-status');
                 if (statusLine) statusLine.textContent = `Downloading · ${Math.round(track.mixProgress)}%`;
                 if (status.status === 'completed') {
-                    track.url = status.result?.streamUrl?.startsWith('http') ? status.result.streamUrl : `${state.serverUrl}${status.result?.streamUrl || `/api/media/${encodeURIComponent(status.result.fileName)}`}`;
+                    track.url = status.result?.streamUrl?.startsWith('http') ? status.result.streamUrl : apiResourceUrl(status.result?.streamUrl || `/api/media/${encodeURIComponent(status.result.fileName)}`);
                     track.fileName = status.result?.fileName || '';
                     track.filePath = status.result?.filePath || '';
                     track.source = 'download'; track.playQuery = ''; track.mixStatus = 'Ready'; track.mixProgress = 100;
@@ -2966,7 +3704,7 @@
             percent.textContent = '0%';
             bar.style.width = '0%';
             updateServerDownloadIndicator({ title: track.name, stage: 'Starting server download…', progress: 0 });
-            const response = await fetch(`${state.serverUrl}/api/ytb/download`, {
+            const response = await serverFetch(`/api/ytb/download`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: track.playQuery, title: track.name })
             });
@@ -2976,7 +3714,7 @@
             updateServerDownloadIndicator({ title: track.name, stage: 'Download queued on server…', progress: 0 });
             while (true) {
                 await new Promise(resolve => setTimeout(resolve, 900));
-                const statusResponse = await fetch(`${state.serverUrl}/api/ytb/progress/${encodeURIComponent(started.id)}`, { cache: 'no-store' });
+                const statusResponse = await serverFetch(`/api/ytb/progress/${encodeURIComponent(started.id)}`, { cache: 'no-store' });
                 const status = await statusResponse.json();
                 if (!statusResponse.ok) throw new Error(status.message || 'Could not read download status.');
                 const value = Math.max(0, Math.min(100, Number(status.progress) || 0));
@@ -2993,7 +3731,7 @@
                         id: started.id,
                         url: status.result?.streamUrl?.startsWith('http')
                             ? status.result.streamUrl
-                            : `${state.serverUrl}${status.result?.streamUrl || `/api/media/${encodeURIComponent(status.result.fileName)}`}`,
+                            : apiResourceUrl(status.result?.streamUrl || `/api/media/${encodeURIComponent(status.result.fileName)}`),
                         source: 'download',
                         fileName: status.result?.fileName || '',
                         filePath: status.result?.filePath || ''
@@ -3027,13 +3765,15 @@
                 message.classList.remove('hidden', 'text-red-300');
                 message.classList.add('text-zinc-400');
                 message.textContent = 'Searching your library and catalog…';
+                setDesktopOperationStatus(`Searching for “${query}”…`);
                 try {
                     const data = await apiGet(`/api/search?q=${encodeURIComponent(query)}`);
                     if (sequence !== requestSequence || query !== input.value.trim()) return;
                     message.classList.add('hidden');
                     renderGlobalSearchResults(data || {});
+                    setDesktopOperationStatus(`Search complete · ${query}`);
                 } catch (error) {
-                    if (sequence === requestSequence) setPanelMessage(message, `Search is unavailable: ${error.message}`, true);
+                    if (sequence === requestSequence) { setPanelMessage(message, `Search is unavailable: ${error.message}`, true); setDesktopOperationStatus(`Search failed: ${error.message}`, true); }
                 }
             };
             form.addEventListener('submit', event => {
@@ -3091,6 +3831,50 @@
             if (state.activeMainTab === 'discover') loadDiscoveryView();
         }
 
+        async function openMixDetail(item) {
+            const modal = document.getElementById('desktopMixDetailModal');
+            const title = document.getElementById('desktopMixDetailTitle');
+            const body = document.getElementById('desktopMixDetailBody');
+            const playAll = document.getElementById('desktopMixDetailPlayAll');
+            const tracks = Array.isArray(item.tracks) ? item.tracks : [];
+            title.textContent = item.title || item.name || 'Mix Detail';
+            body.innerHTML = '';
+            if (!tracks.length) { body.textContent = 'No tracks in this mix.'; modal.classList.remove('hidden'); modal.classList.add('flex'); return; }
+            tracks.forEach((track, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2 hover:bg-zinc-800';
+                const num = document.createElement('span');
+                num.className = 'w-6 h-6 shrink-0 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-300'; num.textContent = String(idx + 1);
+                const info = document.createElement('div'); info.className = 'min-w-0 flex-1';
+                const tname = document.createElement('p'); tname.className = 'truncate text-xs font-semibold text-zinc-200'; tname.textContent = track.title || 'Untitled';
+                const tartist = document.createElement('p'); tartist.className = 'truncate text-[10px] text-zinc-500'; tartist.textContent = `${track.artist || 'Unknown artist'} · ${track.genre || 'Mix'}`;
+                info.append(tname, tartist);
+                const play = document.createElement('button'); play.type = 'button'; play.className = 'p-1.5 rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white'; play.innerHTML = '<i class="fa-solid fa-play text-[10px]"></i>';
+                play.onclick = () => queueTrackForPlayback({ ...track, title: track.title || track.name, name: track.title || track.name, artist: track.artist || '', source: 'mix-detail', playQuery: track.playQuery || `${track.artist || ''} ${track.title || ''}`.trim() });
+                row.append(num, info, play); body.appendChild(row);
+            });
+            playAll.onclick = () => { startMixPlayback(item, null, false, true); modal.classList.add('hidden'); modal.classList.remove('flex'); };
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        function toggleLikeMix(item, btn) {
+            const likedKey = `aura_liked_mixes`;
+            const stored = localStorage.getItem(likedKey);
+            const liked = stored ? JSON.parse(stored) : [];
+            const id = item.id || item.title || item.name;
+            const already = liked.includes(id);
+            if (already) {
+                localStorage.setItem(likedKey, JSON.stringify(liked.filter(x => x !== id)));
+                btn.classList.remove('liked');
+                btn.style.color = '#fff';
+            } else {
+                localStorage.setItem(likedKey, JSON.stringify([...liked, id]));
+                btn.classList.add('liked');
+                btn.style.color = '#ff6681';
+            }
+            renderDiscoveryView();
+        }
+
         async function openArtistDetail(artist) {
             const modal = document.getElementById('artistDetailModal');
             const image = document.getElementById('artistDetailImage');
@@ -3099,7 +3883,7 @@
             document.getElementById('artistDetailDescription').textContent = 'Loading artist details…';
             document.getElementById('artistDetailAlbums').innerHTML = '';
             document.getElementById('artistDetailTracks').innerHTML = '';
-            image.src = artist.image || '';
+            setDesktopImage(image, artist.image || '');
             image.alt = `${artist.name || 'Artist'} portrait`;
             const like = document.getElementById('artistDetailLikeBtn');
             like.innerHTML = `<i class="fa-${artistIsLiked(artist) ? 'solid' : 'regular'} fa-heart"></i> ${artistIsLiked(artist) ? 'Favorited' : 'Favorite'}`;
@@ -3110,9 +3894,16 @@
                 document.getElementById('artistDetailName').textContent = profile.name || artist.name;
                 document.getElementById('artistDetailMeta').textContent = [profile.type, profile.country, ...(profile.tags || [])].filter(Boolean).join(' · ');
                 document.getElementById('artistDetailDescription').textContent = profile.description || 'No biography is available for this artist yet.';
-                image.src = profile.image || artist.image || '';
+                setDesktopImage(image, profile.image || artist.image || '');
                 const source = document.getElementById('artistDetailSource'); source.href = profile.articleUrl || profile.sourceUrls?.musicbrainz || '#'; source.classList.toggle('hidden', !profile.articleUrl && !profile.sourceUrls?.musicbrainz);
-                document.getElementById('artistDetailAlbums').innerHTML = (profile.albums || []).map(album => `<a href="https://musicbrainz.org/release-group/${encodeURIComponent(album.id)}" target="_blank" rel="noreferrer" class="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900"><img src="${escapeHtml(album.cover)}" alt="${escapeHtml(album.title)} cover" loading="lazy" class="aspect-square w-full object-cover" onerror="this.src='assets/icon_128x128.png'"><span class="block truncate p-2 text-[10px] text-zinc-300">${escapeHtml(album.title)}${album.date ? ` · ${escapeHtml(album.date.slice(0,4))}` : ''}</span></a>`).join('') || '<p class="text-xs text-zinc-500">No albums found.</p>';
+                const albumGrid = document.getElementById('artistDetailAlbums'); albumGrid.replaceChildren();
+                if (!(profile.albums || []).length) albumGrid.innerHTML = '<p class="text-xs text-zinc-500">No albums found.</p>';
+                (profile.albums || []).forEach(album => {
+                    const link = document.createElement('a'); link.href = `https://musicbrainz.org/release-group/${encodeURIComponent(album.id)}`; link.target = '_blank'; link.rel = 'noreferrer'; link.className = 'overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900';
+                    const cover = document.createElement('img'); cover.alt = `${album.title} cover`; cover.loading = 'lazy'; cover.className = 'aspect-square w-full object-cover'; setDesktopImage(cover, album.cover || album.image || '');
+                    const label = document.createElement('span'); label.className = 'block truncate p-2 text-[10px] text-zinc-300'; label.textContent = `${album.title}${album.date ? ` · ${album.date.slice(0,4)}` : ''}`;
+                    link.append(cover, label); albumGrid.append(link);
+                });
                 const tracks = profile.topTracks || [];
                 const container = document.getElementById('artistDetailTracks');
                 tracks.slice(0, 12).forEach(track => {
@@ -3128,6 +3919,8 @@
         function setupArtistDiscovery() {
             document.getElementById('artistDetailCloseBtn').addEventListener('click', () => { const modal = document.getElementById('artistDetailModal'); modal.classList.add('hidden'); modal.classList.remove('flex'); });
             document.getElementById('artistDetailModal').addEventListener('click', event => { if (event.target.id === 'artistDetailModal') document.getElementById('artistDetailCloseBtn').click(); });
+            document.getElementById('closeDesktopMixDetail')?.addEventListener('click', () => { const modal = document.getElementById('desktopMixDetailModal'); modal.classList.add('hidden'); modal.classList.remove('flex'); });
+            document.getElementById('desktopMixDetailModal')?.addEventListener('click', event => { if (event.target.id === 'desktopMixDetailModal') document.getElementById('closeDesktopMixDetail').click(); });
             const input = document.getElementById('artistDiscoverySearchInput'); let timer;
             input.addEventListener('input', () => {
                 clearTimeout(timer);
@@ -3156,34 +3949,139 @@
                 renderDiscoveryPayload(cached.data);
                 return;
             }
+            setDesktopOperationStatus(force ? 'Refreshing Discover from the server…' : 'Loading Discover from the server…');
             const targets = [
                 ['dailyMixGrid', 'Loading mixes…'], ['artistsListGrid', 'Loading artists…'],
                 ['recommendationsList', 'Finding recommendations…'], ['latestReleasesList', 'Loading releases…']
             ];
             targets.forEach(([id, text]) => { document.getElementById(id).textContent = text; });
             try {
-                const [mixes, artists, recommendations, releases] = await Promise.all([
+                const results = await Promise.allSettled([
                     apiGet('/api/discovery/daily-mix'), apiGet('/api/discovery/artists'),
-                    apiGet('/api/discovery/recommendations'), apiGet('/api/discovery/releases')
+                    apiGet('/api/discovery/recommendations'), apiGet('/api/discovery/releases'),
+                    apiGet('/api/library/playlists')
                 ]);
-                const data = { mixes, artists, recommendations, releases };
+                const [mixes, artists, recommendations, releaseResult, playlistsResult] = results.map(result => result.status === 'fulfilled' ? result.value : []);
+                const releases = releaseResult;
+                const playlists = Array.isArray(playlistsResult) ? playlistsResult : [];
+                const data = { mixes, artists, recommendations, releases: Array.isArray(releases) ? releases : releases?.releases || [], playlists };
                 state.discoveryCache = { ownerId: String(state.user.id || 'guest'), savedAt: Date.now(), data };
                 try { localStorage.setItem(cacheKey, JSON.stringify(state.discoveryCache)); } catch (error) { console.debug('Could not persist Discover cache:', error.message); }
                 renderDiscoveryPayload(data);
+                const failedSections = results.map((result, index) => result.status === 'rejected' ? ['mixes', 'artists', 'recommendations', 'latest releases', 'playlists'][index] : '').filter(Boolean);
+                setDesktopOperationStatus(failedSections.length ? `Discover loaded with unavailable data: ${failedSections.join(', ')}.` : 'Discover updated.', failedSections.length > 0);
             } catch (error) {
-                if (cached?.data) { state.discoveryCache = cached; renderDiscoveryPayload(cached.data); return; }
+                if (cached?.data) { state.discoveryCache = cached; renderDiscoveryPayload(cached.data); setDesktopOperationStatus('Showing saved Discover results; server refresh failed.', true); return; }
                 targets.forEach(([id]) => { document.getElementById(id).textContent = `Discovery is unavailable: ${error.message}`; });
+                setDesktopOperationStatus(`Discover failed: ${error.message}`, true);
             }
         }
 
         function renderDiscoveryPayload(data) {
             state.dailyMixes = Array.isArray(data.mixes) ? data.mixes : [];
             state.dailyMixesLoaded = true;
+            state.playlists = Array.isArray(data.playlists) ? data.playlists : [];
             renderQueuePlaylistOptions();
             renderDiscoveryCards('dailyMixGrid', data.mixes || [], item => item.title || item.name, item => item.description || `${item.tracksCount || item.tracks?.length || 0} tracks`, 'mix');
             renderDiscoveryCards('artistsListGrid', data.artists || [], item => item.name, item => item.genre || item.bio || '', 'artist');
             renderDiscoveryCards('recommendationsList', data.recommendations || [], item => item.title, item => `${item.artist || ''}${item.reason ? ` · ${item.reason}` : ''}`, 'track');
-            renderDiscoveryCards('latestReleasesList', data.releases || [], item => item.title, item => `${item.artist || ''}${item.year ? ` · ${item.year}` : ''}`, 'release');
+            const releases = Array.isArray(data.releases) ? data.releases : data.releases?.releases || [];
+            renderDiscoveryCards('latestReleasesList', releases, item => item.title, item => `${item.artist || ''}${item.date ? ` · ${String(item.date).slice(0, 4)}` : item.year ? ` · ${item.year}` : ''}`, 'release');
+            renderDiscoveryPlaylists();
+        }
+
+        function setDesktopOperationStatus(message, isError = false) {
+            const status = document.getElementById('desktopOperationStatus');
+            if (!status) return;
+            status.textContent = message || '';
+            status.classList.toggle('hidden', !message);
+            status.classList.toggle('text-red-300', isError);
+            status.classList.toggle('text-zinc-400', !isError);
+        }
+
+        function setDesktopImage(image, url, fallback = 'assets/icon_128x128.png') {
+            if (!url) { image.src = fallback; return; }
+            // Absolute external URLs (http/https/blob/data): set directly, let browser handle CORS
+            if (/^(?:blob:|data:|https?:)/i.test(String(url))) {
+                image.src = url;
+                image.onerror = () => { image.src = fallback; };
+                return;
+            }
+            let requestPath = '';
+            try {
+                const parsed = new URL(String(url), window.apiUrl);
+                if (parsed.pathname.startsWith('/api/')) requestPath = `${parsed.pathname}${parsed.search}`;
+            } catch (_) {}
+            if (!requestPath) {
+                image.src = apiResourceUrl(url);
+                image.onerror = () => { image.src = fallback; };
+                return;
+            }
+            const previousObjectUrl = image.dataset.objectUrl;
+            serverFetch(requestPath).then(response => {
+                if (!response.ok) throw new Error(`Artwork returned ${response.status}`);
+                return response.blob();
+            }).then(blob => {
+                if (previousObjectUrl) URL.revokeObjectURL(previousObjectUrl);
+                image.dataset.objectUrl = URL.createObjectURL(blob);
+                image.src = image.dataset.objectUrl;
+            }).catch(() => {
+                // Server fetch failed (CORS, auth, network): fall back to direct URL resolution
+                image.src = apiResourceUrl(url);
+                image.onerror = () => { image.src = fallback; };
+            });
+        }
+
+        function renderDiscoveryPlaylists() {
+            let section = document.getElementById('discoveryPlaylists');
+            if (!section) {
+                section = document.createElement('section');
+                section.id = 'discoveryPlaylists';
+                section.innerHTML = '<div class="mb-2 flex items-center justify-between"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-200"><i class="fa-solid fa-list-music mr-1.5 text-blue-300"></i>Your Playlists</h3><button type="button" class="text-[10px] text-zinc-500 hover:text-white" data-open-playlists>See all</button></div><div class="grid grid-cols-2 gap-2" data-discovery-playlist-grid></div>';
+                document.getElementById('tabContentDiscover').prepend(section);
+                section.querySelector('[data-open-playlists]').addEventListener('click', () => document.querySelector('[data-main-tab="playlists"]')?.click());
+            }
+            const grid = section.querySelector('[data-discovery-playlist-grid]');
+            const playlists = Array.isArray(state.playlists) ? state.playlists : [];
+            grid.replaceChildren();
+            if (!playlists.length) { grid.innerHTML = '<p class="col-span-full text-[11px] text-zinc-500">No playlists yet. Create one from the Playlists tab.</p>'; return; }
+            playlists.slice(0, 6).forEach(playlist => {
+                const card = document.createElement('article');
+                card.className = 'rounded-lg border border-zinc-800 bg-zinc-900/70 p-2.5';
+                const title = document.createElement('p'); title.className = 'truncate text-xs font-semibold text-zinc-200'; title.textContent = playlist.name || 'Playlist';
+                const detail = document.createElement('p'); detail.className = 'mt-1 text-[10px] text-zinc-500'; detail.textContent = `${playlist.tracks?.length || 0} tracks`;
+                const open = document.createElement('button'); open.type = 'button'; open.className = 'mt-2 w-full rounded-md border border-zinc-700 px-2 py-1.5 text-[10px] text-zinc-300 hover:bg-zinc-800 hover:text-white'; open.innerHTML = '<i class="fa-solid fa-play mr-1"></i>Open in Queue';
+                open.addEventListener('click', () => { document.getElementById('queuePlaylistSelect').value = playlist.id; document.querySelector('[data-main-tab="queue"]')?.click(); document.getElementById('loadQueuePlaylistBtn').click(); });
+                card.append(title, detail, open); grid.append(card);
+            });
+        }
+
+        async function loadDesktopLibrary() {
+            const list = document.getElementById('desktopLibraryList');
+            if (!list) return;
+            list.innerHTML = '<p class="py-6 text-center text-xs text-zinc-500">Loading your server library…</p>';
+            setDesktopOperationStatus('Loading saved downloads and imported tracks…');
+            try {
+                const [downloadsResult, importedResult] = await Promise.allSettled([apiGet('/api/library/downloads'), loadCachedPlaylist()]);
+                const downloads = downloadsResult.status === 'fulfilled' && Array.isArray(downloadsResult.value) ? downloadsResult.value : [];
+                const imported = importedResult.status === 'fulfilled' && Array.isArray(importedResult.value) ? importedResult.value : [];
+                const localTracks = imported.filter(track => track.blob).map(track => ({ ...track, url: track.url || state.playlist.find(saved => saved.id === track.id)?.url || URL.createObjectURL(track.blob), source: 'imported' }));
+                const tracks = [...downloads, ...localTracks];
+                list.replaceChildren();
+                if (!tracks.length) list.innerHTML = '<p class="py-8 text-center text-xs text-zinc-500">No saved audio in the server library yet.</p>';
+                tracks.forEach(track => {
+                    const row = document.createElement('div'); row.className = 'flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2';
+                    const image = document.createElement('img'); image.className = 'h-10 w-10 rounded-md bg-zinc-800 object-cover'; image.alt = ''; setDesktopImage(image, track.cover || track.artwork || '');
+                    const text = document.createElement('div'); text.className = 'min-w-0 flex-1';
+                    const title = document.createElement('p'); title.className = 'truncate text-xs font-semibold text-zinc-200'; title.textContent = track.title || track.name || 'Untitled';
+                    const artist = document.createElement('p'); artist.className = 'truncate text-[10px] text-zinc-500'; artist.textContent = track.artist || 'Unknown artist'; text.append(title, artist);
+                    const play = document.createElement('button'); play.type = 'button'; play.className = 'rounded-md border border-zinc-700 px-2.5 py-2 text-xs text-zinc-300 hover:text-white'; play.title = 'Play from server library'; play.innerHTML = '<i class="fa-solid fa-play"></i>';
+                    play.addEventListener('click', () => queueTrackForPlayback({ ...track, title: track.title || track.name, name: track.title || track.name, url: track.streamUrl || track.url || '', source: track.source || 'server-library' }));
+                    row.append(image, text, play); list.append(row);
+                });
+                const offline = downloadsResult.status === 'rejected';
+                setDesktopOperationStatus(offline ? `Showing local library · server unavailable: ${downloadsResult.reason?.message || 'offline'}` : `Server library loaded · ${tracks.length} tracks.`, offline);
+            } catch (error) { list.textContent = `Could not load library: ${error.message}`; setDesktopOperationStatus(`Library failed: ${error.message}`, true); }
         }
 
         function renderDiscoveryCards(targetId, data, getTitle, getDetail, kind) {
@@ -3197,63 +4095,82 @@
             }
             target.classList.remove('text-[11px]', 'text-zinc-500');
             items.forEach(item => {
-                const card = document.createElement(kind === 'mix' || kind === 'artist' ? 'div' : 'button');
-                if (kind !== 'mix') card.type = 'button';
-                card.className = 'w-full min-w-0 rounded-lg border border-zinc-800 bg-zinc-900/70 p-2.5 text-left transition hover:border-blue-500/40 hover:bg-zinc-900';
-                const title = document.createElement('p');
-                title.className = 'truncate text-xs font-semibold text-zinc-200';
-                title.textContent = getTitle(item) || 'Untitled';
-                const detail = document.createElement('p');
-                detail.className = 'mt-1 line-clamp-2 text-[10px] leading-relaxed text-zinc-500';
-                detail.textContent = getDetail(item) || '';
-                if (kind === 'artist') {
-                    card.className = 'relative w-full min-w-0 rounded-lg border border-zinc-800 bg-zinc-900/70 p-2.5 text-left transition hover:border-blue-500/40 hover:bg-zinc-900';
-                    const open = document.createElement('button'); open.type = 'button'; open.className = 'block w-full min-w-0 text-left';
-                    if (item.image) { const image = document.createElement('img'); image.src = item.image; image.alt = `${item.name} portrait`; image.loading = 'lazy'; image.className = 'mb-2 aspect-square w-full rounded-md bg-zinc-800 object-cover'; open.appendChild(image); }
-                    open.append(title, detail); open.addEventListener('click', () => openArtistDetail(item));
-                    const favorite = document.createElement('button'); favorite.type = 'button'; favorite.className = `absolute right-2 top-2 rounded-full bg-black/70 p-2 ${artistIsLiked(item) ? 'text-red-400' : 'text-white'}`; favorite.innerHTML = `<i class="fa-${artistIsLiked(item) ? 'solid' : 'regular'} fa-heart"></i>`; favorite.title = 'Toggle favorite artist'; favorite.onclick = () => toggleArtistFavorite(item);
-                    card.append(open, favorite);
-                } else card.append(title, detail);
-                if (kind === 'mix') {
-                    const playMix = document.createElement('button');
-                    playMix.type = 'button';
-                    playMix.className = 'mt-2 w-full rounded-lg theme-accent-bg px-2 py-1.5 text-[11px] font-semibold text-white';
-                    playMix.textContent = `▶ Play mix (${item.tracks?.length || 0})`;
-                    playMix.disabled = !item.tracks?.length;
-                    playMix.addEventListener('click', () => startMixPlayback(item, playMix));
-                    card.appendChild(playMix);
-                    const downloadMix = document.createElement('button');
-                    downloadMix.type = 'button';
-                    downloadMix.className = 'mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-[11px] font-semibold text-zinc-300 hover:text-white';
-                    downloadMix.textContent = '⬇ Download full mix';
-                    downloadMix.disabled = !item.tracks?.length;
-                    downloadMix.title = 'Download missing tracks now (up to two at a time)';
-                    downloadMix.addEventListener('click', () => startMixPlayback(item, downloadMix, true));
-                    card.appendChild(downloadMix);
-                    (item.tracks || []).slice(0, 4).forEach(track => {
-                        const trackRow = document.createElement('button');
-                        trackRow.type = 'button';
-                        trackRow.className = 'mt-1 flex w-full items-center justify-between gap-2 rounded px-1.5 py-1 text-left text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-white';
-                        const name = document.createElement('span');
-                        name.className = 'truncate';
-                        name.textContent = `${track.title} · ${track.artist || 'Unknown artist'}`;
-                        const playIcon = document.createElement('i');
-                        playIcon.className = 'fa-solid fa-play shrink-0';
-                        trackRow.append(name, playIcon);
-                        trackRow.addEventListener('click', () => queueTrackForPlayback({ ...track, source: 'mix' }));
-                        card.appendChild(trackRow);
-                    });
-                } else if (kind !== 'artist') {
-                    card.addEventListener('click', () => {
-                        if (kind === 'track') {
-                            queueTrackForPlayback({ ...item, title: getTitle(item), playQuery: `${getTitle(item)} ${item.artist || ''}`.trim(), source: 'catalog' });
-                            return;
-                        }
-                        const query = kind === 'artist' ? item.name : `${getTitle(item) || ''} ${item.artist || ''}`.trim();
-                        document.getElementById('globalSearchInput').value = query;
-                        document.querySelector('[data-main-tab="search"]')?.click();
-                        if (query) document.getElementById('globalSearchForm').requestSubmit();
-                    });
+                const isMix = kind === 'mix';
+                const card = document.createElement(isMix || kind === 'artist' ? 'div' : 'button');
+                if (!isMix) card.type = 'button';
+                if (isMix) {
+                    const grad = item.color || 'from-blue-600 to-indigo-900';
+                    card.className = `mix-card-spotify ${grad} text-white border-transparent`;
+                    card.style.position = 'relative';
+                    const badge = document.createElement('span');
+                    badge.className = 'mix-card-badge';
+                    badge.textContent = item.badge || 'MIX';
+                    const title = document.createElement('strong');
+                    title.className = 'mix-card-title block mb-1';
+                    title.textContent = getTitle(item) || 'Untitled';
+                    const desc = document.createElement('span');
+                    desc.className = 'mix-card-desc block mb-3';
+                    desc.textContent = item.description || `${item.tracks?.length || 0} tracks`;
+                    // Album art in corner (mobile-dist style mc-art)
+                    const uniqueCovers = [...new Set((item.tracks || []).map(t => t.cover || item.cover || item.image || item.artwork).filter(Boolean))].slice(0, 1);
+                    const art = document.createElement('div');
+                    art.className = 'mix-card-art';
+                    if (uniqueCovers.length) {
+                        const img = document.createElement('img');
+                        img.alt = getTitle(item);
+                        img.loading = 'lazy';
+                        setDesktopImage(img, uniqueCovers[0]);
+                        img.onerror = () => { art.textContent = '♫'; };
+                        art.append(img);
+                    } else {
+                        art.textContent = '♫';
+                    }
+                    // Play button bottom-left
+                    const playBtn = document.createElement('button');
+                    playBtn.type = 'button';
+                    playBtn.className = 'mix-card-play theme-accent-bg text-white';
+                    playBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+                    playBtn.title = 'Play mix';
+                    playBtn.addEventListener('click', (e) => { e.stopPropagation(); startMixPlayback(item, playBtn); });
+                    // Like heart top-right
+                    const heartBtn = document.createElement('button');
+                    heartBtn.type = 'button';
+                    heartBtn.className = 'mix-card-heart';
+                    heartBtn.innerHTML = '♥';
+                    heartBtn.title = 'Like mix';
+                    heartBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLikeMix(item, heartBtn); });
+                    card.append(badge, title, desc, art, playBtn, heartBtn);
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', () => openMixDetail(item));
+                } else {
+                    card.className = 'w-full min-w-0 rounded-lg border border-zinc-800 bg-zinc-900/70 p-1.5 text-left transition hover:border-blue-500/40 hover:bg-zinc-900';
+                    const title = document.createElement('p');
+                    title.className = `truncate text-[10px] font-semibold text-zinc-200`;
+                    title.textContent = getTitle(item) || 'Untitled';
+                    const detail = document.createElement('p');
+                    detail.className = `mt-0.5 line-clamp-2 text-[9px] leading-relaxed text-zinc-500`;
+                    detail.textContent = getDetail(item) || '';
+                    if (kind === 'artist') {
+                        card.className = 'relative w-full min-w-0 rounded-lg border border-zinc-800 bg-zinc-900/70 p-2.5 text-left transition hover:border-blue-500/40 hover:bg-zinc-900';
+                        const open = document.createElement('button'); open.type = 'button'; open.className = 'block w-full min-w-0 text-left';
+                        if (item.image || item.cover || item.artwork) { const image = document.createElement('img'); image.alt = `${item.name} portrait`; image.loading = 'lazy'; image.className = 'mb-2 aspect-square w-full rounded-md bg-zinc-800 object-cover'; setDesktopImage(image, item.image || item.cover || item.artwork); open.appendChild(image); }
+                        open.append(title, detail); open.addEventListener('click', () => openArtistDetail(item));
+                        const favorite = document.createElement('button'); favorite.type = 'button'; favorite.className = `absolute right-2 top-2 rounded-full bg-black/70 p-2 ${artistIsLiked(item) ? 'text-red-400' : 'text-white'}`; favorite.innerHTML = `<i class="fa-${artistIsLiked(item) ? 'solid' : 'regular'} fa-heart"></i>`; favorite.title = 'Toggle favorite artist'; favorite.onclick = () => toggleArtistFavorite(item);
+                        card.append(open, favorite);
+                    } else {
+                        if ((kind === 'release' || kind === 'track') && (item.cover || item.image || item.artwork || item.artworkUrl)) { const image = document.createElement('img'); image.alt = `${getTitle(item) || 'Music'} cover`; image.loading = 'lazy'; image.className = 'mb-2 aspect-square w-full rounded-md bg-zinc-800 object-cover'; setDesktopImage(image, item.cover || item.image || item.artwork || item.artworkUrl); card.append(image); }
+                        card.append(title, detail);
+                        card.addEventListener('click', () => {
+                            if (kind === 'track') {
+                                queueTrackForPlayback({ ...item, title: getTitle(item), playQuery: `${getTitle(item)} ${item.artist || ''}`.trim(), source: 'catalog' });
+                                return;
+                            }
+                            const query = kind === 'artist' ? item.name : `${getTitle(item) || ''} ${item.artist || ''}`.trim();
+                            document.getElementById('globalSearchInput').value = query;
+                            document.querySelector('[data-main-tab="search"]')?.click();
+                            if (query) document.getElementById('globalSearchForm').requestSubmit();
+                        });
+                    }
                 }
                 target.appendChild(card);
             });
@@ -3283,12 +4200,12 @@
         async function confirmAppleMusicApi() {
             const developerToken = getAppleMusicDeveloperToken();
             if (!developerToken) throw new Error('Paste your Apple Music developer token first.');
-            const result = await apiPost('/api/integrations/apple/validate', { developerToken, origin: state.serverUrl });
+            const result = await apiPost('/api/integrations/apple/validate', { developerToken, origin: window.apiUrl });
             localStorage.setItem('aura_apple_music_developer_token', developerToken);
             localStorage.setItem('aura_apple_music_confirmed_token', developerToken);
             if (window.MusicKit && !window.auraMusicKitInstance) {
                 try {
-                    await window.MusicKit.configure({ developerToken, app: { name: 'AuraAudio', build: '1.2.0' } });
+                    await window.MusicKit.configure({ developerToken, app: { name: 'AuraAudio', build: '1.5.0' } });
                     window.auraMusicKitInstance = window.MusicKit.getInstance();
                 } catch (error) { console.warn('MusicKit user authorization is not ready yet:', error.message); }
             }
@@ -3305,7 +4222,7 @@
                 music = window.auraMusicKitInstance;
                 if (music.developerToken && music.developerToken !== developerToken) throw new Error('The Apple Music token changed. Restart AuraAudio before connecting with the new token.');
             } else {
-                await window.MusicKit.configure({ developerToken, app: { name: 'AuraAudio', build: '1.2.0' } });
+                await window.MusicKit.configure({ developerToken, app: { name: 'AuraAudio', build: '1.5.0' } });
                 music = window.MusicKit.getInstance();
                 window.auraMusicKitInstance = music;
             }
@@ -3536,7 +4453,7 @@
                 progressBar.style.width = '0%';
                 subtext.textContent = 'Contacting the local download service…';
                 try {
-                    const response = await fetch(`${state.serverUrl}/api/ytb/download`, {
+                    const response = await serverFetch(`/api/ytb/download`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ url: targetUrl })
@@ -3550,7 +4467,7 @@
                     let finished = false;
                     while (!finished) {
                         await new Promise(resolve => setTimeout(resolve, 900));
-                        const statusResponse = await fetch(`${state.serverUrl}/api/ytb/progress/${encodeURIComponent(started.id)}`, { cache: 'no-store' });
+                        const statusResponse = await serverFetch(`/api/ytb/progress/${encodeURIComponent(started.id)}`, { cache: 'no-store' });
                         const status = await statusResponse.json();
                         if (!statusResponse.ok) throw new Error(status.message || 'Could not read download status.');
                         const value = Math.max(0, Math.min(100, Number(status.progress) || 0));
@@ -3704,6 +4621,21 @@
                 resetPlayerDisplay();
             });
 
+            clearDownloadedBtn.addEventListener('click', async () => {
+                const downloaded = state.playlist.filter(t => t.mixStatus === 'Ready' && (t.source === 'download' || t.fileName));
+                if (!downloaded.length) { setDesktopOperationStatus('No downloaded tracks in queue.'); return; }
+                const wasPlaying = state.isPlaying;
+                if (wasPlaying) state.audio.pause();
+                state.playlist = state.playlist.filter(t => !(t.mixStatus === 'Ready' && (t.source === 'download' || t.fileName)));
+                state.filteredPlaylist = [...state.playlist];
+                state.currentIndex = -1;
+                if (state.playlist.length) state.currentIndex = 0;
+                renderPlaylist();
+                resetPlayerDisplay();
+                if (wasPlaying) state.audio.play().catch(() => {});
+                setDesktopOperationStatus(`Removed ${downloaded.length} downloaded track(s) from queue.`);
+            });
+
             // Playlist Search Filter
             playlistSearchInput.addEventListener('input', (e) => {
                 state.searchQuery = e.target.value.toLowerCase();
@@ -3781,7 +4713,7 @@
             try {
                 const headers = { 'Content-Type': 'application/json' };
                 if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-                await fetch(`${state.serverUrl}/api/library/imported`, {
+                await serverFetch(`/api/library/imported`, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({ tracks })
@@ -3796,7 +4728,7 @@
             try {
                 const headers = { 'Content-Type': 'application/json' };
                 if (state.user.token) headers.Authorization = `Bearer ${state.user.token}`;
-                await fetch(`${state.serverUrl}/api/library/played`, {
+                await serverFetch(`/api/library/played`, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({ track: { title: track.name, artist: track.artist || '' } })
@@ -3816,11 +4748,40 @@
             const requests = [apiGet('/api/library/playlists')];
             if (!state.dailyMixesLoaded) requests.push(apiGet('/api/discovery/daily-mix'));
             const [playlistsResult, mixesResult] = await Promise.allSettled(requests);
-            if (playlistsResult.status === 'fulfilled') state.playlists = playlistsResult.value;
+            if (playlistsResult.status === 'fulfilled') state.playlists = Array.isArray(playlistsResult.value) ? playlistsResult.value : [];
             else { console.warn('Could not load playlists:', playlistsResult.reason?.message); state.playlists = []; }
             if (!state.dailyMixesLoaded && mixesResult.status === 'fulfilled') { state.dailyMixes = mixesResult.value; state.dailyMixesLoaded = true; }
             else if (!state.dailyMixesLoaded) { console.warn('Could not load daily mixes:', mixesResult.reason?.message); state.dailyMixes = []; }
             renderQueuePlaylistOptions();
+            renderPlaylistsPanel();
+            renderDiscoveryPlaylists();
+        }
+
+        function renderPlaylistsPanel() {
+            const grid = document.getElementById('playlistsGrid');
+            if (!grid) return;
+            grid.replaceChildren();
+            if (!state.playlists.length) {
+                grid.innerHTML = '<p class="col-span-full rounded-lg border border-dashed border-zinc-800 p-6 text-center text-xs text-zinc-500">No playlists yet. Create one to collect tracks.</p>';
+                return;
+            }
+            state.playlists.forEach(playlist => {
+                const card = document.createElement('article'); card.className = 'rounded-xl border border-zinc-800 bg-zinc-900/70 p-3';
+                const title = document.createElement('h3'); title.className = 'truncate text-xs font-semibold text-zinc-100'; title.textContent = playlist.name || 'Untitled playlist';
+                const count = document.createElement('p'); count.className = 'mt-1 text-[10px] text-zinc-500'; count.textContent = `${playlist.tracks?.length || 0} tracks`;
+                const actions = document.createElement('div'); actions.className = 'mt-3 flex gap-2';
+                const load = document.createElement('button'); load.type = 'button'; load.className = 'flex-1 rounded-md theme-accent-bg px-2 py-1.5 text-[10px] font-semibold text-white'; load.textContent = 'Open in Queue';
+                load.addEventListener('click', () => { document.getElementById('queuePlaylistSelect').value = playlist.id; document.querySelector('[data-main-tab="queue"]')?.click(); document.getElementById('loadQueuePlaylistBtn').click(); });
+                const addQueue = document.createElement('button'); addQueue.type = 'button'; addQueue.className = 'rounded-md border border-zinc-700 px-2 py-1.5 text-[10px] text-zinc-300 hover:bg-zinc-800'; addQueue.title = 'Append playlist tracks to Queue'; addQueue.innerHTML = '<i class="fa-solid fa-list"></i> Add';
+                addQueue.addEventListener('click', () => {
+                    const tracks = playlist.tracks || [];
+                    if (!tracks.length) { setDesktopOperationStatus('This playlist has no tracks yet.', true); return; }
+                    const entries = tracks.map(track => ({ ...track, name: track.title || track.name, url: track.url || '', source: track.source || 'playlist', sourceUrl: track.sourceUrl || '', playQuery: track.downloadable && track.sourceUrl ? track.sourceUrl : (track.source && track.source !== 'local' ? '' : `${track.title || track.name} ${track.artist || ''}`.trim()) }));
+                    state.playlist.push(...entries); state.filteredPlaylist = [...state.playlist]; renderPlaylist();
+                    setDesktopOperationStatus(`Added ${entries.length} tracks from “${playlist.name}” to Queue.`);
+                });
+                actions.append(load, addQueue); card.append(title, count, actions); grid.append(card);
+            });
         }
 
         function renderQueuePlaylistOptions() {
@@ -3998,9 +4959,10 @@
 
                 li.innerHTML = `
                     <div class="flex min-w-0 items-center space-x-3 overflow-hidden">
-                        <span class="text-xs ${isActive ? 'theme-accent-text font-bold' : 'text-zinc-600'} w-4 text-center">
-                            ${isActive && state.isPlaying ? '<i class="fa-solid fa-volume-high animate-pulse"></i>' : (originalIndex + 1)}
-                        </span>
+                        <div class="relative min-w-[34px]">
+                        <img class="queue-song-img w-8 h-8 rounded-lg object-cover border border-zinc-700/50 bg-zinc-900 shadow-sm" src="assets/icon_128x128.png" alt="Cover" data-cover="${track.cover || track.artwork || track.artworkUrl || ''}" onerror="this.src='assets/icon_128x128.png'">
+                        ${isActive && state.isPlaying ? '<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>' : ''}
+                    </div>
                         <div class="min-w-0 flex-1 overflow-hidden">
                             <p class="text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-zinc-300'}">${escapeHtml(track.name)}</p>
                             ${showArtist ? `<p class="text-[10px] text-zinc-500 truncate">${escapeHtml(track.artist)}</p>` : ''}
@@ -4011,9 +4973,7 @@
                         <i class="${currentTrackIsLiked(track) ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
                     </button>
                     <button class="queue-more-btn text-zinc-500 hover:text-white p-1.5 text-xs transition" data-id="${track.id}" title="Add to playlist" aria-label="Add ${escapeHtml(track.name)} to playlist"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    <button class="remove-btn text-zinc-600 hover:text-red-400 p-1 text-xs transition" data-id="${track.id}">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                    ${(track.source === 'download' || track.fileName) ? `<button class="queue-delete-download-btn text-zinc-400 hover:text-red-500 p-1.5 text-xs transition" data-id="${track.id}" title="Delete downloaded file" aria-label="Delete downloaded ${escapeHtml(track.name)}"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                 `;
 
                 li.addEventListener('click', (e) => {
@@ -4032,14 +4992,13 @@
                 playlistItems.appendChild(li);
             });
 
-            // Remove Button Handlers
-            playlistItems.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    await removeTrackById(id);
-                });
+            // Resolve album artwork via API for queue items
+            playlistItems.querySelectorAll('.queue-song-img').forEach(img => {
+                const coverUrl = img.dataset.cover;
+                if (coverUrl) setDesktopImage(img, coverUrl);
             });
+
+            // Remove Button Handlers
             playlistItems.querySelectorAll('.queue-like-btn').forEach(btn => {
                 btn.addEventListener('click', async event => {
                     event.stopPropagation();
@@ -4055,6 +5014,28 @@
                 const track = state.playlist.find(item => item.id === btn.dataset.id);
                 if (!track) return;
                 showQueueTrackMenu(track, btn);
+            }));
+            playlistItems.querySelectorAll('.queue-delete-download-btn').forEach(btn => btn.addEventListener('click', async event => {
+                event.stopPropagation();
+                const track = state.playlist.find(item => item.id === btn.dataset.id);
+                if (!track) return;
+                const wasPlaying = state.playlist.indexOf(track) === state.currentIndex && state.isPlaying;
+                if (wasPlaying) { state.audio.pause(); }
+                try { await deleteTrackFromLibrary(track); }
+                catch (error) {
+                    setDesktopOperationStatus(`Could not delete download: ${error.message}`, true);
+                    if (wasPlaying) state.audio.play().catch(() => {});
+                    return;
+                }
+                const index = state.playlist.findIndex(t => t.id === track.id);
+                if (index !== -1) state.playlist.splice(index, 1);
+                applyPlaylistFilter();
+                renderPlaylist();
+                setDesktopOperationStatus('Downloaded track deleted.');
+                if (wasPlaying) {
+                    state.currentIndex = -1;
+                    resetPlayerDisplay();
+                }
             }));
         }
 
@@ -4138,6 +5119,7 @@
         function setupVolumeControl() {
             verticalVolumeBar.addEventListener('input', (e) => setVolume(parseFloat(e.target.value)));
             compactVolumeBar.addEventListener('input', (e) => setVolume(parseFloat(e.target.value)));
+            microVolumeBar.addEventListener('input', (e) => setVolume(parseFloat(e.target.value)));
 
             const toggleMute = () => {
                 state.isMuted = !state.isMuted;
@@ -4148,6 +5130,7 @@
 
             volumeToggleBtn.addEventListener('click', toggleMute);
             compactVolumeIconBtn.addEventListener('click', toggleMute);
+            microVolumeIconBtn.addEventListener('click', toggleMute);
 
             volumeWrapper.addEventListener('wheel', (e) => {
                 e.preventDefault();
@@ -4167,6 +5150,7 @@
             state.audio.muted = state.isMuted;
             verticalVolumeBar.value = val;
             compactVolumeBar.value = val;
+            microVolumeBar.value = val;
             localStorage.setItem('aura_volume', val);
             updateVolumeUI();
         }
@@ -4190,18 +5174,38 @@
         // -------------------------------------------------------------
         // PLAYBACK MANAGEMENT & 3-STATE SYNCHRONIZATION
         // -------------------------------------------------------------
-        function loadTrack(index) {
+        async function loadTrack(index) {
             if (index < 0 || index >= state.playlist.length) return;
-            
+
             const previousTrack = state.playlist[state.currentIndex];
             state.currentIndex = index;
             const track = state.playlist[index];
-            if (!previousTrack || previousTrack.id !== track.id) state.lastRecordedPlaybackId = null;
-            state.audio.src = track.url;
-            
+            if (!previousTrack || previousTrack.id !== track.id) {
+                state.lastRecordedPlaybackId = null;
+                state.desktopLyrics = [];
+                state.desktopLyricsTrackId = '';
+                document.getElementById('desktopLyricsPreview')?.classList.add('hidden');
+            }
+            // S'assurer que l'URL est résolue correctement (relative vs absolute)
+            const audioUrl = apiResourceUrl(track.url);
+            console.log('[LoadTrack] Setting audio source:', audioUrl);
+            state.audio.src = audioUrl;
+            setDesktopOperationStatus(`Ready · ${track.name || 'track'}${track.artist ? ` — ${track.artist}` : ''}`);
+
             syncCurrentTrackUI();
             renderPlaylist();
             updatePipCanvas();
+            
+            // Auto-load lyrics for 1-line display
+            if (!state.desktopLyrics.length && track && (track.name || track.artist)) {
+                const query = cleanLyricsQuery(track);
+                if (query.title || query.artist) {
+                    try {
+                        const data = await apiGet(`/api/lyrics?title=${encodeURIComponent(query.title)}&artist=${encodeURIComponent(query.artist)}`);
+                        state.desktopLyrics = (data.lines || []).filter(line => line?.text);
+                    } catch (e) { /* silent - lyrics optional */ }
+                }
+            }
         }
 
         function syncCurrentTrackUI() {
@@ -4222,6 +5226,33 @@
             }
             activeTrackInfo.textContent = `Playing [${state.currentIndex + 1}/${state.playlist.length}]`;
 
+            // Album cover image
+            const coverEl = document.getElementById('desktopAlbumCover');
+            if (coverEl) {
+                const coverUrl = track.cover || track.artwork || track.artworkUrl || '';
+                if (coverUrl) {
+                    coverEl.classList.remove('hidden');
+                    setDesktopImage(coverEl, coverUrl);
+                } else {
+                    coverEl.src = 'assets/icon_128x128.png';
+                }
+            }
+
+            // STATE 1: 1 line lyrics display in full player
+            const state1Lyrics = document.getElementById('state1LyricsLine');
+            if (state.desktopLyrics && state.desktopLyrics.length) {
+                const activeLine = state.desktopLyrics.find(line => Number(line.t || 0) <= (state.audio.currentTime || 0));
+                if (activeLine) {
+                    state1Lyrics.textContent = activeLine.text;
+                    state1Lyrics.classList.remove('hidden');
+                } else {
+                    state1Lyrics.textContent = state.desktopLyrics[0]?.text || '♫ No lyrics found';
+                    state1Lyrics.classList.remove('hidden');
+                }
+            } else {
+                state1Lyrics.classList.add('hidden');
+            }
+
             // Compact Player
             compactTrackTitle.textContent = track.name;
             if (validArtist) {
@@ -4232,6 +5263,26 @@
                 compactTrackArtist.classList.add('hidden');
             }
             compactTrackBadge.textContent = `Track ${state.currentIndex + 1}/${state.playlist.length}`;
+
+            // STATE 2: Compact player 1 line lyrics
+            const compactLyrics = document.getElementById('compactLyricsLine');
+            if (compactLyrics && state.desktopLyrics && state.desktopLyrics.length) {
+                const now = state.audio.currentTime || 0;
+                let activeLine = null;
+                for (const line of state.desktopLyrics) {
+                    if (Number(line.t || 0) <= now) activeLine = line;
+                    else break;
+                }
+                if (activeLine) {
+                    compactLyrics.textContent = activeLine.text;
+                    compactLyrics.classList.remove('hidden');
+                } else if (!compactLyrics.classList.contains('hidden')) {
+                    compactLyrics.textContent = state.desktopLyrics[0]?.text || '♫ No lyrics';
+                    compactLyrics.classList.remove('hidden');
+                }
+            } else if (compactLyrics) {
+                compactLyrics.classList.add('hidden');
+            }
 
             // Micro Player: Continuous Traveling Array (Marquee)
             const travelText = validArtist 
@@ -4427,15 +5478,50 @@
 
                     updatePipCanvas();
                 }
+
+                // STATE 1: Update 1 line lyrics as song plays
+                const state1Lyrics = document.getElementById('state1LyricsLine');
+                if (state1Lyrics && state.desktopLyrics && state.desktopLyrics.length) {
+                    const now = state.audio.currentTime || 0;
+                    let activeLine = null;
+                    for (const line of state.desktopLyrics) {
+                        if (Number(line.t || 0) <= now) activeLine = line;
+                        else break;
+                    }
+                    if (activeLine) {
+                        state1Lyrics.textContent = activeLine.text;
+                        state1Lyrics.classList.remove('hidden');
+                    } else if (!state1Lyrics.classList.contains('hidden')) {
+                        state1Lyrics.textContent = state.desktopLyrics[0]?.text || '♫ No lyrics found';
+                        state1Lyrics.classList.remove('hidden');
+                    }
+                }
+            });
+
+            // Enable seek bar once metadata is available (allows seeking)
+            state.audio.addEventListener('loadedmetadata', () => {
+                if (!isNaN(state.audio.duration) && state.audio.duration > 0) {
+                    seekBar.disabled = false;
+                    compactSeekBar.disabled = false;
+                    seekBar.classList.remove('opacity-50', 'cursor-not-allowed');
+                    compactSeekBar.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             });
 
             // Seekbar Handlers (prevent jitter with isSeeking flag)
             const handleSeekStart = () => { state.isSeeking = true; };
             const handleSeekEnd = (bar) => {
                 state.isSeeking = false;
-                if (!isNaN(state.audio.duration)) {
-                    state.audio.currentTime = (bar.value / 100) * state.audio.duration;
+                if (!isNaN(state.audio.duration) && state.audio.duration > 0) {
+                    const targetTime = (bar.value / 100) * state.audio.duration;
+                    state.audio.currentTime = targetTime;
+                    currentTime.textContent = formatTime(targetTime);
+                    compactCurrentTime.textContent = formatTime(targetTime);
                 }
+            };
+            const handleSeekError = (error) => {
+                console.warn('[Seek] Seek failed:', error.message);
+                state.isSeeking = false;
             };
             const updateSeekPreview = (bar, event) => {
                 if (!Number.isFinite(state.audio.duration) || !state.audio.duration) return;
@@ -4452,6 +5538,7 @@
                     currentTime.textContent = formatTime((seekBar.value / 100) * state.audio.duration);
                 }
             });
+            seekBar.addEventListener('error', handleSeekError);
 
             compactSeekBar.addEventListener('mousedown', handleSeekStart);
             compactSeekBar.addEventListener('pointermove', event => { updateSeekPreview(compactSeekBar, event); });
@@ -4461,6 +5548,7 @@
                     compactCurrentTime.textContent = formatTime((compactSeekBar.value / 100) * state.audio.duration);
                 }
             });
+            compactSeekBar.addEventListener('error', handleSeekError);
 
             state.audio.addEventListener('ended', () => {
                 if (state.repeatMode === 2) {
