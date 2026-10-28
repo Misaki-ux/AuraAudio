@@ -24,13 +24,22 @@ Run these commands from the project folder:
 
 | Command | Purpose |
 | --- | --- |
-| `npm run app` or `npm start` | Launch the Electron desktop app for normal use |
-| `npm run server` | Launch only the API server from the project source |
+| `npm run app` or `npm start` | Launch the Electron desktop app for normal use (`electron .`) |
+| `npm run web` | Serve the project over HTTP on port 8080 (`npx http-server . -p 8080`) |
+| `npm run server` | Launch only the API server from the project source (`node server/index.js`) |
+| `npm run dev` | Launch the Electron desktop app with logging enabled (`electron . --enable-logging`) |
 | `npm run mobile:compile` | Build the static mobile page into `mobile-dist/` |
-| `npm run android:apk` | Build and sync the Capacitor project, then create a debug Android APK at `dist/AuraAudio-debug.apk` |
+| `npm run mobile:dist` | Alias for `npm run mobile:compile` |
 | `npm run server:compile` | Build the portable server-only folder at `standalone-server/` |
-| `npm run appcompile` | Build the mobile and server outputs, then create desktop installers and a portable app in `dist/` |
+| `npm run server:dist` | Alias for `npm run server:compile` |
+| `npm run android:apk` | Build and sync the Capacitor project, then create a debug Android APK at `dist/AuraAudio-debug.apk` |
+| `npm run android:autonomous-apk` | Build the autonomous Android client APK (`node tools/build-autonomous-android.js`) |
+| `npm run setup:ytdlp` | Install yt-dlp via `tools/install-ytdlp.ps1` |
+| `npm run appcompile` | Build mobile and server outputs, then create desktop installers and a portable app in `dist/` |
+| `npm run app:exe` | Build the mobile and server outputs, then create a portable Windows `.exe` in `dist/` |
+| `npm run build` | Alias for `npm run appcompile` |
 | `npm run pack` | Build mobile and server outputs, then create an unpacked desktop app in `dist/` |
+| `npm run dist` | Alias for `npm run appcompile` |
 
 `npm run build` and `npm run dist` are aliases for `npm run appcompile`. On Windows, `appcompile` creates the NSIS installer and portable `.exe` targets configured in `package.json`.
 
@@ -101,3 +110,34 @@ To open the page from a phone on the same Wi-Fi, start AuraAudio with `AURA_HOST
 ## Optional YouTube downloads
 
 YouTube search and audio downloads need `yt-dlp` and FFmpeg available on `PATH`. Local file playback and likes do not depend on these tools.
+
+## Windows Firewall (allow the HTTPS port)
+
+If the phone cannot reach the server even though Caddy is running, Windows Defender Firewall is probably blocking the port. Run PowerShell as Administrator and allow the chosen HTTPS port (replace 32768 with your port):
+
+```powershell
+New-NetFirewallRule -DisplayName "AuraAudio HTTPS 32768" -Direction Inbound -Protocol TCP -LocalPort 32768 -Action Allow
+# Or with netsh:
+netsh advfirewall firewall add rule name="AuraAudio HTTPS 32768" dir=in action=allow protocol=TCP localport=32768
+```
+
+To remove the rule later:
+
+```powershell
+Remove-NetFirewallRule -DisplayName "AuraAudio HTTPS 32768"
+```
+
+## External HTTPS access (DuckDNS + autonomous client)
+
+The standalone server ships an offline-capable autonomous client at /autonomousclientmobile/. To reach it from outside your home network over HTTPS:
+
+1. Copy standalone-server/duckdns.config.example.json to standalone-server/duckdns.config.json and fill in your DuckDNS subdomain and token.
+2. If your router can forward ports 80/443, run ./start-duckdns-server.ps1 inside standalone-server/. If it cannot, pick a high external port and forward only that one:
+   `powershell
+   .\start-duckdns-server.ps1 -HttpsPort 32768
+   `
+3. Certificates are obtained through DNS-01 via DuckDNS, so no inbound ports 80/443 are required for certificate issuance. Only your chosen HTTPS port needs forwarding.
+4. Keep the PowerShell window open. It prints the full HTTPS URL (including the port when it is not 443) and a temporary access key.
+5. Open the printed URL + /autonomousclientmobile/ on your phone and enter the access key. The client derives its server address from the page origin automatically.
+
+The access key rotates on every launch; re-enter it in the client connection settings (gear icon) when the server restarts. See standalone-server/DUCKDNS-SETUP.md for full troubleshooting.
