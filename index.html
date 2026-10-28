@@ -105,6 +105,31 @@
             border-radius: 0 0 17px 17px;
         }
 
+        /* State 2 (compact): no keyboard / settings buttons */
+        #appViewport.mode-compact #shortcutsBtn,
+        #appViewport.mode-compact #settingsBtn { display: none !important; }
+
+        /* Frameless window: dialogs must never inherit the title-bar drag region,
+           otherwise Electron swallows clicks on controls that overlap it. */
+        [role="dialog"] { -webkit-app-region: no-drag; }
+
+        /* Lyrics fullscreen */
+        .lyrics-line { margin: .45rem 0; line-height: 1.3; font-weight: 600; transition: opacity .25s, color .25s, font-size .25s; }
+        .lyrics-mode-btn { min-width: 2.5rem; padding: .4rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 700; color: #a1a1aa; transition: background-color .15s, color .15s; }
+        .lyrics-mode-btn:hover { color: #fff; }
+        .lyrics-mode-btn[aria-pressed="true"] { background-color: var(--color-primary); color: #fff; }
+
+        /* Artist cards: borderless, no button chrome */
+        .artist-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .6rem .35rem; text-align: center; background: none; border: 0; border-radius: 14px; cursor: pointer; transition: background-color .18s; }
+        .artist-card:hover { background-color: rgba(255,255,255,.04); }
+        .artist-card:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+        .artist-avatar { width: 100%; max-width: 104px; aspect-ratio: 1; border-radius: 9999px; overflow: hidden; background: #27272a; display: flex; align-items: center; justify-content: center; color: #a1a1aa; font-size: 1.6rem; font-weight: 700; transition: transform .2s, box-shadow .2s; }
+        .artist-card:hover .artist-avatar { transform: scale(1.04); box-shadow: 0 10px 26px rgba(0,0,0,.55); }
+        .artist-fav { position: absolute; top: .3rem; right: .3rem; padding: .4rem; background: none; border: 0; color: #fff; text-shadow: 0 1px 5px rgba(0,0,0,.9); opacity: 0; transition: opacity .15s, transform .15s; }
+        .artist-card:hover .artist-fav, .artist-fav.is-on, .artist-fav:focus-visible { opacity: 1; }
+        .artist-fav.is-on { color: #f87171; }
+        .artist-fav:hover { transform: scale(1.15); }
+
         /* Dynamic CSS Theme Variables */
         .theme-accent-bg { background-color: var(--color-primary) !important; }
         .theme-accent-text { color: var(--color-primary) !important; }
@@ -614,8 +639,6 @@
                             <h2 id="currentTrackTitle" class="font-bold text-sm sm:text-base text-white truncate">Select or Drop Audio Files</h2>
                         </div>
                         <p id="currentTrackArtist" class="text-xs text-zinc-400 truncate hidden"></p>
-                        <!-- STATE 1: 1 LINE LYRICS DISPLAY -->
-                        <div id="state1LyricsLine" class="hidden mt-1 text-[10px] text-zinc-400 truncate italic leading-none">♫ No lyrics found</div>
                     </div>
                     <button id="likeCurrentTrackBtn" title="Like Song (Add to Liked Songs)" class="p-1.5 text-zinc-500 hover:text-red-500 transition text-base shrink-0">
                         <i id="likeCurrentTrackIcon" class="fa-regular fa-heart"></i>
@@ -1527,34 +1550,28 @@
 
     <div id="artistDetailModal" class="hidden fixed inset-0 z-[70] items-center justify-center bg-black/75 p-4" role="dialog" aria-modal="true" aria-labelledby="artistDetailName">
         <section class="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-zinc-700 bg-zinc-950 p-4 shadow-2xl">
-            <div class="flex items-start justify-between gap-3"><div class="flex min-w-0 items-center gap-3"><img id="artistDetailImage" class="h-16 w-16 rounded-xl bg-zinc-900 object-cover" alt="Artist portrait"><div class="min-w-0"><h2 id="artistDetailName" class="truncate text-lg font-bold text-white"></h2><p id="artistDetailMeta" class="text-xs text-zinc-400"></p></div></div><div class="flex gap-2"><button id="artistDetailLikeBtn" class="rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-200"><i class="fa-regular fa-heart"></i> Favorite</button><button id="artistDetailCloseBtn" aria-label="Close" class="rounded-lg px-2 py-2 text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div></div>
+            <div class="flex items-start justify-between gap-3"><div class="flex min-w-0 items-center gap-4"><img id="artistDetailImage" class="h-24 w-24 shrink-0 rounded-full bg-zinc-900 object-cover shadow-xl" alt="Artist portrait"><div class="min-w-0"><h2 id="artistDetailName" class="truncate text-2xl font-bold text-white"></h2><p id="artistDetailMeta" class="mt-0.5 text-xs text-zinc-400"></p><button id="artistDetailLikeBtn" type="button" class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-300 transition hover:text-white"><i class="fa-regular fa-heart"></i> Favorite</button></div></div><button id="artistDetailCloseBtn" type="button" aria-label="Close" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
             <p id="artistDetailDescription" class="mt-4 whitespace-pre-line text-sm leading-relaxed text-zinc-300"></p><a id="artistDetailSource" target="_blank" rel="noreferrer" class="mt-2 inline-block text-xs text-blue-400 hover:underline">Read artist biography</a>
             <h3 class="mt-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Albums</h3><div id="artistDetailAlbums" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4"></div>
             <h3 class="mt-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Tracks</h3><div id="artistDetailTracks" class="mt-2 space-y-1"></div>
         </section>
     </div>
 
-    <div id="desktopLyricsModal" class="hidden fixed inset-0 z-[90] bg-black/95 backdrop-blur-[20px] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="desktopLyricsTitle">
-        <section class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl">
-            <header class="flex items-start justify-between gap-3 border-b border-zinc-800 p-4 shrink-0"><div class="min-w-0"><h2 id="desktopLyricsTitle" class="truncate text-lg font-bold text-white">Lyrics</h2><p id="desktopLyricsArtist" class="truncate text-xs text-zinc-400"></p></div><button id="closeDesktopLyrics" type="button" aria-label="Close lyrics" class="rounded-lg px-2 py-1 text-xl text-zinc-400 hover:bg-zinc-800 hover:text-white">×</button></header>
-            <div class="flex items-center justify-center gap-2 border-b border-zinc-800 p-2 shrink-0" role="group" aria-label="Lyrics display size"><button data-desktop-lyrics-lines="1" class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-300">1 line</button><button data-desktop-lyrics-lines="3" class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-300">3 lines</button><button data-desktop-lyrics-lines="5" class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-300">5 lines</button></div>
-            <div id="desktopLyricsBody" class="flex-1 overflow-y-auto px-8 py-8 text-center text-sm leading-8 text-zinc-300">Select a track to load lyrics.</div>
-        </section>
-    </div>
-
-    <!-- FULLSCREEN LYRICS OVERLAY (mobile-dist style) -->
-    <div id="desktopLyricsFullscreenOverlay" class="hidden fixed inset-0 z-[95] bg-black/98 backdrop-blur-[30px] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="desktopLyricsFsTitle">
-        <section class="flex flex-col items-center justify-center w-full h-full max-w-2xl overflow-y-auto text-center">
-            <button id="closeDesktopLyricsFs" type="button" class="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:bg-zinc-800 hover:text-white transition z-10" aria-label="Close fullscreen lyrics">
-                <i class="fa-solid fa-xmark text-xs"></i>
-            </button>
-            <button id="toggleLyricsFsLines" type="button" class="absolute top-4 left-4 px-4 py-2 rounded-full border border-zinc-600 bg-zinc-900/90 text-sm text-white hover:text-white hover:bg-zinc-800 shadow-lg transition-all" aria-label="Toggle lyrics lines">
-                <span id="toggleLyricsFsLinesText">1 Line</span>
-            </button>
-            <div id="desktopLyricsFsContent" class="max-w-lg w-full px-4">
-                <h2 id="desktopLyricsFsTitle" class="text-2xl font-bold text-white mb-2">Track Title</h2>
-                <p id="desktopLyricsFsArtist" class="text-zinc-400 text-sm mb-8">Artist</p>
-                <div id="desktopLyricsFsBody" class="text-xl leading-relaxed text-zinc-200 font-medium min-h-[200px] flex flex-col items-center justify-center gap-2">Loading lyrics…</div>
+    <!-- FULLSCREEN LYRICS OVERLAY -->
+    <div id="desktopLyricsFullscreenOverlay" class="hidden fixed inset-0 z-[95] flex-col bg-black/95 backdrop-blur-[30px]" role="dialog" aria-modal="true" aria-labelledby="desktopLyricsFsTitle">
+        <header class="drag-region flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-3">
+            <div id="lyricsFsModeGroup" role="group" aria-label="Lines shown" class="no-drag inline-flex items-center gap-1 rounded-full bg-zinc-900 p-1">
+                <button type="button" data-fs-lines="1" class="lyrics-mode-btn" aria-pressed="false">1</button>
+                <button type="button" data-fs-lines="3" class="lyrics-mode-btn" aria-pressed="false">3</button>
+                <button type="button" data-fs-lines="5" class="lyrics-mode-btn" aria-pressed="false">5</button>
+            </div>
+            <button id="closeDesktopLyricsFs" type="button" aria-label="Close lyrics (Esc)" title="Close (Esc)" class="no-drag flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-lg text-zinc-200 transition hover:bg-zinc-700 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <section id="desktopLyricsFsContent" class="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-6 pb-8 text-center">
+            <div class="my-auto w-full max-w-xl">
+                <h2 id="desktopLyricsFsTitle" class="mb-1 text-2xl font-bold text-white">Track Title</h2>
+                <p id="desktopLyricsFsArtist" class="mb-8 text-sm text-zinc-400">Artist</p>
+                <div id="desktopLyricsFsBody" class="flex min-h-[160px] flex-col items-center justify-center text-zinc-200">Loading lyrics…</div>
             </div>
         </section>
     </div>
@@ -2299,12 +2316,12 @@
             empty.classList.toggle('hidden', state.likedSongs.length > 0 || state.likedArtists.length > 0);
             state.likedSongs.forEach((liked, index) => {
                 const title = liked.title || liked.name || 'Untitled track';
-                const artist = liked.artist || 'Unknown artist';
+                const artist = hasValidArtist(liked) ? liked.artist : 'Unknown artist';
                 const localTrack = state.playlist.find(track => !!track.url && (track.id === liked.trackId || track.id === liked.id || getLikedTrackKey(track) === getLikedTrackKey(liked)));
                 const row = document.createElement('li');
                 row.className = 'group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 transition hover:border-zinc-800 hover:bg-zinc-900/80';
                 const sourceUrl = /^https?:\/\//i.test(liked.sourceUrl || '') ? liked.sourceUrl : '';
-                row.innerHTML = `<div class="relative min-w-[34px]"><img class="liked-song-img w-8 h-8 rounded-lg object-cover border border-zinc-700/50 bg-zinc-900 shadow-sm" src="assets/icon_128x128.png" alt="Cover" data-cover="${liked.cover || liked.artwork || liked.artworkUrl || ''}">${localTrack ? '<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>' : ''}</div><button class="liked-play h-8 w-8 shrink-0 rounded-lg bg-zinc-800 text-zinc-300 transition hover:bg-blue-600 hover:text-white disabled:opacity-40" title="${localTrack ? 'Play track' : sourceUrl ? 'Open in original music service' : 'Track is not imported on this device'}" ${localTrack || sourceUrl ? '' : 'disabled'}><i class="fa-${localTrack ? 'solid fa-play' : sourceUrl ? 'solid fa-arrow-up-right-from-square' : 'solid fa-play'} text-[10px]"></i></button><div class="min-w-0 flex-1"><p class="truncate text-xs font-semibold text-zinc-200">${escapeHtml(title)}</p><p class="truncate text-[10px] text-zinc-500">${escapeHtml(artist)}</p></div><span class="hidden text-[9px] uppercase tracking-wider text-zinc-600 sm:block">${localTrack ? 'On this device' : sourceUrl ? escapeHtml(liked.source || 'Favorite') : 'Cloud favorite'}</span><button class="liked-remove rounded-md p-2 text-red-400 transition hover:bg-red-950/50 hover:text-red-300" title="Remove from liked" aria-label="Remove ${escapeHtml(title)} from liked"><i class="fa-solid fa-heart"></i></button>`;
+                row.innerHTML = `<div class="relative min-w-[34px]"><img class="liked-song-img w-8 h-8 rounded-lg object-cover border border-zinc-700/50 bg-zinc-900 shadow-sm" src="assets/icon_128x128.png" alt="Cover" data-cover="${escapeHtml(coverOf(liked) || liked.thumbnail || '')}">${localTrack ? '<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>' : ''}</div><button class="liked-play h-8 w-8 shrink-0 rounded-lg bg-zinc-800 text-zinc-300 transition hover:bg-blue-600 hover:text-white disabled:opacity-40" title="${localTrack ? 'Play track' : sourceUrl ? 'Open in original music service' : 'Track is not imported on this device'}" ${localTrack || sourceUrl ? '' : 'disabled'}><i class="fa-${localTrack ? 'solid fa-play' : sourceUrl ? 'solid fa-arrow-up-right-from-square' : 'solid fa-play'} text-[10px]"></i></button><div class="min-w-0 flex-1"><p class="truncate text-xs font-semibold text-zinc-200">${escapeHtml(title)}</p><p class="truncate text-[10px] text-zinc-500">${escapeHtml(artist)}</p></div><span class="hidden text-[9px] uppercase tracking-wider text-zinc-600 sm:block">${localTrack ? 'On this device' : sourceUrl ? escapeHtml(liked.source || 'Favorite') : 'Cloud favorite'}</span><button class="liked-remove rounded-md p-2 text-red-400 transition hover:bg-red-950/50 hover:text-red-300" title="Remove from liked" aria-label="Remove ${escapeHtml(title)} from liked"><i class="fa-solid fa-heart"></i></button>`;
                 // Resolve album artwork via API (setDesktopImage handles auth headers & caching)
                 const imgEl = row.querySelector('.liked-song-img');
                 const coverUrl = imgEl?.dataset.cover;
@@ -2317,6 +2334,7 @@
                 row.querySelector('.liked-remove').addEventListener('click', () => toggleLikedTrack(liked));
                 list.appendChild(row);
             });
+            hydrateTrackMetadata(state.likedSongs);
         }
 
         function renderLikedArtists() {
@@ -2332,13 +2350,13 @@
             document.getElementById('tabLikedBadge').textContent = String(state.likedSongs.length + state.likedArtists.length);
             state.likedArtists.forEach(artist => {
                 const details = document.createElement('details');
-                details.className = 'group flex flex-col items-center rounded-xl border border-zinc-800 bg-zinc-900/60 p-2 text-center transition hover:border-zinc-700 hover:bg-zinc-900';
+                details.className = 'group flex flex-col items-center rounded-xl p-2 text-center transition hover:bg-white/5';
                 details.classList.add('liked-artist-details');
                 const summary = document.createElement('summary');
                 summary.className = 'flex flex-col items-center gap-1.5 cursor-pointer select-none';
                 summary.style.listStyle = 'none';
-                if (artist.image) { const image = document.createElement('img'); image.alt = ''; image.loading = 'lazy'; image.className = 'h-14 w-14 shrink-0 rounded-full bg-zinc-800 object-cover ring-2 ring-zinc-700'; setDesktopImage(image, artist.image); summary.appendChild(image); }
-                else { const placeholder = document.createElement('span'); placeholder.className = 'flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-500 ring-2 ring-zinc-700'; placeholder.innerHTML = '<i class="fa-solid fa-music text-sm"></i>'; summary.appendChild(placeholder); }
+                if (artist.image) { const image = document.createElement('img'); image.alt = ''; image.loading = 'lazy'; image.className = 'h-14 w-14 shrink-0 rounded-full bg-zinc-800 object-cover'; setDesktopImage(image, artist.image); summary.appendChild(image); }
+                else { const placeholder = document.createElement('span'); placeholder.className = 'flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-500'; placeholder.innerHTML = '<i class="fa-solid fa-music text-sm"></i>'; summary.appendChild(placeholder); }
                 const name = document.createElement('span'); name.className = 'truncate text-xs font-semibold text-zinc-200'; name.textContent = artist.name || 'Unknown artist'; summary.appendChild(name);
                 const subtitle = document.createElement('span'); subtitle.className = 'truncate text-[9px] text-zinc-500'; subtitle.textContent = 'Artist'; summary.appendChild(subtitle);
                 details.appendChild(summary);
@@ -2670,6 +2688,8 @@
                 document.getElementById('quickThemePresets')?.classList.add('hidden');
                 document.getElementById('serverStatusBadge')?.classList.add('hidden');
                 document.getElementById('shortcutsBtn')?.classList.add('hidden');
+                document.getElementById('settingsBtn')?.classList.add('hidden');
+                settingsPanel.classList.add('translate-x-full');
 
                 compactPlayer.classList.remove('hidden');
                 compactPlayer.classList.add('flex');
@@ -2686,6 +2706,7 @@
                 document.getElementById('quickThemePresets')?.classList.remove('hidden');
                 document.getElementById('serverStatusBadge')?.classList.remove('hidden');
                 document.getElementById('shortcutsBtn')?.classList.remove('hidden');
+                document.getElementById('settingsBtn')?.classList.remove('hidden');
 
                 fullPlayer.classList.remove('hidden');
 
@@ -3172,48 +3193,114 @@
         function cleanLyricsQuery(track) {
             let title = String(track?.name || track?.title || '').replace(/\s*\[(?:dl_)?[a-f0-9]{8,}\]\s*/gi, ' ').trim();
             let artist = String(track?.artist || track?.channel || track?.uploader || '').trim();
-            const split = title.match(/^(.{1,100}?)\s+-\s+(.{1,180})$/);
-            if (split && /^(?:unknown(?: artist)?|youtube(?: audio)?|local(?: track| audio)?)$/i.test(artist)) { artist = split[1].trim(); title = split[2].trim(); }
+            if (isPlaceholderArtist(artist)) { artist = ''; const split = splitArtistTitle(title); if (split) { artist = split.artist; title = split.title; } }
             // Remove YouTube / streaming junk from title
             title = title
                 .replace(/[[(](?:[^)\]]*(?:official|video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version|hd|hq|4k|1080p|720p|full\s+album|live\s+version|cover|remix|mix|extended|edited|clean|dirty|uncensored|instrumental|karaoke|acoustic|performance|session|reaction|trailer|teaser|preview|teaser|behind\s+the\s+scenes|making\s+of|featurette|clip|promo|teaser|music\s+video|lyric\s+video|visualizer|visualiser|animated|official\s+audio|lyrics\s+video)[^)]*)[)\]]/gi, ' ')
                 .replace(/\s*[|–—]\s*(?:official|lyrics?|music video|audio|video).*$/i, ' ')
                 .replace(/\s*-\s*(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ')
-                .replace(/\b(?:ft\.|feat\.|featuring|with|vs\.|versus|x|and|&)\s+[^\s-]+/gi, ' ')
+                .replace(/\s*[(\[]?\b(?:ft\.?|feat\.?|featuring)\s+[^()\[\]-]+[)\]]?/gi, ' ')
                 .replace(/\((?:Official|Audio|Video|Lyrics|HD|HQ|Full|Live|Remix|Cover|Instrumental|Karaoke|Acoustic|Performance|Session|Reaction|Trailer|Teaser|Preview|Clip|Promo|Music Video|Lyric Video|Visualizer|Animated|Official Audio|Lyrics Video)[^)]*\)/gi, ' ')
                 .replace(/\s+/g, ' ').trim();
-            artist = artist.replace(/\s*(?:-\s*)?(?:VEVO|Topic|Official|Records|Music|Entertainment|Label|Studio|Productions|Sounds|Beats)$/i, '').trim();
-            if (/^(?:unknown(?: artist)?|youtube(?: audio)?|local(?: track| audio)?)$/i.test(artist)) artist = '';
+            artist = cleanArtistName(artist);
             return { title, artist };
         }
 
-        function renderDesktopLyrics() {
-            const body = document.getElementById('desktopLyricsBody');
+        function activeLyricIndex(rows, now) {
+            let active = 0;
+            for (let i = 0; i < rows.length; i++) { if (Number(rows[i].t) <= now) active = i; else break; }
+            return active;
+        }
+        function lyricsAreSynced(rows) { return rows.some(line => Number(line.t) > 0); }
+        const lyricsView = { key: '' };
+
+        function lyricsOverlayOpen() {
+            return !document.getElementById('desktopLyricsFullscreenOverlay').classList.contains('hidden');
+        }
+
+        function renderDesktopLyrics(force = false) {
             const rows = state.desktopLyrics;
             const preview = document.getElementById('desktopLyricsPreview');
             const previewText = document.getElementById('desktopLyricsPreviewText');
             preview.classList.toggle('hidden', !rows.length);
-            if (!rows.length) { body.textContent = 'No lyrics found for this track.'; previewText.textContent = 'No lyrics found'; return; }
-            const synced = rows.some(line => Number(line.t) > 0);
-            if (!synced) { previewText.textContent = rows[0]?.text || 'Lyrics available'; body.replaceChildren(); rows.forEach(line => { const p = document.createElement('p'); p.className = 'my-2 text-zinc-400'; p.textContent = line.text; body.append(p); }); return; }
-            let active = 0; const now = state.audio.currentTime || 0;
-            for (let i = 0; i < rows.length; i++) { if (Number(rows[i].t) <= now) active = i; else break; }
-            previewText.textContent = rows[active]?.text || 'Lyrics available';
-            const count = state.desktopLyricsLineCount, start = Math.max(0, Math.min(rows.length - count, active - Math.floor(count / 2)));
-            body.replaceChildren();
-            for (let i = start; i < Math.min(rows.length, start + count); i++) {
-                const line = document.createElement('p');
-                line.className = 'my-2 transition-colors select-none';
-                line.style.fontSize = count === 1 ? '24px' : count === 3 ? '16px' : '13px';
-                line.style.color = i === active ? '#ffffff' : count === 3 ? '#94a3b8' : '#747a87';
-                line.style.opacity = i === active ? '1' : count === 3 ? '.5' : '.35';
-                line.textContent = rows[i].text; body.append(line);
+            if (rows.length) {
+                const active = lyricsAreSynced(rows) ? activeLyricIndex(rows, state.audio.currentTime || 0) : 0;
+                const text = rows[active]?.text || 'Lyrics available';
+                if (previewText.textContent !== text) previewText.textContent = text;
             }
-            // In 1-line mode, center vertically and show only the active line large
-            if (count === 1) {
-                body.classList.add('flex', 'flex-col', 'justify-center', 'items-center');
-            } else {
-                body.classList.remove('flex', 'flex-col', 'justify-center', 'items-center');
+            renderFsLyrics(force);
+        }
+
+        function renderFsLyrics(force = false) {
+            if (!lyricsOverlayOpen()) return;
+            const rows = state.desktopLyrics;
+            if (!rows.length) return;
+            const body = document.getElementById('desktopLyricsFsBody');
+            const count = [1, 3, 5].includes(state.desktopLyricsLineCount) ? state.desktopLyricsLineCount : 1;
+            const synced = lyricsAreSynced(rows);
+            const active = synced ? activeLyricIndex(rows, state.audio.currentTime || 0) : -1;
+            const key = synced ? `${state.desktopLyricsTrackId}|${count}|${active}` : `plain|${state.desktopLyricsTrackId}|${rows.length}`;
+            if (!force && key === lyricsView.key) return;
+            lyricsView.key = key;
+            body.classList.toggle('justify-center', synced);
+            if (!synced) {
+                // No timestamps available: show the whole text instead of an arbitrary slice.
+                body.replaceChildren(...rows.map(line => { const p = document.createElement('p'); p.className = 'lyrics-line text-base text-zinc-300'; p.textContent = line.text; return p; }));
+                return;
+            }
+            const start = Math.max(0, Math.min(rows.length - count, active - Math.floor(count / 2)));
+            const end = Math.min(rows.length, start + count);
+            const nodes = [];
+            for (let i = start; i < end; i++) {
+                const p = document.createElement('p');
+                const isActive = i === active;
+                const dist = Math.abs(i - active);
+                p.className = 'lyrics-line';
+                p.style.fontSize = count === 1 ? '32px' : isActive ? (count === 3 ? '28px' : '26px') : (count === 3 ? '19px' : '16px');
+                p.style.color = isActive ? '#ffffff' : '#a1a1aa';
+                p.style.opacity = isActive ? '1' : String(Math.max(0.3, 0.65 - 0.15 * dist));
+                p.textContent = rows[i].text;
+                nodes.push(p);
+            }
+            body.replaceChildren(...nodes);
+        }
+
+        function setFsLyricsMessage(text) {
+            const body = document.getElementById('desktopLyricsFsBody');
+            body.classList.add('justify-center');
+            body.textContent = text;
+            lyricsView.key = '';
+        }
+
+        function resetFsLyricsForTrack(track) {
+            if (!lyricsOverlayOpen()) return;
+            const q = cleanLyricsQuery(track);
+            document.getElementById('desktopLyricsFsTitle').textContent = q.title || track.name || 'Unknown';
+            document.getElementById('desktopLyricsFsArtist').textContent = q.artist || (hasValidArtist(track) ? track.artist : 'Unknown artist');
+            setFsLyricsMessage('Loading lyrics…');
+        }
+
+        async function fetchLyricsFor(track) {
+            const q = cleanLyricsQuery(track);
+            const data = await apiGet(`/api/lyrics?title=${encodeURIComponent(q.title)}&artist=${encodeURIComponent(q.artist)}`);
+            return (data.lines || []).filter(line => line?.text);
+        }
+
+        async function autoLoadLyrics(track, pendingEnrichment) {
+            if (pendingEnrichment) await pendingEnrichment;
+            const isCurrent = () => state.playlist[state.currentIndex] === track;
+            if (!isCurrent() || (state.desktopLyrics.length && state.desktopLyricsTrackId === track.id)) return;
+            const q = cleanLyricsQuery(track);
+            if (!q.title && !q.artist) return;
+            try {
+                const rows = await fetchLyricsFor(track);
+                if (!isCurrent()) return;
+                state.desktopLyrics = rows;
+                state.desktopLyricsTrackId = track.id;
+                if (!rows.length && lyricsOverlayOpen()) setFsLyricsMessage('No lyrics found for this track.');
+                renderDesktopLyrics(true);
+            } catch (e) {
+                if (isCurrent() && lyricsOverlayOpen()) setFsLyricsMessage(`Lyrics unavailable: ${e.message}`);
             }
         }
 
@@ -3223,81 +3310,65 @@
         }
 
         function setupDesktopLyrics() {
-            const modal = document.getElementById('desktopLyricsModal');
-            const fsOverlay = document.getElementById('desktopLyricsFullscreenOverlay');
-            const fsBody = document.getElementById('desktopLyricsFsBody');
-            const fsTitle = document.getElementById('desktopLyricsFsTitle');
-            const fsArtist = document.getElementById('desktopLyricsFsArtist');
-            let fsLineCount = 1;
+            const overlay = document.getElementById('desktopLyricsFullscreenOverlay');
+            const modeButtons = document.querySelectorAll('[data-fs-lines]');
+            const saved = Number(localStorage.getItem('aura_lyrics_lines'));
+            state.desktopLyricsLineCount = [1, 3, 5].includes(saved) ? saved : 1;
+
+            const syncModeButtons = () => modeButtons.forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.fsLines) === state.desktopLyricsLineCount)));
+            const closeFs = () => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                if (state.lyricsPrevIdle !== undefined) { state.autoReduction.idleEnabled = state.lyricsPrevIdle; state.lyricsPrevIdle = undefined; }
+            };
+            syncModeButtons();
 
             document.getElementById('desktopLyricsButton').addEventListener('click', async (e) => {
                 e.stopPropagation();
                 try { await openDesktopLyrics(); }
-                catch (err) { console.error('[Lyrics] Failed to open lyrics:', err.message); const fsOverlay = document.getElementById('desktopLyricsFullscreenOverlay'); if (fsOverlay) { fsOverlay.classList.remove('hidden'); fsOverlay.classList.add('flex'); document.getElementById('desktopLyricsFsBody').textContent = 'Lyrics error: ' + err.message; } }
+                catch (err) { console.error('[Lyrics] Failed to open lyrics:', err.message); setFsLyricsMessage('Lyrics error: ' + err.message); }
             });
             document.getElementById('desktopLyricsPreview').addEventListener('click', () => void openDesktopLyrics());
-            document.getElementById('closeDesktopLyrics').addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
-            modal.addEventListener('click', event => { if (event.target === modal) document.getElementById('closeDesktopLyrics').click(); });
-            document.querySelectorAll('[data-desktop-lyrics-lines]').forEach(button => button.addEventListener('click', () => {
-                state.desktopLyricsLineCount = Number(button.dataset.desktopLyricsLines);
-                document.querySelectorAll('[data-desktop-lyrics-lines]').forEach(item => item.classList.toggle('theme-accent-bg', item === button)); renderDesktopLyrics();
+            document.getElementById('closeDesktopLyricsFs').addEventListener('click', closeFs);
+            modeButtons.forEach(button => button.addEventListener('click', () => {
+                state.desktopLyricsLineCount = Number(button.dataset.fsLines);
+                try { localStorage.setItem('aura_lyrics_lines', String(state.desktopLyricsLineCount)); } catch (_) {}
+                syncModeButtons();
+                renderFsLyrics(true);
             }));
-            state.audio.addEventListener('timeupdate', () => {
-                if (state.desktopLyrics.length && (!modal.classList.contains('hidden') || state.desktopLyrics.some(line => Number(line.t) > 0))) renderDesktopLyrics();
-                // Fullscreen overlay lyrics sync
-                const fsBodyEl = document.getElementById('desktopLyricsFsBody');
-                if (fsOverlay && !fsOverlay.classList.contains('hidden') && state.desktopLyrics.length && fsBodyEl) {
-                    const now = state.audio.currentTime || 0;
-                    let activeIdx = 0;
-                    for (let i = 0; i < state.desktopLyrics.length; i++) {
-                        if (Number(state.desktopLyrics[i].t || 0) <= now) activeIdx = i;
-                        else break;
-                    }
-                    const lineCount = fsLineCount === 5 ? 5 : fsLineCount === 3 ? 3 : 1;
-                    const lines = lineCount === 1 ? [state.desktopLyrics[activeIdx]?.text || ''] : state.desktopLyrics.slice(Math.max(0, activeIdx - Math.floor(lineCount / 2)), activeIdx + Math.ceil(lineCount / 2)).map(l => l?.text || '');
-                    fsBodyEl.replaceChildren(...lines.map(t => {
-                        const p = document.createElement('div');
-                        p.className = 'my-3 transition-colors';
-                    p.style.fontSize = lineCount === 1 ? '32px' : lineCount === 3 ? (i === activeIdx ? '22px' : '18px') : '14px';
-                    p.style.color = lines.length === 1 ? '#ffffff' : (i === activeIdx ? '#ffffff' : lineCount === 3 ? '#94a3b8' : '#747a87');
-                    p.style.opacity = lines.length === 1 ? '1' : (i === activeIdx ? '1' : lineCount === 3 ? '.4' : '.3');
-                        p.textContent = t;
-                        return p;
-                    }));
-                }
-            });
-
-            // Fullscreen overlay controls
-            document.getElementById('closeDesktopLyricsFs').addEventListener('click', () => { fsOverlay.classList.add('hidden'); fsOverlay.classList.remove('flex'); state.autoReduction.idleEnabled = true; });
-            fsOverlay.addEventListener('click', event => { if (event.target === fsOverlay) document.getElementById('closeDesktopLyricsFs').click(); });
-            document.getElementById('toggleLyricsFsLines').addEventListener('click', () => {
-                fsLineCount = fsLineCount === 1 ? 3 : fsLineCount === 3 ? 5 : 1;
-                document.getElementById('toggleLyricsFsLinesText').textContent = fsLineCount === 1 ? '1 Line' : fsLineCount === 3 ? '3 Lines' : '5 Lines';
-                renderDesktopLyrics();
-            });
+            state.audio.addEventListener('timeupdate', () => renderDesktopLyrics());
+            // Escape closes the overlay before any other shortcut handler sees it
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && lyricsOverlayOpen()) { e.preventDefault(); e.stopImmediatePropagation(); closeFs(); }
+            }, true);
         }
 
         async function openDesktopLyricsFullscreen() {
-            const fsOverlay = document.getElementById('desktopLyricsFullscreenOverlay');
+            const overlay = document.getElementById('desktopLyricsFullscreenOverlay');
             const track = state.playlist[state.currentIndex];
             const fsTitle = document.getElementById('desktopLyricsFsTitle');
             const fsArtist = document.getElementById('desktopLyricsFsArtist');
-            const fsBodyEl = document.getElementById('desktopLyricsFsBody');
-            if (!track) { fsTitle.textContent = 'No track'; fsArtist.textContent = 'Choose a track first'; fsOverlay.classList.remove('hidden'); fsOverlay.classList.add('flex'); return; }
-            const query = cleanLyricsQuery(track);
-            fsTitle.textContent = query.title || track.name || 'Unknown';
-            fsArtist.textContent = query.artist || track.artist || 'Unknown artist';
-            fsBodyEl.textContent = 'Loading lyrics…';
-            fsOverlay.classList.remove('hidden');
-            fsOverlay.classList.add('flex');
-            // Disable idle reduction while fullscreen lyrics open
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            // Keep auto-reduction from shrinking the window while lyrics are open; restore the user's setting on close
+            if (state.lyricsPrevIdle === undefined) state.lyricsPrevIdle = state.autoReduction.idleEnabled;
             state.autoReduction.idleEnabled = false;
+            lyricsView.key = '';
+            if (!track) { fsTitle.textContent = 'No track'; fsArtist.textContent = 'Choose a track first'; setFsLyricsMessage(''); return; }
+            resetFsLyricsForTrack(track);
+            if (state.desktopLyrics.length && state.desktopLyricsTrackId === track.id) { renderDesktopLyrics(true); return; }
             try {
-                const data = await apiGet(`/api/lyrics?title=${encodeURIComponent(query.title)}&artist=${encodeURIComponent(query.artist)}`);
-                state.desktopLyrics = (data.lines || []).filter(line => line?.text);
-                if (!state.desktopLyrics.length) fsBodyEl.textContent = 'No lyrics found for this track.';
+                await enrichTrackMetadata(track);
+                if (state.playlist[state.currentIndex] !== track) return;
+                resetFsLyricsForTrack(track);
+                const rows = await fetchLyricsFor(track);
+                if (state.playlist[state.currentIndex] !== track) return;
+                state.desktopLyrics = rows;
+                state.desktopLyricsTrackId = track.id;
+                if (!rows.length) setFsLyricsMessage('No lyrics found for this track.');
+                renderDesktopLyrics(true);
             } catch (error) {
-                fsBodyEl.textContent = `Lyrics unavailable: ${error.message}`;
+                setFsLyricsMessage(`Lyrics unavailable: ${error.message}`);
             }
         }
 
@@ -3473,24 +3544,235 @@
             if (!container.children.length) setPanelMessage(document.getElementById('globalSearchMessage'), 'No matches yet. Try another artist or track name.');
         }
 
+
+
+        // -------------------------------------------------------------
+        // TRACK IDENTITY & ARTWORK RESOLUTION
+        // Replaces placeholder artists ("YouTube Audio"...) and fills missing covers
+        // for queue, liked and library tracks.
+        // -------------------------------------------------------------
+        const PLACEHOLDER_ARTIST_RE = /^(?:unknown(?:\s+artist)?|youtube(?:\s+(?:audio|music|video|channel))?|yt(?:\s+audio)?|local(?:\s+(?:track|audio|file))?|various\s+artists?|n\/?a|none|null|undefined|[-.\s]+)$/i;
+        const TRACK_META_STORAGE_KEY = 'aura_track_meta_v1';
+        const trackMetaCache = (() => { try { return new Map(Object.entries(JSON.parse(localStorage.getItem(TRACK_META_STORAGE_KEY) || '{}'))); } catch (_) { return new Map(); } })();
+        const trackMetaMisses = new Map();
+        const trackMetaInflight = new Map();
+        let trackMetaPersistTimer = null;
+        let trackUiRefreshTimer = null;
+
+        function isPlaceholderArtist(value) {
+            const v = String(value || '').trim();
+            return !v || PLACEHOLDER_ARTIST_RE.test(v);
+        }
+
+        function cleanArtistName(value) {
+            let v = String(value || '').replace(/\s+/g, ' ').trim();
+            v = v.replace(/\s*-\s*topic$/i, '').replace(/\s*(?:VEVO|Official(?:\s+(?:Channel|Artist))?)$/i, '').trim();
+            return isPlaceholderArtist(v) ? '' : v;
+        }
+
+        function splitArtistTitle(rawTitle) {
+            const m = String(rawTitle || '').trim().match(/^(.{1,80}?)\s+[-–—]\s+(.{1,200})$/);
+            if (!m) return null;
+            const artist = cleanArtistName(m[1]);
+            const title = m[2].trim();
+            if (!artist || !title || /^(?:official|lyrics?|audio|video|full|hd|hq)\b/i.test(artist)) return null;
+            return { artist, title };
+        }
+
+        function coverOf(item) { return item?.cover || item?.artwork || item?.artworkUrl || ''; }
+
+        function pickMetaCover(o) { return o?.cover || o?.artwork || o?.artworkUrl || o?.image || o?.thumbnail || o?.album?.cover || o?.album?.image || ''; }
+
+        function persistTrackMetaCache() {
+            clearTimeout(trackMetaPersistTimer);
+            trackMetaPersistTimer = setTimeout(() => {
+                try { localStorage.setItem(TRACK_META_STORAGE_KEY, JSON.stringify(Object.fromEntries(Array.from(trackMetaCache).slice(-400)))); } catch (_) {}
+            }, 800);
+        }
+
+        async function lookupItunesMetadata(title, artist) {
+            // Optional public catalog fallback. Disable with localStorage.setItem('aura_online_artwork', 'off').
+            if (localStorage.getItem('aura_online_artwork') === 'off') return null;
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 6000);
+            try {
+                const params = new URLSearchParams({ term: `${artist} ${title}`.trim(), media: 'music', entity: 'song', limit: '8' });
+                const response = await fetch(`https://itunes.apple.com/search?${params}`, { signal: controller.signal });
+                if (!response.ok) return null;
+                const data = await response.json();
+                const wantTitle = normalizedTrackTitle(title), wantArtist = normalizedTrackArtist(artist);
+                let best = null, bestScore = 0;
+                for (const r of data.results || []) {
+                    const t = normalizedTrackTitle(r.trackName), a = normalizedTrackArtist(r.artistName);
+                    if (!t || t !== wantTitle) continue;          // exact title only: a wrong artist is worse than none
+                    let score = 3;
+                    if (wantArtist) { if (a === wantArtist) score += 3; else if (a.includes(wantArtist) || wantArtist.includes(a)) score += 1.5; else continue; }
+                    if (score > bestScore) { best = r; bestScore = score; }
+                }
+                if (!best) return null;
+                return { artist: best.artistName || '', album: best.collectionName || '', cover: (best.artworkUrl100 || '').replace(/\d+x\d+bb/, '600x600bb') };
+            } catch (_) { return null; }
+            finally { clearTimeout(timer); }
+        }
+
+        async function lookupTrackMetadata(rawTitle, rawArtist) {
+            const q = cleanLyricsQuery({ name: rawTitle, artist: rawArtist });
+            const title = q.title || String(rawTitle || '').trim();
+            const artist = q.artist;
+            if (!title) return null;
+            const key = `${normalizedTrackTitle(title)}::${normalizedTrackArtist(artist)}`;
+            if (trackMetaCache.has(key)) return trackMetaCache.get(key);
+            const missAt = trackMetaMisses.get(key);
+            if (missAt && Date.now() - missAt < 10 * 60 * 1000) return null;
+            if (trackMetaInflight.has(key)) return trackMetaInflight.get(key);
+            const job = (async () => {
+                let result = null;
+                try {
+                    const m = await apiGet(`/api/music/track-metadata?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`);
+                    const a = cleanArtistName(m?.artist || '');
+                    const cover = pickMetaCover(m);
+                    const album = typeof m?.album === 'string' ? m.album : (m?.album?.title || m?.album?.name || '');
+                    if (a || cover) result = { artist: a, album, cover };
+                } catch (_) { /* server metadata optional */ }
+                if (!result?.cover || !result?.artist) {
+                    const it = await lookupItunesMetadata(title, result?.artist || artist);
+                    if (it) result = { artist: result?.artist || it.artist, album: result?.album || it.album, cover: result?.cover || it.cover };
+                }
+                trackMetaInflight.delete(key);
+                if (result && (result.artist || result.cover)) {
+                    trackMetaCache.set(key, result);
+                    if (result.artist) trackMetaCache.set(`${normalizedTrackTitle(title)}::${normalizedTrackArtist(result.artist)}`, result);
+                    persistTrackMetaCache();
+                    return result;
+                }
+                trackMetaMisses.set(key, Date.now());
+                return null;
+            })();
+            trackMetaInflight.set(key, job);
+            return job;
+        }
+
+        // Fills missing artist / cover on a track object. Resolves true when something changed.
+        async function enrichTrackMetadata(track) {
+            if (!track) return false;
+            let changed = false;
+            const rawTitle = track.name || track.title || '';
+            if (isPlaceholderArtist(track.artist)) {
+                if (track.artist) { track.artist = ''; changed = true; }
+                const split = splitArtistTitle(rawTitle);
+                if (split) { track.artist = split.artist; changed = true; }
+            } else {
+                const cleaned = cleanArtistName(track.artist);
+                if (cleaned !== track.artist) { track.artist = cleaned; changed = true; }
+            }
+            const needsArtist = !hasValidArtist(track);
+            const needsCover = !coverOf(track);
+            if ((needsArtist || needsCover) && !track.metaResolved) {
+                track.metaResolved = true;
+                const meta = await lookupTrackMetadata(rawTitle, needsArtist ? '' : track.artist);
+                if (meta) {
+                    if (needsArtist && meta.artist) { track.artist = meta.artist; changed = true; }
+                    if (needsCover && meta.cover) { track.cover = meta.cover; changed = true; }
+                    if (!track.album && meta.album) track.album = meta.album;
+                }
+            }
+            return changed;
+        }
+
+        function scheduleTrackUiRefresh() {
+            clearTimeout(trackUiRefreshTimer);
+            trackUiRefreshTimer = setTimeout(() => {
+                renderPlaylist();
+                renderLikedSongs();
+                syncCurrentTrackUI();
+            }, 400);
+        }
+
+        // Resolves metadata for a list of tracks (3 at a time). onChange(track) runs per updated track.
+        async function hydrateTrackMetadata(tracks, onChange, limit = 40) {
+            const pending = (tracks || []).filter(t => t && !t.metaResolved && (!hasValidArtist(t) || !coverOf(t))).slice(0, limit);
+            if (!pending.length) return;
+            let anyChanged = false;
+            await Promise.all(Array.from({ length: 3 }, async () => {
+                while (pending.length) {
+                    const t = pending.shift();
+                    try { if (await enrichTrackMetadata(t)) { anyChanged = true; onChange?.(t); } } catch (_) {}
+                }
+            }));
+            if (anyChanged && !onChange) scheduleTrackUiRefresh();
+        }
+
+        // ---- Artist portraits (cards) ----
+        const artistImageCache = new Map();
+        const artistImageQueue = [];
+        let artistImageActive = 0;
+        function pumpArtistImageQueue() {
+            while (artistImageActive < 3 && artistImageQueue.length) {
+                const job = artistImageQueue.shift();
+                artistImageActive++;
+                job().finally(() => { artistImageActive--; pumpArtistImageQueue(); });
+            }
+        }
+        function resolveArtistImage(artist) {
+            const id = artist.id || artist.name;
+            if (!id) return Promise.resolve('');
+            const key = String(id).toLowerCase();
+            if (artistImageCache.has(key)) return artistImageCache.get(key);
+            const promise = new Promise(resolve => {
+                artistImageQueue.push(async () => {
+                    try {
+                        const profile = await apiGet(`/api/discovery/${/^[a-f0-9-]{36}$/i.test(String(id)) ? `artist/${id}` : `artists/${encodeURIComponent(id)}`}`);
+                        resolve(profile.image || '');
+                    } catch (_) { resolve(''); }
+                });
+                pumpArtistImageQueue();
+            });
+            artistImageCache.set(key, promise);
+            return promise;
+        }
+        function makeArtistAvatar(artist) {
+            const holder = document.createElement('div');
+            holder.className = 'artist-avatar';
+            holder.textContent = (artist.name || '?').trim().charAt(0).toUpperCase();
+            const show = url => {
+                const img = document.createElement('img');
+                img.alt = ''; img.loading = 'lazy'; img.className = 'h-full w-full object-cover';
+                holder.replaceChildren(img);
+                setDesktopImage(img, url);
+            };
+            const existing = artist.image || artist.cover || artist.artwork || '';
+            if (existing) show(existing);
+            else resolveArtistImage(artist).then(url => { if (url) show(url); });
+            return holder;
+        }
+
+        function hasValidArtist(track) {
+            return !!track && !isPlaceholderArtist(track.artist);
+        }
+
         function queueTrackForPlayback(track) {
             const title = cleanTrackDisplayTitle(track.title || track.name || 'Untitled');
-            const artist = track.artist || 'YouTube';
+            const artist = cleanArtistName(track.artist);
             const duplicateIndex = findQueuedTrackIndex({ title, artist });
             if (duplicateIndex >= 0) {
+                const existing = state.playlist[duplicateIndex];
+                if (!coverOf(existing) && coverOf(track)) existing.cover = coverOf(track);
                 loadTrack(duplicateIndex);
                 playAudio();
                 document.querySelector('[data-main-tab="queue"]')?.click();
-                return state.playlist[duplicateIndex];
+                return existing;
             }
             const entry = {
                 id: `online_${track.id || Math.random().toString(36).slice(2)}`,
                 name: title,
                 artist,
+                cover: coverOf(track),
+                thumbnail: track.thumbnail || '',
+                album: typeof track.album === 'string' ? track.album : (track.album?.title || ''),
                 url: track.url || (track.streamUrl
                     ? apiResourceUrl(track.streamUrl)
                     : (track.fileName ? apiResourceUrl(`/api/media/${encodeURIComponent(track.fileName)}`) : '')),
-                playQuery: track.playQuery || (track.streamUrl || track.fileName ? '' : `${title} ${artist}`),
+                playQuery: track.playQuery || (track.streamUrl || track.fileName ? '' : `${title} ${artist}`.trim()),
                 fileName: track.fileName || '',
                 source: track.source || 'youtube'
             };
@@ -3606,6 +3888,8 @@
                     track.url = status.result?.streamUrl?.startsWith('http') ? status.result.streamUrl : apiResourceUrl(status.result?.streamUrl || `/api/media/${encodeURIComponent(status.result.fileName)}`);
                     track.fileName = status.result?.fileName || '';
                     track.filePath = status.result?.filePath || '';
+                    if (!hasValidArtist(track)) track.artist = cleanArtistName(status.result?.artist) || '';
+                    if (!coverOf(track)) track.cover = coverOf(status.result);
                     track.source = 'download'; track.playQuery = ''; track.mixStatus = 'Ready'; track.mixProgress = 100;
                     track.isDownloading = false;
                     renderPlaylist();
@@ -3734,7 +4018,9 @@
                             : apiResourceUrl(status.result?.streamUrl || `/api/media/${encodeURIComponent(status.result.fileName)}`),
                         source: 'download',
                         fileName: status.result?.fileName || '',
-                        filePath: status.result?.filePath || ''
+                        filePath: status.result?.filePath || '',
+                        artist: cleanArtistName(status.result?.artist) || track.artist || '',
+                        cover: coverOf(status.result) || coverOf(track)
                     };
                 }
                 if (status.status === 'failed' || status.status === 'unknown') {
@@ -3826,7 +4112,7 @@
                 else state.likedArtists.unshift({ ...artist, key, id: artist.id || key });
                 localStorage.setItem('aura_liked_artists', JSON.stringify(state.likedArtists));
             }
-            document.getElementById('artistDetailLikeBtn').innerHTML = `<i class="fa-${artistIsLiked(artist) ? 'solid' : 'regular'} fa-heart"></i> ${artistIsLiked(artist) ? 'Favorited' : 'Favorite'}`;
+            document.getElementById('artistDetailLikeBtn').innerHTML = `<i class="fa-${artistIsLiked(artist) ? 'solid text-red-400' : 'regular'} fa-heart"></i> ${artistIsLiked(artist) ? 'Favorited' : 'Favorite'}`;
             renderLikedArtists();
             if (state.activeMainTab === 'discover') loadDiscoveryView();
         }
@@ -3886,7 +4172,7 @@
             setDesktopImage(image, artist.image || '');
             image.alt = `${artist.name || 'Artist'} portrait`;
             const like = document.getElementById('artistDetailLikeBtn');
-            like.innerHTML = `<i class="fa-${artistIsLiked(artist) ? 'solid' : 'regular'} fa-heart"></i> ${artistIsLiked(artist) ? 'Favorited' : 'Favorite'}`;
+            like.innerHTML = `<i class="fa-${artistIsLiked(artist) ? 'solid text-red-400' : 'regular'} fa-heart"></i> ${artistIsLiked(artist) ? 'Favorited' : 'Favorite'}`;
             like.onclick = () => toggleArtistFavorite(artist);
             modal.classList.remove('hidden'); modal.classList.add('flex');
             try {
@@ -3899,7 +4185,7 @@
                 const albumGrid = document.getElementById('artistDetailAlbums'); albumGrid.replaceChildren();
                 if (!(profile.albums || []).length) albumGrid.innerHTML = '<p class="text-xs text-zinc-500">No albums found.</p>';
                 (profile.albums || []).forEach(album => {
-                    const link = document.createElement('a'); link.href = `https://musicbrainz.org/release-group/${encodeURIComponent(album.id)}`; link.target = '_blank'; link.rel = 'noreferrer'; link.className = 'overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900';
+                    const link = document.createElement('a'); link.href = `https://musicbrainz.org/release-group/${encodeURIComponent(album.id)}`; link.target = '_blank'; link.rel = 'noreferrer'; link.className = 'overflow-hidden rounded-lg bg-zinc-900/60 transition hover:bg-zinc-800';
                     const cover = document.createElement('img'); cover.alt = `${album.title} cover`; cover.loading = 'lazy'; cover.className = 'aspect-square w-full object-cover'; setDesktopImage(cover, album.cover || album.image || '');
                     const label = document.createElement('span'); label.className = 'block truncate p-2 text-[10px] text-zinc-300'; label.textContent = `${album.title}${album.date ? ` · ${album.date.slice(0,4)}` : ''}`;
                     link.append(cover, label); albumGrid.append(link);
@@ -4069,15 +4355,21 @@
                 const tracks = [...downloads, ...localTracks];
                 list.replaceChildren();
                 if (!tracks.length) list.innerHTML = '<p class="py-8 text-center text-xs text-zinc-500">No saved audio in the server library yet.</p>';
+                const libraryRows = new Map();
                 tracks.forEach(track => {
                     const row = document.createElement('div'); row.className = 'flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2';
                     const image = document.createElement('img'); image.className = 'h-10 w-10 rounded-md bg-zinc-800 object-cover'; image.alt = ''; setDesktopImage(image, track.cover || track.artwork || '');
                     const text = document.createElement('div'); text.className = 'min-w-0 flex-1';
                     const title = document.createElement('p'); title.className = 'truncate text-xs font-semibold text-zinc-200'; title.textContent = track.title || track.name || 'Untitled';
-                    const artist = document.createElement('p'); artist.className = 'truncate text-[10px] text-zinc-500'; artist.textContent = track.artist || 'Unknown artist'; text.append(title, artist);
+                    const artist = document.createElement('p'); artist.className = 'truncate text-[10px] text-zinc-500'; artist.textContent = hasValidArtist(track) ? track.artist : 'Unknown artist'; text.append(title, artist); libraryRows.set(track, { image, artist });
                     const play = document.createElement('button'); play.type = 'button'; play.className = 'rounded-md border border-zinc-700 px-2.5 py-2 text-xs text-zinc-300 hover:text-white'; play.title = 'Play from server library'; play.innerHTML = '<i class="fa-solid fa-play"></i>';
                     play.addEventListener('click', () => queueTrackForPlayback({ ...track, title: track.title || track.name, name: track.title || track.name, url: track.streamUrl || track.url || '', source: track.source || 'server-library' }));
                     row.append(image, text, play); list.append(row);
+                });
+                hydrateTrackMetadata(tracks, t => {
+                    const r = libraryRows.get(t); if (!r) return;
+                    if (hasValidArtist(t)) r.artist.textContent = t.artist;
+                    if (coverOf(t)) setDesktopImage(r.image, coverOf(t));
                 });
                 const offline = downloadsResult.status === 'rejected';
                 setDesktopOperationStatus(offline ? `Showing local library · server unavailable: ${downloadsResult.reason?.message || 'offline'}` : `Server library loaded · ${tracks.length} tracks.`, offline);
@@ -4151,12 +4443,21 @@
                     detail.className = `mt-0.5 line-clamp-2 text-[9px] leading-relaxed text-zinc-500`;
                     detail.textContent = getDetail(item) || '';
                     if (kind === 'artist') {
-                        card.className = 'relative w-full min-w-0 rounded-lg border border-zinc-800 bg-zinc-900/70 p-2.5 text-left transition hover:border-blue-500/40 hover:bg-zinc-900';
-                        const open = document.createElement('button'); open.type = 'button'; open.className = 'block w-full min-w-0 text-left';
-                        if (item.image || item.cover || item.artwork) { const image = document.createElement('img'); image.alt = `${item.name} portrait`; image.loading = 'lazy'; image.className = 'mb-2 aspect-square w-full rounded-md bg-zinc-800 object-cover'; setDesktopImage(image, item.image || item.cover || item.artwork); open.appendChild(image); }
-                        open.append(title, detail); open.addEventListener('click', () => openArtistDetail(item));
-                        const favorite = document.createElement('button'); favorite.type = 'button'; favorite.className = `absolute right-2 top-2 rounded-full bg-black/70 p-2 ${artistIsLiked(item) ? 'text-red-400' : 'text-white'}`; favorite.innerHTML = `<i class="fa-${artistIsLiked(item) ? 'solid' : 'regular'} fa-heart"></i>`; favorite.title = 'Toggle favorite artist'; favorite.onclick = () => toggleArtistFavorite(item);
-                        card.append(open, favorite);
+                        card.className = 'artist-card';
+                        card.tabIndex = 0;
+                        card.setAttribute('role', 'button');
+                        title.className = 'w-full truncate text-xs font-semibold text-zinc-100';
+                        detail.className = 'w-full line-clamp-2 text-[10px] leading-snug text-zinc-500';
+                        const favorite = document.createElement('button');
+                        favorite.type = 'button';
+                        favorite.className = `artist-fav${artistIsLiked(item) ? ' is-on' : ''}`;
+                        favorite.innerHTML = `<i class="fa-${artistIsLiked(item) ? 'solid' : 'regular'} fa-heart"></i>`;
+                        favorite.title = 'Toggle favorite artist';
+                        favorite.setAttribute('aria-label', `Favorite ${item.name || 'artist'}`);
+                        favorite.addEventListener('click', (e) => { e.stopPropagation(); toggleArtistFavorite(item); });
+                        card.append(makeArtistAvatar(item), title, detail, favorite);
+                        card.addEventListener('click', () => openArtistDetail(item));
+                        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === card) openArtistDetail(item); });
                     } else {
                         if ((kind === 'release' || kind === 'track') && (item.cover || item.image || item.artwork || item.artworkUrl)) { const image = document.createElement('img'); image.alt = `${getTitle(item) || 'Music'} cover`; image.loading = 'lazy'; image.className = 'mb-2 aspect-square w-full rounded-md bg-zinc-800 object-cover'; setDesktopImage(image, item.cover || item.image || item.artwork || item.artworkUrl); card.append(image); }
                         card.append(title, detail);
@@ -4692,6 +4993,7 @@
                     } catch (error) { console.debug('Music metadata lookup skipped:', error.message); }
                 }
                 state.playlist.push(track);
+                enrichTrackMetadata(track).then(changed => { if (changed) scheduleTrackUiRefresh(); }).catch(() => {});
                 importedTracks.push(track);
                 await saveTrackToDB(track);
             }
@@ -4731,18 +5033,14 @@
                 await serverFetch(`/api/library/played`, {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify({ track: { title: track.name, artist: track.artist || '' } })
+                    body: JSON.stringify({ track: { title: track.name, artist: hasValidArtist(track) ? track.artist : '' } })
                 });
             } catch (error) {
                 console.debug('Playback history sync unavailable:', error.message);
             }
         }
 
-        function hasValidArtist(track) {
-            if (!track || !track.artist) return false;
-            const a = track.artist.trim().toLowerCase();
-            return a !== '' && a !== 'local track' && a !== 'local audio' && a !== 'unknown';
-        }
+
 
         async function loadPlaylistChoices() {
             const requests = [apiGet('/api/library/playlists')];
@@ -4960,7 +5258,7 @@
                 li.innerHTML = `
                     <div class="flex min-w-0 items-center space-x-3 overflow-hidden">
                         <div class="relative min-w-[34px]">
-                        <img class="queue-song-img w-8 h-8 rounded-lg object-cover border border-zinc-700/50 bg-zinc-900 shadow-sm" src="assets/icon_128x128.png" alt="Cover" data-cover="${track.cover || track.artwork || track.artworkUrl || ''}" onerror="this.src='assets/icon_128x128.png'">
+                        <img class="queue-song-img w-8 h-8 rounded-lg object-cover border border-zinc-700/50 bg-zinc-900 shadow-sm" src="assets/icon_128x128.png" alt="Cover" data-cover="${escapeHtml(coverOf(track) || track.thumbnail || '')}" onerror="this.src='assets/icon_128x128.png'">
                         ${isActive && state.isPlaying ? '<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>' : ''}
                     </div>
                         <div class="min-w-0 flex-1 overflow-hidden">
@@ -4991,6 +5289,8 @@
 
                 playlistItems.appendChild(li);
             });
+
+            hydrateTrackMetadata(state.filteredPlaylist);
 
             // Resolve album artwork via API for queue items
             playlistItems.querySelectorAll('.queue-song-img').forEach(img => {
@@ -5185,27 +5485,26 @@
                 state.desktopLyrics = [];
                 state.desktopLyricsTrackId = '';
                 document.getElementById('desktopLyricsPreview')?.classList.add('hidden');
+                resetFsLyricsForTrack(track);
             }
-            // S'assurer que l'URL est résolue correctement (relative vs absolute)
             const audioUrl = apiResourceUrl(track.url);
             console.log('[LoadTrack] Setting audio source:', audioUrl);
             state.audio.src = audioUrl;
-            setDesktopOperationStatus(`Ready · ${track.name || 'track'}${track.artist ? ` — ${track.artist}` : ''}`);
+            setDesktopOperationStatus(`Ready · ${track.name || 'track'}${hasValidArtist(track) ? ` — ${track.artist}` : ''}`);
 
             syncCurrentTrackUI();
             renderPlaylist();
             updatePipCanvas();
-            
-            // Auto-load lyrics for 1-line display
-            if (!state.desktopLyrics.length && track && (track.name || track.artist)) {
-                const query = cleanLyricsQuery(track);
-                if (query.title || query.artist) {
-                    try {
-                        const data = await apiGet(`/api/lyrics?title=${encodeURIComponent(query.title)}&artist=${encodeURIComponent(query.artist)}`);
-                        state.desktopLyrics = (data.lines || []).filter(line => line?.text);
-                    } catch (e) { /* silent - lyrics optional */ }
+
+            // Resolve real artist + album art, then refresh every surface that shows them
+            const enrichment = enrichTrackMetadata(track).then(changed => {
+                if (changed) {
+                    if (state.playlist[state.currentIndex] === track) syncCurrentTrackUI();
+                    scheduleTrackUiRefresh();
                 }
-            }
+                return changed;
+            }).catch(() => false);
+            autoLoadLyrics(track, enrichment);
         }
 
         function syncCurrentTrackUI() {
@@ -5226,31 +5525,16 @@
             }
             activeTrackInfo.textContent = `Playing [${state.currentIndex + 1}/${state.playlist.length}]`;
 
-            // Album cover image
+            // Album cover image (State 1)
             const coverEl = document.getElementById('desktopAlbumCover');
             if (coverEl) {
-                const coverUrl = track.cover || track.artwork || track.artworkUrl || '';
-                if (coverUrl) {
+                const coverUrl = coverOf(track) || track.thumbnail || '';
+                if (coverEl.dataset.coverSrc !== coverUrl) {
+                    coverEl.dataset.coverSrc = coverUrl;
                     coverEl.classList.remove('hidden');
-                    setDesktopImage(coverEl, coverUrl);
-                } else {
-                    coverEl.src = 'assets/icon_128x128.png';
+                    if (coverUrl) setDesktopImage(coverEl, coverUrl);
+                    else coverEl.src = 'assets/icon_128x128.png';
                 }
-            }
-
-            // STATE 1: 1 line lyrics display in full player
-            const state1Lyrics = document.getElementById('state1LyricsLine');
-            if (state.desktopLyrics && state.desktopLyrics.length) {
-                const activeLine = state.desktopLyrics.find(line => Number(line.t || 0) <= (state.audio.currentTime || 0));
-                if (activeLine) {
-                    state1Lyrics.textContent = activeLine.text;
-                    state1Lyrics.classList.remove('hidden');
-                } else {
-                    state1Lyrics.textContent = state.desktopLyrics[0]?.text || '♫ No lyrics found';
-                    state1Lyrics.classList.remove('hidden');
-                }
-            } else {
-                state1Lyrics.classList.add('hidden');
             }
 
             // Compact Player
@@ -5479,23 +5763,6 @@
                     updatePipCanvas();
                 }
 
-                // STATE 1: Update 1 line lyrics as song plays
-                const state1Lyrics = document.getElementById('state1LyricsLine');
-                if (state1Lyrics && state.desktopLyrics && state.desktopLyrics.length) {
-                    const now = state.audio.currentTime || 0;
-                    let activeLine = null;
-                    for (const line of state.desktopLyrics) {
-                        if (Number(line.t || 0) <= now) activeLine = line;
-                        else break;
-                    }
-                    if (activeLine) {
-                        state1Lyrics.textContent = activeLine.text;
-                        state1Lyrics.classList.remove('hidden');
-                    } else if (!state1Lyrics.classList.contains('hidden')) {
-                        state1Lyrics.textContent = state.desktopLyrics[0]?.text || '♫ No lyrics found';
-                        state1Lyrics.classList.remove('hidden');
-                    }
-                }
             });
 
             // Enable seek bar once metadata is available (allows seeking)
