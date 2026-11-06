@@ -11,6 +11,69 @@ function releaseType(title, fallback) {
     return suffix ? `${suffix[1][0].toUpperCase()}${suffix[1].slice(1).toLowerCase()}` : (fallback || 'Release');
 }
 
+// Shared track metadata parser used by the YouTube downloader, the lyrics
+// lookup and the cover lookup so that the artist is never silently replaced
+// by a generic "YouTube Audio" / "Topic" uploader name.
+const GENERIC_ARTIST_RE = /^(unknown(?:\s+artist)?|youtube(?:\s+audio)?|various\s+artists?|topic|unknown)$/i;
+const FEATURE_RE = /\s*(?:ft\.?|feat\.?|featuring|with)\s+[a-z0-9][a-z0-9'&. -]*/gi;
+const PAREN_BRACKET_RE = /\s*[\[(](?:[^)\]]*(?:official|music\s+video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version|clip|preview|премьера\s+клипа|official\s+video)[^)]*)[)\]]/gi;
+
+function cleanTitleToken(rawTitle) {
+    return String(rawTitle || '')
+        .replace(PAREN_BRACKET_RE, ' ')
+        .replace(/\s*[-–—]\s*(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ')
+        .replace(FEATURE_RE, ' ')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function cleanArtistToken(rawArtist) {
+    return String(rawArtist || '')
+        .replace(/\s*-\s*topic$/i, '')
+        .replace(/\s*\(?\s*(?:official|music\s+video|vevo|topic)\s*\)?\s*$/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function splitArtistTitle(rawTitle) {
+    // Split on the first " - " (or en/em dash) that separates artist from title.
+    const match = String(rawTitle || '').match(/^(.*?)\s*[-–—]\s*(.+)$/);
+    if (!match) return { artist: '', title: rawTitle };
+    return { artist: match[1].trim(), title: match[2].trim() };
+}
+
+function parseTrackMeta(info = {}, fallbackTitle = '') {
+    // info comes from yt-dlp metadata (or a hand-built object).
+    const rawTitle = String(info.title || fallbackTitle || '').trim();
+
+    // 1. Explicit artist fields from yt-dlp.
+    const explicitArtist = cleanArtistToken(info.artist || info.creator || (info.artists && info.artists[0]) || '');
+
+    // 2. Parse the title "Artist - Title".
+    const split = splitArtistTitle(rawTitle);
+    const titleParsedArtist = cleanArtistToken(split.artist);
+
+    // 3. Channel / uploader, cleaned.
+    const channelArtist = cleanArtistToken(info.channel || info.uploader || '');
+
+    // 4. Generic names force us to fall through to the next candidate.
+    const isGeneric = name => !name || GENERIC_ARTIST_RE.test(name);
+
+    let artist = '';
+    if (!isGeneric(explicitArtist)) {
+        artist = explicitArtist;
+    } else if (!isGeneric(titleParsedArtist)) {
+        artist = titleParsedArtist;
+    } else if (!isGeneric(channelArtist)) {
+        artist = channelArtist;
+    }
+
+    const titleSource = !isGeneric(titleParsedArtist) ? split.title : rawTitle;
+    const title = cleanTitleToken(titleSource) || titleSource || rawTitle;
+    return { artist, title };
+}
+
 class MusicMetadataService {
     constructor() {
         this.cache = new Map();
@@ -21,34 +84,53 @@ class MusicMetadataService {
     async cached(key, ttlMs, fetcher) {
         const entry = this.cache.get(key);
         if (entry && entry.expiresAt > Date.now()) return entry.value;
-        const value = await fetcher();
-        this.cache.set(key, { value, expiresAt: Date.now() + ttlMs });
-        return value;
+        try {
+            const value = await fetcher();
+            this.cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+            return value;
+        } catch (error) {
+            // Keep previously fetched metadata useful during MusicBrainz outages/rate limits.
+            if (entry) {
+                console.warn(`[MusicMetadata] Serving stale cache for ${key}:`, error.message);
+                return entry.value;
+            }
+            throw error;
+        }
     }
 
     async requestJson(url, provider = 'musicbrainz') {
-        if (provider === 'musicbrainz') {
-            // Serialize MusicBrainz calls: parallel callers used to read the same timestamp and burst past 1 req/s (HTTP 503)
-            const turn = this.mbQueue.then(async () => {
-                const delay = Math.max(0, 1100 - (Date.now() - this.lastMusicBrainzRequest));
-                if (delay) await new Promise(resolve => setTimeout(resolve, delay));
-                this.lastMusicBrainzRequest = Date.now();
-            });
-            this.mbQueue = turn.catch(() => {});
-            await turn;
-        }
         // Apple's chart RSS is regularly slower than the JSON search APIs; aborting it
         // at the generic timeout left the new-releases and chart feeds intermittently empty.
         const timeoutMs = provider === 'apple' ? 15000 : 9000;
-        const response = await fetch(url, {
-            headers: {
-                Accept: 'application/json',
-                'User-Agent': 'AuraAudio/1.2.0 (music discovery; https://github.com/auraplayer)'
-            },
-            signal: AbortSignal.timeout(timeoutMs)
-        });
-        if (!response.ok) throw new Error(`${provider} returned HTTP ${response.status}`);
-        return response.json();
+        for (let attempt = 0; ; attempt++) {
+            if (provider === 'musicbrainz') {
+                // MusicBrainz permits one request per second per client. Serialize every
+                // attempt, including retries, so concurrent app activity cannot burst it.
+                const turn = this.mbQueue.then(async () => {
+                    const delay = Math.max(0, 1100 - (Date.now() - this.lastMusicBrainzRequest));
+                    if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+                    this.lastMusicBrainzRequest = Date.now();
+                });
+                this.mbQueue = turn.catch(() => {});
+                await turn;
+            }
+            const response = await fetch(url, {
+                headers: {
+                    Accept: 'application/json',
+                    'User-Agent': 'AuraAudio/1.2.0 (music discovery; https://github.com/auraplayer)'
+                },
+                signal: AbortSignal.timeout(timeoutMs)
+            });
+            if (response.ok) return response.json();
+            const retryable = provider === 'musicbrainz' && [429, 502, 503, 504].includes(response.status) && attempt < 2;
+            if (!retryable) throw new Error(`${provider} returned HTTP ${response.status}`);
+            const retryAfter = Number(response.headers.get('retry-after'));
+            const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+                ? Math.min(retryAfter * 1000, 10000)
+                : 1200 * (2 ** attempt);
+            console.warn(`[MusicMetadata] MusicBrainz returned HTTP ${response.status}; retrying in ${delayMs}ms.`);
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
     }
 
     async wikipediaSummary(title, force = false) {
@@ -471,3 +553,4 @@ class MusicMetadataService {
 
 module.exports = MusicMetadataService;
 module.exports.matchKey = matchKey;
+module.exports.parseTrackMeta = parseTrackMeta;

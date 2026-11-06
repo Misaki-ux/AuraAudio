@@ -3,10 +3,11 @@
 // Local Audio Downloader via yt-dlp & FFmpeg with Real-time Progress Tracking
 // =========================================================================
 
-const { spawn, execFile, execFileSync } = require('child_process');
+const { spawn, execFile, execFileSync, spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { parseTrackMeta } = require('./music-metadata');
 
 const ARTWORK_MIME_EXTENSIONS = new Map([
     ['image/jpeg', 'jpg'],
@@ -120,44 +121,94 @@ async function forceFetchFallbackCover(artist, title) {
     return null;
 }
 
+// Locate a tool: bundled copy (resources/tools) wins over PATH fallback.
+function locateTool(baseName) {
+    const binaryName = process.platform === 'win32' ? `${baseName}.exe` : baseName;
+    const candidates = [
+        path.resolve(__dirname, '..', 'tools', binaryName),
+        process.resourcesPath && path.join(process.resourcesPath, 'tools', binaryName),
+        process.resourcesPath && path.join(process.resourcesPath, 'app.asar.unpacked', 'tools', binaryName)
+    ].filter(Boolean);
+    const found = candidates.find(candidate => {
+        try { return fs.existsSync(candidate); } catch { return false; }
+    });
+    // Return the bundled absolute path if present, else the bare name (PATH lookup).
+    return found || binaryName;
+}
+
 class YouTubeService {
     constructor(downloadsDir = './downloads') {
         this.downloadsDir = path.resolve(downloadsDir);
         this.activeDownloads = new Map();
         this.processes = new Map();
         this.ytDlpDownloadOptions = null;
+        this.videoIdIndex = new Map(); // videoId -> downloadId (for idempotency)
         
         this.queue = [];
         this.activeProcesses = 0;
         this.maxConcurrent = 1; 
         this.proxy = process.env.YTB_PROXY_URL || null; 
 
-        const binaryName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp';
-        const localCandidates = [
-            process.resourcesPath && path.join(process.resourcesPath, 'tools', binaryName),
-            path.resolve(__dirname, '..', 'tools', binaryName),
-            process.resourcesPath && path.join(process.resourcesPath, 'app.asar.unpacked', 'tools', binaryName)
-        ].filter(Boolean);
-        
-        this.ytDlpExecutable = localCandidates.find(candidate => fs.existsSync(candidate)) || 'yt-dlp';
+        this.ytDlpExecutable = locateTool('yt-dlp');
+        this.ffmpegExecutable = locateTool('ffmpeg');
+        this.ffprobeExecutable = locateTool('ffprobe');
+        // Where yt-dlp should look for ffmpeg. Passing the containing directory lets
+        // yt-dlp find ffmpeg/ffprobe without relying on the system PATH.
+        this.ffmpegLocation = path.isAbsolute(this.ffmpegExecutable)
+            ? path.dirname(this.ffmpegExecutable)
+            : '';
         this.ensureDir();
+
+        console.log('[YouTubeService] yt-dlp  :', this.ytDlpExecutable);
+        console.log('[YouTubeService] ffmpeg  :', this.ffmpegExecutable, this.ffmpegLocation ? `(dir: ${this.ffmpegLocation})` : '(PATH)');
+        console.log('[YouTubeService] ffprobe :', this.ffprobeExecutable);
     }
 
-    getDownloadOptions() {
+    // Find an active (queued/downloading) download for the same YouTube video.
+    // Used by the API layer to make /api/ytb/download idempotent.
+    findActiveByVideoId(videoId, targetUrl = '') {
+        if (videoId && this.videoIdIndex.has(videoId)) {
+            const id = this.videoIdIndex.get(videoId);
+            const job = this.activeDownloads.get(id);
+            if (job && job.status !== 'completed' && job.status !== 'failed' && job.status !== 'killed') return job;
+        }
+        // Fallback: match by raw URL on non-video-id URLs (e.g. search queries).
+        for (const job of this.activeDownloads.values()) {
+            if (job.status === 'completed' || job.status === 'failed' || job.status === 'killed') continue;
+            if (job.targetUrl === targetUrl) return job;
+        }
+        return null;
+    }
+
+    async getDownloadOptions() {
         if (this.ytDlpDownloadOptions) return this.ytDlpDownloadOptions;
         let help;
         let version = 'unknown';
+        // yt-dlp inspection must never block the request loop synchronously. If the
+        // bundled binary is slow or missing, fall back to defaults instead of
+        // surfacing "Could not inspect yt-dlp (ETIMEDOUT)" to clients.
         try {
-            version = execFileSync(this.ytDlpExecutable, ['--version'], { encoding: 'utf8', timeout: 5000 }).trim();
-            help = execFileSync(this.ytDlpExecutable, ['--help'], { encoding: 'utf8', timeout: 5000, maxBuffer: 4 * 1024 * 1024 });
+            const inspect = (args) => new Promise(resolve => {
+                let settled = false;
+                const finish = (val) => { if (settled) return; settled = true; resolve(val); };
+                const timer = setTimeout(() => finish(null), 4000);
+                execFile(this.ytDlpExecutable, args, { maxBuffer: 4 * 1024 * 1024, timeout: 4000 }, (err, stdout) => {
+                    clearTimeout(timer);
+                    finish(err || !stdout ? null : stdout);
+                });
+            });
+            const versionOut = await inspect(['--version']);
+            if (versionOut) version = versionOut.trim();
+            const helpOut = await inspect(['--help']);
+            if (helpOut) help = helpOut;
         } catch (error) {
-            throw new Error(`Could not inspect yt-dlp (${error.message}). Run npm run setup:ytdlp.`);
+            console.warn('[YouTube] Could not inspect yt-dlp, using defaults:', error.message);
         }
-        if (!help.includes('--js-runtimes')) {
-            throw new Error(`yt-dlp ${version} is too old. Run npm run setup:ytdlp.`);
-        }
+        // Use default options if version check failed
         const options = ['--js-runtimes', 'node'];
-        if (help.includes('--remote-components')) options.push('--remote-components', 'ejs:github');
+        if (help && help.includes('--remote-components')) options.push('--remote-components', 'ejs:github');
+        // Point yt-dlp at the bundled ffmpeg directory when we have one.
+        if (this.ffmpegLocation) options.push('--ffmpeg-location', this.ffmpegLocation);
         this.ytDlpDownloadOptions = options;
         return options;
     }
@@ -226,12 +277,28 @@ class YouTubeService {
         });
     }
 
-    downloadAudio(targetUrl, customTitle = null, onStarted = null) {
+    downloadAudio(targetUrl, customTitle = null, onStarted = null, options = {}) {
+        // Allocate the job before it enters the serialized yt-dlp queue. Callers
+        // need a stable progress id even while another download is active.
+        const downloadId = 'dl_' + crypto.randomBytes(8).toString('hex');
+        this.activeDownloads.set(downloadId, {
+            id: downloadId,
+            status: 'queued',
+            progress: 0,
+            targetUrl,
+            title: customTitle || 'Downloading…',
+            stage: 'Queued',
+            result: null
+        });
+        const videoId = options.videoId || '';
+        if (videoId) this.videoIdIndex.set(videoId, downloadId);
+        if (onStarted) onStarted(downloadId);
         return new Promise((resolve, reject) => {
             this.queue.push({
-                task: () => new Promise((res, rej) => {
+                task: () => new Promise(async (res, rej) => {
                     this.ensureDir();
-                    const downloadId = 'dl_' + crypto.randomBytes(8).toString('hex');
+                    const job = this.activeDownloads.get(downloadId);
+                    if (job) { job.status = 'downloading'; job.stage = 'Starting'; }
                     const outputTemplate = path.join(this.downloadsDir, `%(title)s [${downloadId}].%(ext)s`);
                     const isSearch = !/^https?:\/\//i.test(targetUrl);
                     const downloadTarget = isSearch ? `ytsearch3:${targetUrl}` : targetUrl;
@@ -239,33 +306,70 @@ class YouTubeService {
                     const args = [
                         downloadTarget, '-f', 'bestaudio/best', '-x', '--audio-format', 'mp3', '--audio-quality', '0',
                         ...(isSearch ? ['--playlist-end', '3', '--match-filter', 'availability = public', '--max-downloads', '1'] : ['--no-playlist']),
-                        '--no-warnings', '--ignore-config', '--newline', '--progress', '--add-metadata', '-o', outputTemplate
+                        '--print', 'before_dl:__AURAAUDIO_METADATA__%(artist|NA)s\t%(creator|NA)s\t%(channel|NA)s\t%(uploader|NA)s\t%(title|NA)s',
+                        '--no-simulate', '--no-warnings', '--ignore-config', '--newline', '--progress', '--add-metadata', '-o', outputTemplate
                     ];
                     if (this.proxy) args.push('--proxy', this.proxy);
 
-                    this.activeDownloads.set(downloadId, { id: downloadId, status: 'downloading', progress: 0, targetUrl, title: customTitle || 'Downloading…', stage: 'Starting' });
-                    if (onStarted) onStarted(downloadId);
-
                     let process;
                     try {
-                        args.unshift(...this.getDownloadOptions());
+                        // getDownloadOptions() also injects --ffmpeg-location for the bundled dir.
+                        args.unshift(...await this.getDownloadOptions());
                         process = spawn(this.ytDlpExecutable, args);
                         this.processes.set(downloadId, process);
                     } catch (error) {
-                        this.activeDownloads.get(downloadId).status = 'failed';
+                        const current = this.activeDownloads.get(downloadId);
+                        if (current) { current.status = 'failed'; current.stage = 'Failed'; current.error = error.message; }
                         return rej(error);
                     }
 
-                    let outputBuffer = '', downloadedFilePath = null, videoThumbnail = null, videoId = null;
+                    let outputBuffer = '', downloadedFilePath = null, videoThumbnail = null, videoId = null, videoMetadata = null, lastInfoLine = 'Starting';
+                    let stageTimer = null, stalledTimer = null;
+                    let extractorStarted = false;
+                    const refreshStage = () => {
+                        const current = this.activeDownloads.get(downloadId);
+                        if (current && current.stage !== 'Downloading') {
+                            current.stage = lastInfoLine || 'Starting';
+                        }
+                    };
+                    const tickStalled = () => {
+                        // yt-dlp extractor phase is silent for a long time on
+                        // unavailable / geo-blocked videos. Surface that the job is
+                        // still alive so the client never shows a frozen "0%".
+                        const current = this.activeDownloads.get(downloadId);
+                        if (current && current.stage !== 'Downloading') {
+                            current.stage = extractorStarted
+                                ? 'Resolving extractor / fetching m3u8…'
+                                : 'Resolving video metadata…';
+                        }
+                    };
                     const consumeOutput = (data, isError = false) => {
                         outputBuffer += data.toString();
                         const lines = outputBuffer.split(/\r?\n|\r/);
                         outputBuffer = lines.pop() || '';
                         for (const line of lines) {
                             const text = line.replace(/\x1b\[[0-9;]*m/g, '').trim();
+                            if (!text) continue;
+                            const metadataPrefix = '__AURAAUDIO_METADATA__';
+                            if (text.startsWith(metadataPrefix)) {
+                                const [artist, creator, channel, uploader, title] = text.slice(metadataPrefix.length)
+                                    .split('\t')
+                                    .map(value => value === 'NA' ? '' : value.trim());
+                                videoMetadata = { artist, creator, channel, uploader, title };
+                            }
                             const match = text.match(/\[download\]\s+([\d.]+)%/);
                             const current = this.activeDownloads.get(downloadId);
                             if (match && current) { current.progress = parseFloat(match[1]); current.stage = 'Downloading'; }
+                            if (!match) {
+                                // Surface the most recent [info] line as the stage so the
+                                // client never shows a frozen "Starting · 0%" while
+                                // yt-dlp resolves the extractor / fetches the m3u8.
+                                const infoMatch = text.match(/^\[info\]\s+(.+)$/i);
+                                if (infoMatch) {
+                                    lastInfoLine = infoMatch[1].slice(0, 80);
+                                    extractorStarted = true;
+                                }
+                            }
                             
                             const thumbMatch = text.match(/\[info\] Writing video thumbnail.*?:\s*(.+)$/i);
                             if (thumbMatch) videoThumbnail = thumbMatch[1].trim();
@@ -279,8 +383,14 @@ class YouTubeService {
                     };
                     process.stdout.on('data', d => consumeOutput(d));
                     process.stderr.on('data', d => consumeOutput(d, true));
+                    // Heartbeat: push a fresh stage label every 2s so progress polls
+                    // during the long yt-dlp extractor phase report something useful.
+                    stageTimer = setInterval(refreshStage, 2000);
+                    stalledTimer = setInterval(tickStalled, 8000);
 
                     process.on('close', async (code) => {
+                        if (stageTimer) clearInterval(stageTimer);
+                        if (stalledTimer) clearInterval(stalledTimer);
                         this.processes.delete(downloadId);
                         
                         if (!downloadedFilePath || !fs.existsSync(downloadedFilePath)) {
@@ -289,48 +399,66 @@ class YouTubeService {
                         }
 
                         if ((code === 0 || (code === 101 && isSearch)) && downloadedFilePath && fs.existsSync(downloadedFilePath)) {
-                            const stats = fs.statSync(downloadedFilePath);
-                            const fileName = path.basename(downloadedFilePath);
-                            let parsedName = path.parse(fileName).name.replace(` [${downloadId}]`, '');
-                            
-                            parsedName = parsedName.replace(/\((?:official\s+)?(?:music\s+)?video\)|\[(?:official\s+)?(?:music\s+)?video\]|\(clip officiel\)|\(audio\)|\(lyrics?\)/gi, '').trim();
+                            try {
+                                const stats = fs.statSync(downloadedFilePath);
+                                const fileName = path.basename(downloadedFilePath);
+                                const parsedName = path.parse(fileName).name.replace(` [${downloadId}]`, '');
 
-                            let artist = 'YouTube Audio', title = parsedName;
-                            if (parsedName.includes(' - ')) {
-                                const split = parsedName.split(' - ');
-                                artist = split[0].trim();
-                                title = split.slice(1).join(' - ').trim();
+                                // Prefer extractor metadata, then parse the downloaded title.
+                                const parsed = parseTrackMeta(videoMetadata || {}, parsedName);
+                                const artist = parsed.artist || 'YouTube Audio';
+                                const title = parsed.title || customTitle || 'Downloaded Audio';
+
+                                const urlId = (targetUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) || [])[1];
+                                const id = videoId || urlId;
+                                const sourceArtwork = isAllowedArtworkUrl(videoThumbnail) ? videoThumbnail
+                                    : (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
+                                const cachedCover = await this.resolveAndCacheCover(artist, title, fileName, sourceArtwork);
+
+                                const result = {
+                                    id: downloadId,
+                                    title,
+                                    artist,
+                                    filePath: downloadedFilePath,
+                                    fileName,
+                                    fileSize: stats.size,
+                                    coverFile: cachedCover?.coverFile || '',
+                                    cover: cachedCover?.coverUrl || '',
+                                    streamUrl: `/api/media/${encodeURIComponent(fileName)}`
+                                };
+
+                                this.activeDownloads.set(downloadId, {
+                                    id: downloadId,
+                                    status: 'completed',
+                                    progress: 100,
+                                    stage: 'Complete',
+                                    result
+                                });
+                                return res(result);
+                            } catch (error) {
+                                const current = this.activeDownloads.get(downloadId);
+                                if (current) {
+                                    current.status = 'failed';
+                                    current.stage = 'Failed';
+                                    current.error = error.message;
+                                }
+                                return rej(error);
                             }
-
-                            const urlId = (targetUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) || [])[1];
-                            const id = videoId || urlId;
-                            const sourceArtwork = isAllowedArtworkUrl(videoThumbnail) ? videoThumbnail
-                                : (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
-                            const cachedCover = await this.resolveAndCacheCover(artist, title, fileName, sourceArtwork);
-
-                            const result = { 
-                                id: downloadId, 
-                                title: title || customTitle || 'Downloaded Audio', 
-                                artist, 
-                                filePath: downloadedFilePath, 
-                                fileName, 
-                                fileSize: stats.size,
-                                coverFile: cachedCover?.coverFile || '',
-                                cover: cachedCover?.coverUrl || ''
-                            };
-                            
-                            this.activeDownloads.set(downloadId, { id: downloadId, status: 'completed', progress: 100, stage: 'Complete', result });
-                            return res(result);
                         }
 
                         const current = this.activeDownloads.get(downloadId);
-                        if (current) { current.status = 'failed'; current.stage = 'Failed'; }
+                        if (current) {
+                            current.status = 'failed';
+                            current.stage = 'Failed';
+                            current.error = `Download failed (code ${code}). File not found.`;
+                        }
                         rej(new Error(`Download failed (code ${code}). File not found.`));
                     });
 
                     process.on('error', (err) => {
                         this.processes.delete(downloadId);
-                        this.activeDownloads.get(downloadId).status = 'failed';
+                        const current = this.activeDownloads.get(downloadId);
+                        if (current) { current.status = 'failed'; current.stage = 'Failed'; current.error = err.message; }
                         rej(err);
                     });
                 }), resolve, reject
@@ -345,7 +473,7 @@ class YouTubeService {
             try { proc.kill('SIGKILL'); } catch(e) {}
             this.processes.delete(downloadId);
             const current = this.activeDownloads.get(downloadId);
-            if (current) { current.status = 'failed'; current.stage = 'Killed'; }
+            if (current) { current.status = 'failed'; current.stage = 'Killed'; current.error = 'Download killed by user.'; }
             return true;
         }
         return false;
@@ -354,7 +482,7 @@ class YouTubeService {
     getDownloadProgress(downloadId) { return this.activeDownloads.get(downloadId) || null; }
     
     formatSeconds(sec) { 
-        if (!sec || isNaN(sec)) return '--:--'; 
+        if (!sec || isNaN(sec)) return `${'--:--'}`; 
         return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(Math.floor(sec % 60)).padStart(2, '0')}`; 
     }
 }
