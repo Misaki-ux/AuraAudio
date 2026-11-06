@@ -11,19 +11,28 @@
 
 🎛️ **3-State Dynamic Reduction**:
   - **Full Mode (920 × 580)**: Complete dashboard with rotating vinyl disc and branded label, real-time audio spectrum visualizer, full playlist queue with instant search & drag-and-drop, track information, seekbar, and YT Shorts-style vertical volume popup.
+  <img width="966" height="609" alt="image" src="https://github.com/user-attachments/assets/f6b4bf47-1232-4c50-bcd2-a3d6a2611581" />
   - **Compact Mode (520 × 240)**: Sleek horizontal media card with medium spinning vinyl disc, marquee ticker, seekbar, full controls, and horizontal volume slider.
+  <img width="535" height="230" alt="image" src="https://github.com/user-attachments/assets/5c30a2d3-ef16-4ac3-8047-12e12fa20163" />
   - **Micro Mode (360 × 74)**: Ultra-compact floating pill bar with mini vinyl disc, scrolling track marquee, time tracker, and micro controls.
+  <img width="410" height="85" alt="image" src="https://github.com/user-attachments/assets/8fa1412b-7189-404b-8a2c-c4b951fd4cb7" />
+
 - ⚡ **Intelligent Auto-Reduction Engine**:
   - **Inactivity / Idle Auto-Reduction**: Automatically detects when you are idle (configurable to 15s, 30s, 1m, 2m, or 5m) and smoothly shrinks the player to Compact or Micro mode with a graceful countdown toast.
   - **Blur Auto-Reduction**: Automatically shrinks the player when you switch focus to your code editor, browser, or documents.
   - **Focus Auto-Restore**: Seamlessly expands back to Full mode when you click back into the player.
   - **Responsive Window Adaptation**: Intelligently switches layouts dynamically when the window is resized manually.
+  <img width="921" height="261" alt="image" src="https://github.com/user-attachments/assets/8384f53e-29b0-4b45-a4ec-0e275d17e911" />
+  
 - 🎨 **Branded Artwork & Assets**:
   - Official high-resolution disc icon embedded into the spinning vinyl record centers in Full, Compact, and Micro modes.
   - Native window taskbar and window frame icons (`assets/icon.ico` and `assets/icon.png`).
   - Web favicons in multiple resolutions (16×16, 24×24, 32×32, 64×64, 128×128).
   - PiP video overlay rendered with the branded app insignia.
-- 📌 **Always-on-Top (Pin)**: Pin the Compact or Micro player above all your open windows while coding, studying, or gaming.
+  <img width="533" height="440" alt="image" src="https://github.com/user-attachments/assets/9c4b365a-7d78-4bd0-a7f5-93ffa1011298" />
+
+- 📌 **Always-on-Top (Pin)**: Pin the Compact or Micro player above all your open windows while coding, studying, or gaming. <img width="24" height="39" alt="image" src="https://github.com/user-attachments/assets/5ab844eb-e668-4351-96bd-740d9f892509" />
+
 - 🎵 **High-Fidelity Audio Engine**:
   - HTML5 Audio API with Web Audio Analyser integration.
   - Real-time frequency spectrum visualizer rendered on HTML5 canvas with GPU acceleration.
@@ -39,18 +48,36 @@
 - 🔍 **Global Search**: Search the local library, curated catalog, and real YouTube results from a dedicated tab; results update as you type. Queue filtering remains available separately.
 - 💗 **Liked library**: Liked songs and artists can be collapsed independently. Selecting a liked artist opens a dedicated profile with portrait, biography, albums, and songs.
 - ✨ **Personalized Discovery**: Recommendations use the current user's likes, imported media, downloads, playlists, and recent plays. Opening Discover fetches fresh data from the server.
+<img width="561" height="453" alt="image" src="https://github.com/user-attachments/assets/1393f42c-e225-4f57-98a5-e3e7cc10cde9" />
+
 - 🎙️ **Artist discovery**: Search and open artist profiles with biographies, portraits, albums, artwork, and playable recording results. Selecting an album opens its details and track titles inside the themed desktop app instead of navigating to MusicBrainz. Favorite artists and songs directly from the discovery view. Metadata comes from MusicBrainz, Wikimedia, and Cover Art Archive when available.
+<img width="535" height="376" alt="image" src="https://github.com/user-attachments/assets/b3b82c73-ad38-4b64-9799-908aed82288e" />
+
 - 🧹 **Cache controls**: Settings estimates local imported audio and server download sizes before partial or full cleanup.
+<img width="923" height="198" alt="image" src="https://github.com/user-attachments/assets/aac969ea-33eb-4697-bfce-df5aaddef22e" />
+
 - 🗂️ **Queue playlists**: Load playlists from the Queue selector, or use the vertical dots on a track to add it to a playlist, open its artist or album, or search related songs.
+<img width="557" height="237" alt="image" src="https://github.com/user-attachments/assets/d769d985-3b6b-4719-b1b0-79fbf05376c0" />
+
 - 🔗 **Service playlist imports**: Import Spotify playlists and saved songs from Spotify's personal-data JSON export; desktop Liked and DL My Songs, plus mobile Liked, Playlists, and Settings, have direct import actions. AuraAudio does not connect to the Spotify Web API. Apple Music supports developer-token validation and MusicKit account authorization before playlist import. SoundCloud playlists are read through yt-dlp; tracks only play locally when the source marks them downloadable. Spotify and Apple Music audio stays in the official service.
-- 🎚️ **Daily mixes**: Choose Your Aura Mix, Electro, Pop, Rock, Rap, Hip-Hop, Reggae, R&B, Classical, Jazz, Blues, Country, Alternative, Techno, Metal, Indie, or Latin in Discover or the Queue playlist selector. Your Aura Mix reflects liked songs and listening history; mood mixes use remote results for the primary moods and curated, playable-on-demand fallbacks for the others. Discover initially renders six cards and reveals more on request. Playback downloads tracks only after the user chooses to play them. Use **Download full mix** for an explicit batch download (up to two at a time) with per-track status. Discover data is cached per profile for ten minutes and can be refreshed manually.
+<img width="548" height="184" alt="image" src="https://github.com/user-attachments/assets/4636cee9-7ab7-4b52-8ab8-558b898abee8" />
+<img width="491" height="75" alt="image" src="https://github.com/user-attachments/assets/f40585ab-4056-451f-81b0-0337869fedf4" />
+(mobile version)
+
+- 🎚️ **Daily mixes**: [Need more theme based mixes for Desktop version_incomming] Choose Your Aura Mix, Electro, Pop, Rock, Rap, Hip-Hop, Reggae, R&B, Classical, Jazz, Blues, Country, Alternative, Techno, Metal, Indie, or Latin in Discover or the Queue playlist selector. Your Aura Mix reflects liked songs and listening history; mood mixes use remote results for the primary moods and curated, playable-on-demand fallbacks for the others. Discover initially renders six cards and reveals more on request. Playback downloads tracks only after the user chooses to play them. Use **Download full mix** for an explicit batch download (up to two at a time) with per-track status. Discover data is cached per profile for ten minutes and can be refreshed manually.
+<img width="353" height="616" alt="image" src="https://github.com/user-attachments/assets/58c6f950-bcc8-4f46-824c-d778f8fcaf47" />
+Mobile version is more accurate for this feature
 - 📱 **Mobile player**: Open `/mobile/` on the server to browse server-backed likes and playlists, search, play, and access downloads. First launch presents sign-in or guest access; signed-in users can sign out from the account panel. Saved liked and downloaded tracks play from their existing server/device media and do not start a replacement download when a saved file is missing; stale missing-download entries are pruned from the download library. Standard mobile playlists use compact cards that open a separate track view with recommendations; the Library's named Playlists group and individual cards can be collapsed, switched between grid and compact-list layouts, renamed, deleted, and reordered. Expanded playlists provide track reordering. Playlist and track artwork uses cached server metadata lookups. Recommendation entries do not imply that playback is available—the server may return metadata without a playable source. Mobile Liked and Playlists screens provide direct Spotify import actions, while Settings offers separate playlist and saved-song choices. Settings can also import audio folders/files into device-local IndexedDB for playback, download a versioned backup of liked songs, artists, and playlists, and set per-profile play-history retention and minimum listen duration. Folder permissions are not retained; re-import after adding files. Missing or failed liked-track covers are retried through the server's free metadata lookup and saved to the profile and browser cache when found. Artist detail includes a portrait, biography, songs, and a free iTunes Search API latest-release lookup with locally cached artist/release metadata and artwork; it loads release names and covers first, and only loads album tracks after a release is selected. Audio is downloaded only when the user chooses Play. In Liked Songs, tap a row or its play button to play; double-tap a row to append it to the queue without starting a download. The expanded mobile player hides the tab navigation and stays below the top bar; fullscreen lyrics also start below the top bar. Download progress remains non-blocking, and unliking removes duplicate like records.
   <img width="341" height="668" alt="image" src="https://github.com/user-attachments/assets/192b93bf-6fca-4931-a537-ba40d979a0ca" />
   <img width="339" height="667" alt="image" src="https://github.com/user-attachments/assets/b9bc313c-451a-46a3-9ebe-7682f7e09195" />
   <img width="332" height="668" alt="image" src="https://github.com/user-attachments/assets/a2b38874-db94-4f73-b2f4-16aabb0d482f" />
   <img width="331" height="445" alt="image" src="https://github.com/user-attachments/assets/8d794a63-1df4-42fe-8feb-afd9655d437e" />
 - 🔁 **Cross-server library transfer**: In desktop Settings, choose **Import mobile library → Create QR**. On the phone's autonomous client, open Settings → **Send library to desktop**, scan the expiring QR (or paste its payload), then send. The one-use receiver is limited to a private Wi-Fi/LAN connection and merges liked songs/artists, listening history, playlists, and download metadata. Audio files, local filenames, file paths, and stream URLs are never transferred. Keep both devices online and on the same private network until the desktop reports completion.
+<img width="944" height="164" alt="image" src="https://github.com/user-attachments/assets/b99e1f05-edc7-40eb-b0fe-30a612b3e860" />
+
 - 🌈 **Dynamic Accent Color & Glow Engine**:
+  <img width="167" height="44" alt="image" src="https://github.com/user-attachments/assets/6a5293e3-819f-4a28-953f-106f929aed03" />
+
   - Signature Aura Royal Blue (`#2563eb`) matching the official asset palette.
   - One-click color presets: Spotify Green, Cyber Violet, Vibrant Amber, Hot Pink.
   - Custom primary and glow color pickers with real-time CSS variable updates.
