@@ -9,9 +9,7 @@
 
 ---
 
-## ✨ Features at a Glance
-
-- 🎛️ **3-State Dynamic Reduction**:
+🎛️ **3-State Dynamic Reduction**:
   - **Full Mode (920 × 580)**: Complete dashboard with rotating vinyl disc and branded label, real-time audio spectrum visualizer, full playlist queue with instant search & drag-and-drop, track information, seekbar, and YT Shorts-style vertical volume popup.
   - **Compact Mode (520 × 240)**: Sleek horizontal media card with medium spinning vinyl disc, marquee ticker, seekbar, full controls, and horizontal volume slider.
   - **Micro Mode (360 × 74)**: Ultra-compact floating pill bar with mini vinyl disc, scrolling track marquee, time tracker, and micro controls.
@@ -39,23 +37,19 @@
 - 📥 **Favorite on Import**: Choose **Like imports** before adding audio files, and use the heart on any queue card to update favorites.
 - 👤 **Guest-first account access**: The main navigation keeps Queue, Search, Discover, DL My Songs, and Liked. Create and load playlists from Queue; sign-in and cloud options open from the Guest/account button.
 - 🔍 **Global Search**: Search the local library, curated catalog, and real YouTube results from a dedicated tab; results update as you type. Queue filtering remains available separately.
-- 💗 **Liked library**: Liked songs and artists share the same row styling and can be collapsed independently on desktop and mobile.
+- 💗 **Liked library**: Liked songs and artists can be collapsed independently. Selecting a liked artist opens a dedicated profile with portrait, biography, albums, and songs.
 - ✨ **Personalized Discovery**: Recommendations use the current user's likes, imported media, downloads, playlists, and recent plays. Opening Discover fetches fresh data from the server.
-- 🎙️ **Artist discovery**: Search and open artist profiles with biographies, portraits, albums, artwork, and playable recording results. Favorite artists and songs directly from the discovery view. Metadata comes from MusicBrainz, Wikimedia, and Cover Art Archive when available.
+- 🎙️ **Artist discovery**: Search and open artist profiles with biographies, portraits, albums, artwork, and playable recording results. Selecting an album opens its details and track titles inside the themed desktop app instead of navigating to MusicBrainz. Favorite artists and songs directly from the discovery view. Metadata comes from MusicBrainz, Wikimedia, and Cover Art Archive when available.
 - 🧹 **Cache controls**: Settings estimates local imported audio and server download sizes before partial or full cleanup.
 - 🗂️ **Queue playlists**: Load playlists from the Queue selector, or use the vertical dots on a track to add it to a playlist, open its artist or album, or search related songs.
-- 🔗 **Service playlist imports**: Import Spotify playlists and saved songs from Spotify's personal-data JSON export; AuraAudio does not connect to the Spotify Web API. Apple Music supports developer-token validation and MusicKit account authorization before playlist import. SoundCloud playlists are read through yt-dlp; tracks only play locally when the source marks them downloadable. Spotify and Apple Music audio stays in the official service.
+- 🔗 **Service playlist imports**: Import Spotify playlists and saved songs from Spotify's personal-data JSON export; desktop Liked and DL My Songs, plus mobile Liked, Playlists, and Settings, have direct import actions. AuraAudio does not connect to the Spotify Web API. Apple Music supports developer-token validation and MusicKit account authorization before playlist import. SoundCloud playlists are read through yt-dlp; tracks only play locally when the source marks them downloadable. Spotify and Apple Music audio stays in the official service.
 - 🎚️ **Daily mixes**: Choose Your Aura Mix, Electro, Pop, Rock, Rap, Hip-Hop, Reggae, R&B, Classical, Jazz, Blues, Country, Alternative, Techno, Metal, Indie, or Latin in Discover or the Queue playlist selector. Your Aura Mix reflects liked songs and listening history; mood mixes use remote results for the primary moods and curated, playable-on-demand fallbacks for the others. Discover initially renders six cards and reveals more on request. Playback downloads tracks only after the user chooses to play them. Use **Download full mix** for an explicit batch download (up to two at a time) with per-track status. Discover data is cached per profile for ten minutes and can be refreshed manually.
-- 📱 **Mobile player**:
-  <img width="282" height="177" alt="image" src="https://github.com/user-attachments/assets/1b1604ae-b9f4-4646-8588-7ca65a31bd12" />
-
--   Open `/mobile/` on the server to browse server-backed likes and playlists, search, play, and access downloads. First launch presents sign-in or guest access; signed-in users can sign out from the account panel. Saved liked and downloaded tracks play from their existing server/device media and do not start a replacement download when a saved file is missing; stale missing-download entries are pruned from the download library. Playlist rows show artwork, artist, album, date added, and a normalized duration; each playlist also has recommendations with an explicit add action. Recommendation entries do not imply that playback is available—the server may return metadata without a playable source. Mobile Settings can import audio folders/files into device-local IndexedDB for playback, import Spotify personal-data JSON, download a versioned backup of liked songs, artists, and playlists, and set per-profile play-history retention and minimum listen duration. Folder permissions are not retained; re-import after adding files. Missing or failed liked-track covers are retried through the server's free metadata lookup and saved to the profile and browser cache when found. Artist detail includes a free iTunes Search API latest-release lookup with locally cached artist/release metadata and artwork; it loads release names and covers first, and only loads album tracks after a release is selected. Audio is downloaded only when the user chooses Play. In Liked Songs, tap a row or its play button to play; double-tap a row to append it to the queue without starting a download. The expanded mobile player hides the tab navigation and stays below the top bar; fullscreen lyrics also start below the top bar. Download progress remains non-blocking, and unliking removes duplicate like records.
+- 📱 **Mobile player**: Open `/mobile/` on the server to browse server-backed likes and playlists, search, play, and access downloads. First launch presents sign-in or guest access; signed-in users can sign out from the account panel. Saved liked and downloaded tracks play from their existing server/device media and do not start a replacement download when a saved file is missing; stale missing-download entries are pruned from the download library. Standard mobile playlists use compact cards that open a separate track view with recommendations; the Library's named Playlists group and individual cards can be collapsed, switched between grid and compact-list layouts, renamed, deleted, and reordered. Expanded playlists provide track reordering. Playlist and track artwork uses cached server metadata lookups. Recommendation entries do not imply that playback is available—the server may return metadata without a playable source. Mobile Liked and Playlists screens provide direct Spotify import actions, while Settings offers separate playlist and saved-song choices. Settings can also import audio folders/files into device-local IndexedDB for playback, download a versioned backup of liked songs, artists, and playlists, and set per-profile play-history retention and minimum listen duration. Folder permissions are not retained; re-import after adding files. Missing or failed liked-track covers are retried through the server's free metadata lookup and saved to the profile and browser cache when found. Artist detail includes a portrait, biography, songs, and a free iTunes Search API latest-release lookup with locally cached artist/release metadata and artwork; it loads release names and covers first, and only loads album tracks after a release is selected. Audio is downloaded only when the user chooses Play. In Liked Songs, tap a row or its play button to play; double-tap a row to append it to the queue without starting a download. The expanded mobile player hides the tab navigation and stays below the top bar; fullscreen lyrics also start below the top bar. Download progress remains non-blocking, and unliking removes duplicate like records.
   <img width="341" height="668" alt="image" src="https://github.com/user-attachments/assets/192b93bf-6fca-4931-a537-ba40d979a0ca" />
   <img width="339" height="667" alt="image" src="https://github.com/user-attachments/assets/b9bc313c-451a-46a3-9ebe-7682f7e09195" />
   <img width="332" height="668" alt="image" src="https://github.com/user-attachments/assets/a2b38874-db94-4f73-b2f4-16aabb0d482f" />
   <img width="331" height="445" alt="image" src="https://github.com/user-attachments/assets/8d794a63-1df4-42fe-8feb-afd9655d437e" />
-
-
+- 🔁 **Cross-server library transfer**: In desktop Settings, choose **Import mobile library → Create QR**. On the phone's autonomous client, open Settings → **Send library to desktop**, scan the expiring QR (or paste its payload), then send. The one-use receiver is limited to a private Wi-Fi/LAN connection and merges liked songs/artists, listening history, playlists, and download metadata. Audio files, local filenames, file paths, and stream URLs are never transferred. Keep both devices online and on the same private network until the desktop reports completion.
 - 🌈 **Dynamic Accent Color & Glow Engine**:
   - Signature Aura Royal Blue (`#2563eb`) matching the official asset palette.
   - One-click color presets: Spotify Green, Cyber Violet, Vibrant Amber, Hot Pink.
@@ -63,6 +57,7 @@
   - Replace each preset's `assets/<palette>/x.png` and `x.ico` placeholders to brand the app and favicon for that palette.
 - 🖼️ **Picture-in-Picture (PiP)**: Pop out an OS-level floating video overlay with the live branded insignia, song title, and time progress.
 - ⌨️ **Comprehensive Keyboard Navigation**: Control everything effortlessly with hotkeys.
+
 
 ## Build and Run
 
@@ -74,16 +69,24 @@ Install Node.js 18 or newer, then install the project dependencies with `npm ins
 | `npm run server` | Run only the API server from the project | API on port 3456; data in `server/data/db.json`, downloads in `downloads/` |
 | `npm run mobile:compile` | Compile the mobile web client | `mobile-dist/index.html` |
 | `npm run android:apk` | Compile the mobile client, sync the Capacitor Android project, and build a debug APK | `dist/AuraAudio-debug.apk` |
+| `npm run android:autonomous-apk` | Build the standalone autonomous Android app with app-private local storage | `dist/AuraAudio-Autonomous-debug.apk` |
 | `npm run server:compile` | Build the standalone server distribution, including the mobile client | `standalone-server/` |
+| `npm run app:exe` | Build the standalone server and package a portable Windows executable | `dist-portable/` |
 | `powershell -ExecutionPolicy Bypass -File tools/sync-standalone-server.ps1` | Copy newer root server JavaScript files into the existing standalone server | Updates `standalone-server/server/*.js`; leaves runtime data, configuration, and assets unchanged |
 | `npm run appcompile` | Build mobile and standalone server outputs, then package the desktop app | `dist/` installers and portable app, plus both standalone folders |
 | `npm run pack` | Prepare mobile and server outputs and create an unpacked desktop build | `dist/win-unpacked/` on Windows |
 
-`npm run build` and `npm run dist` are aliases for `npm run appcompile`. On Windows, the packaged app produces NSIS installer and portable executable targets. The standalone server needs Node.js 18+ and FFmpeg on PATH; the Windows yt-dlp executable is included when available. See [HOW_TO_RUN.md](HOW_TO_RUN.md) for LAN access and launch steps.
+`npm run build` and `npm run dist` are aliases for `npm run appcompile`. On Windows, the packaged app produces NSIS installer and portable executable targets. `npm run app:exe` writes to `dist-portable/` so a running app or locked build output under `dist/` does not block the portable build. The standalone server needs Node.js 18+ and FFmpeg on PATH; the Windows yt-dlp executable is included when available. See [HOW_TO_RUN.md](HOW_TO_RUN.md) for LAN access and launch steps.
 
 ### Build the Android APK
 
 Install Node.js 22+, JDK 17 or newer, and Android Studio with Android SDK Platform 35 and Build Tools 35.0.0. Install dependencies with `npm install`, then run `npm run android:apk`. On its first run this generates the `android/` Capacitor project, syncs the mobile client and its assets, and builds `dist/AuraAudio-debug.apk`. Android uses an HTTP local WebView origin and allows cleartext requests so it can reach the LAN API over HTTP. The build uses the first available private LAN IPv4 address and port 3456 for its default API URL. To choose a host explicitly, set `AURA_API_HOST` (and optionally `AURA_PORT`) or set the complete `AURA_API_URL` before building. The host server must be reachable from the phone; see [HOW_TO_RUN.md](HOW_TO_RUN.md) for configuring LAN access. Debug APKs are for installation and testing; Play Store distribution needs a signed release build.
+
+### Standalone autonomous Android app
+
+Build with `npm run android:autonomous-apk`. Unlike the LAN-connected APK above, this variant does not require a PC, configure an API URL, or run an embedded HTTP listener. A native Capacitor bridge stores library records and queued actions in app-private SQLite and audio in app-private files; no storage permission or cleartext network access is required. Settings shows storage usage and provides controls to import audio, clear saved audio, clear app cache, export a backup, or reset local data. The bridge enforces a 512 MiB logical storage quota and a 256 MiB per-audio-file limit. On upgrade, existing IndexedDB data is copied and verified before the old copy is removed.
+
+The autonomous app can play imported/saved local audio and manage likes, playlists, and play history without a PC. Online discovery, server search, lyrics, and YouTube downloads still require the optional AuraAudio server; Android YouTube-download parity is not included. To optionally transfer library metadata to desktop, open Settings → **Send library to desktop** and scan the expiring QR created in desktop Settings while both devices share a private network. The transfer includes likes, artists, play history, playlists, and download metadata only—audio is never sent. iOS support is not included.
 
 ### Mobile installation and background audio
 
@@ -180,7 +183,7 @@ Open **Settings (<i class="fa-solid fa-gear"></i>)** to customize the auto-reduc
 
 Spotify can provide a copy of your account data, including playlist details and the songs in Your Library. Request it from [Spotify Account Privacy](https://www.spotify.com/fr/account/privacy/). Spotify sends the download link by email; delivery can take up to 5 days.
 
-When the email arrives, download and extract the ZIP archive. On desktop, use **DL My Songs → Import Spotify data export (JSON)**. On mobile, open **Settings → Import Spotify data**. Select a `Playlist*.json` file to import playlists into Queue, or `YourLibrary.json` to import saved songs into Liked. Repeat for additional playlist JSON files if the export contains more than one. Playlist names and duplicate tracks are deduplicated. To avoid duplicates, AuraAudio skips playlists whose names already exist.
+When the email arrives, download and extract the ZIP archive. On desktop, choose **Liked → Import saved songs** for `YourLibrary.json`, or **DL My Songs → Choose Spotify JSON** for a playlist or library export. On mobile, choose **Liked → Import saved songs** or **Playlists → Import playlists**; both are also available separately under Settings. Choose a `Playlist*.json` file to import playlists into Playlists/Queue, or `YourLibrary.json` to import saved songs into Liked. Repeat for additional playlist JSON files if the export contains more than one. Playlist names and duplicate tracks are deduplicated. To avoid duplicates, AuraAudio skips playlists whose names already exist.
 
 This is a metadata import. Spotify tracks continue to play in Spotify; AuraAudio does not download or stream Spotify audio. Spotify API sign-in and playlist API requests are not used. Mobile library backups are local JSON downloads containing only liked songs, liked artists, and playlists—not play history, diagnostics, credentials, tokens, or audio files.
 
@@ -195,6 +198,32 @@ In **DL My Songs**, paste an Apple Music developer token and click **Confirm API
 ### Use the mobile player
 
 The server serves a separate touch-friendly interface at `http://<server-address>:3456/mobile/`. Its service worker uses the V7 cache namespace and keeps the app shell available offline after a successful visit; API requests and audio streams still require the server. To make it reachable from a phone on the same network, set `server.host` to `0.0.0.0` in `server/config.json` (or set `AURA_HOST=0.0.0.0`) and run `npm run server`. Find the computer's LAN IP and use that address in the phone browser. The app and mobile page share the same API, profile data, and `downloads/` directory. The embedded desktop server stays bound to localhost by default. Background playback is best-effort and remains subject to browser and operating-system policies.
+
+### Windows Firewall (allow the local HTTPS listener)
+
+The DuckDNS launcher forwards external TCP port `32768` (or your selected `-HttpsPort`) to local TCP port `443`. If the phone cannot reach Caddy, run PowerShell as Administrator and allow the local listener:
+
+```powershell
+New-NetFirewallRule -DisplayName "AuraAudio HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
+# Or with netsh:
+netsh advfirewall firewall add rule name="AuraAudio HTTPS" dir=in action=allow protocol=TCP localport=443
+```
+
+To remove the rule later: `Remove-NetFirewallRule -DisplayName "AuraAudio HTTPS"`.
+
+### External HTTPS access (DuckDNS + autonomous client)
+
+The standalone server also ships an offline-capable autonomous client at `/autonomousclientmobile/`. To reach it from outside your home network over HTTPS without forwarding ports 80/443:
+
+1. Copy `standalone-server/duckdns.config.example.json` to `standalone-server/duckdns.config.json` and fill in your DuckDNS subdomain and token.
+2. The launcher prefers the bundled DuckDNS-enabled `caddy-duckdns.exe`. Reserve this PC's LAN address, then forward external TCP `32768` to local TCP `443`. Run `.\start-autonomous-client.ps1` inside `standalone-server/` to launch the server and open a one-time QR code for the autonomous client only. To choose another external port:
+   ```powershell
+   .\start-autonomous-client.ps1 -HttpsPort 32769
+   ```
+3. Certificates are issued through DNS-01 via DuckDNS, so no inbound ports 80/443 are required. Only your chosen external HTTPS port needs forwarding; allow local TCP 443 through Windows Firewall.
+4. Keep the PowerShell window open; after the local Caddy HTTPS listener is ready, it opens a browser prompt containing the QR, the direct pairing link, and an expiry countdown. It does not depend on router NAT loopback. The QR expires after two minutes or its first successful scan and does not expose the shared server key.
+
+The launcher rotates its access key on every run, invalidating paired devices when the server stops. For manual URL/key setup without a QR code, use `.\start-duckdns-server.ps1`. The DuckDNS token stays in the local config file and is passed to Caddy through a temporary environment variable. See `standalone-server/DUCKDNS-SETUP.md` for full troubleshooting.
 
 Desktop search results and personalized mix tracks play through the queue. Online audio is downloaded by the server first; the download status card shows progress, errors, and the saved path. MP3 conversion requires FFmpeg alongside `yt-dlp`.
 
