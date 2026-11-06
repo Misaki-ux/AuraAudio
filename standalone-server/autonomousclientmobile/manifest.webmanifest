@@ -1,0 +1,13 @@
+{
+  "name": "AuraAudio Autonomous Mobile",
+  "short_name": "AuraAudio",
+  "description": "Offline-friendly music discovery, search, and likes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#0b0d13",
+  "icons": [
+    { "src": "./aura-icon.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
