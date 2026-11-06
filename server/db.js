@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { parseTrackMeta } = require('./music-metadata');
 
 function normalizeLikedText(value) {
     return String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
@@ -16,6 +17,26 @@ function likedSongIdentity(track) {
     const title = normalizeLikedText(track.title || track.name);
     const artist = normalizeLikedText(track.artist);
     return title && artist ? `${title}|${artist}` : '';
+}
+
+function isGenericArtistName(value) {
+    return /^(unknown(?:\s+artist)?|youtube(?:\s+audio)?|various\s+artists?|topic)$/i.test(String(value || '').trim());
+}
+
+function normalizedPlayMetadata(track = {}) {
+    const rawTitle = String(track.title || track.name || '').trim();
+    const parsed = parseTrackMeta({
+        title: rawTitle,
+        artist: track.artist,
+        creator: track.creator,
+        artists: track.artists,
+        channel: track.channel,
+        uploader: track.uploader
+    }, rawTitle);
+    return {
+        title: String(parsed.title || rawTitle).trim(),
+        artist: String(parsed.artist || '').trim()
+    };
 }
 
 class Database {
@@ -32,6 +53,7 @@ class Database {
             activity_events: [],
             diagnostics: [],
             downloads: [],
+            download_metadata: [],
             play_history_preferences: [],
             mobile_sync_actions: [],
             settings: {
@@ -111,14 +133,14 @@ class Database {
                 unique.set(identity, { ...item });
                 continue;
             }
-            for (const key of ['cover', 'album', 'albumTitle', 'fileName', 'url', 'localAudioId', 'duration', 'durationFormatted']) {
+            for (const key of ['cover', 'album', 'albumTitle', 'fileName', 'url', 'localAudioId', 'duration', 'durationFormatted', 'artist']) {
                 if (!existing[key] && item[key]) existing[key] = item[key];
             }
         }
         return [...unique.values()];
     }
 
-    updateLikedSongArtwork(userId = 'guest', trackId, cover, album = '') {
+    updateLikedSongArtwork(userId = 'guest', trackId, cover, album = '', artist = '') {
         const track = this.data.liked_songs.find(item => item.userId === userId && item.trackId === trackId);
         if (!track) return false;
         let changed = false;
@@ -128,6 +150,10 @@ class Database {
         }
         if (!track.album && album) {
             track.album = String(album).slice(0, 240);
+            changed = true;
+        }
+        if (isGenericArtistName(track.artist) && artist && !isGenericArtistName(artist)) {
+            track.artist = String(artist).trim().slice(0, 180);
             changed = true;
         }
         if (changed) this.save();
@@ -218,7 +244,8 @@ class Database {
         const playlists = this.data.playlists.filter(p => p.userId === userId);
         const imported = (this.data.imported_media || []).filter(item => item.userId === userId);
         const played = (this.data.play_events || []).filter(item => item.userId === userId)
-            .sort((a, b) => b.playedAt.localeCompare(a.playedAt)).slice(0, 100);
+            .sort((a, b) => String(b.playedAt || '').localeCompare(String(a.playedAt || ''))).slice(0, 100)
+            .map(item => ({ ...item, ...normalizedPlayMetadata(item) }));
         const tracks = [
             ...liked,
             ...downloads,
@@ -304,11 +331,12 @@ class Database {
         const preferences = this.getPlayHistoryPreferences(userId);
         if (Number.isFinite(listenedSeconds) && listenedSeconds < preferences.minimumListenSeconds) return null;
         const collection = this.data.play_events || (this.data.play_events = []);
+        const metadata = normalizedPlayMetadata(track);
         const event = {
             id: 'play_' + crypto.randomBytes(6).toString('hex'),
             userId,
-            title: track.title.trim().slice(0, 200),
-            artist: typeof track.artist === 'string' ? track.artist.trim().slice(0, 160) : '',
+            title: metadata.title.slice(0, 200),
+            artist: metadata.artist.slice(0, 160),
             playedAt: new Date().toISOString()
         };
         collection.unshift(event);
@@ -316,6 +344,254 @@ class Database {
         this.recordActivity(userId, 'play', event, false);
         this.save();
         return event;
+    }
+
+    exportLibraryTransfer(userId = 'guest') {
+        const text = (value, limit) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
+        const duration = value => {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) && parsed >= 0 && parsed <= 86400 ? parsed : 0;
+        };
+        const date = value => {
+            const parsed = Date.parse(value || '');
+            return Number.isFinite(parsed) ? new Date(parsed).toISOString() : '';
+        };
+        const safeTrack = track => ({
+            title: text(track.title || track.name, 240),
+            artist: text(track.artist, 180),
+            album: text(track.album || track.albumTitle, 240),
+            duration: duration(track.duration),
+            addedAt: date(track.addedAt)
+        });
+        let playlistTrackBudget = 5000;
+        const exportedPlaylists = this.data.playlists.filter(playlist => playlist.userId === userId)
+            .slice(0, 100)
+            .map(playlist => {
+                const tracks = (playlist.tracks || []).slice(0, Math.min(200, playlistTrackBudget))
+                    .map(safeTrack).filter(track => track.title);
+                playlistTrackBudget -= tracks.length;
+                return {
+                    name: text(playlist.name, 100) || 'Untitled playlist',
+                    description: text(playlist.description, 240),
+                    createdAt: date(playlist.createdAt),
+                    tracks
+                };
+            });
+        return {
+            format: 'AuraAudio-library-transfer',
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            likedSongs: this.getLikedSongs(userId).slice(0, 1000).map(safeTrack).filter(track => track.title),
+            likedArtists: this.getLikedArtists(userId).slice(0, 500).map(artist => ({
+                id: text(artist.id || artist.key, 180),
+                name: text(artist.name, 180),
+                likedAt: date(artist.likedAt)
+            })).filter(artist => artist.name),
+            listeningHistory: (this.data.play_events || [])
+                .filter(event => event.userId === userId)
+                .sort((a, b) => String(b.playedAt || '').localeCompare(String(a.playedAt || '')))
+                .slice(0, 5000)
+                .map(event => ({ ...safeTrack(event), playedAt: date(event.playedAt) }))
+                .filter(event => event.title && event.playedAt),
+            playlists: exportedPlaylists,
+            downloadMetadata: [
+                ...this.getDownloads(userId),
+                ...(this.data.download_metadata || []).filter(download => download.userId === userId)
+            ].slice(0, 1000).map(download => ({
+                title: text(download.title, 240),
+                artist: text(download.artist, 180),
+                album: text(download.album || download.albumTitle, 240),
+                duration: duration(download.duration),
+                downloadedAt: date(download.downloadedAt)
+            })).filter(download => download.title)
+        };
+    }
+
+    importLibraryTransfer(userId = 'guest', transfer = {}) {
+        const limits = {
+            likedSongs: 1000,
+            likedArtists: 500,
+            listeningHistory: 5000,
+            playlists: 100,
+            downloadMetadata: 1000
+        };
+        for (const [key, limit] of Object.entries(limits)) {
+            if (!Array.isArray(transfer[key]) || transfer[key].length > limit) {
+                throw new Error(`Transfer ${key} must contain no more than ${limit} records.`);
+            }
+        }
+        const text = (value, limit) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
+        const duration = value => {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) && parsed >= 0 && parsed <= 86400 ? parsed : 0;
+        };
+        const validDate = value => {
+            const parsed = Date.parse(value || '');
+            return Number.isFinite(parsed) ? new Date(parsed).toISOString() : '';
+        };
+        const identity = track => {
+            const title = normalizeLikedText(track.title);
+            const artist = normalizeLikedText(track.artist);
+            return title ? `${title}|${artist}` : '';
+        };
+        const safeTrack = track => {
+            if (!track || typeof track !== 'object' || Array.isArray(track)) return null;
+            const title = text(track.title || track.name, 240);
+            if (!title) return null;
+            return {
+                title,
+                artist: text(track.artist, 180),
+                album: text(track.album, 240),
+                duration: duration(track.duration),
+                addedAt: validDate(track.addedAt)
+            };
+        };
+        let likedSongs = 0;
+        let likedArtists = 0;
+        let listeningHistory = 0;
+        let playlists = 0;
+        let playlistTracks = 0;
+        let downloadMetadata = 0;
+
+        this.data.liked_songs ||= [];
+        const likedIdentities = new Set(this.data.liked_songs.filter(track => track.userId === userId).map(identity).filter(Boolean));
+        for (const source of transfer.likedSongs) {
+            const track = safeTrack(source);
+            if (!track) continue;
+            const key = identity(track);
+            if (!key || likedIdentities.has(key)) continue;
+            likedIdentities.add(key);
+            this.data.liked_songs.unshift({
+                id: 'like_' + crypto.randomBytes(6).toString('hex'),
+                userId,
+                trackId: 'transfer_' + crypto.randomBytes(8).toString('hex'),
+                ...track,
+                source: 'library-transfer',
+                url: '',
+                fileName: '',
+                cover: null,
+                durationFormatted: '--:--'
+            });
+            likedSongs++;
+        }
+
+        this.data.liked_artists ||= [];
+        const artistKeys = new Set(this.data.liked_artists.filter(artist => artist.userId === userId)
+            .map(artist => normalizeLikedText(artist.name)).filter(Boolean));
+        for (const source of transfer.likedArtists) {
+            if (!source || typeof source !== 'object' || Array.isArray(source)) continue;
+            const name = text(source.name, 180);
+            const key = normalizeLikedText(name);
+            if (!name || !key || artistKeys.has(key)) continue;
+            artistKeys.add(key);
+            this.data.liked_artists.unshift({
+                userId,
+                key: text(source.id, 180).toLowerCase() || key,
+                id: text(source.id, 180) || name,
+                name,
+                image: '',
+                likedAt: validDate(source.likedAt) || new Date().toISOString()
+            });
+            likedArtists++;
+        }
+
+        this.data.playlists ||= [];
+        const userPlaylists = this.data.playlists.filter(playlist => playlist.userId === userId);
+        const playlistByName = new Map(userPlaylists.map(playlist => [normalizeLikedText(playlist.name), playlist]));
+        for (const source of transfer.playlists) {
+            if (!source || typeof source !== 'object' || Array.isArray(source) || !Array.isArray(source.tracks) || source.tracks.length > 200) continue;
+            const name = text(source.name, 100) || 'Imported playlist';
+            const key = normalizeLikedText(name);
+            let playlist = playlistByName.get(key);
+            if (!playlist) {
+                if (userPlaylists.length >= 100) continue;
+                playlist = {
+                    id: 'pl_' + crypto.randomBytes(6).toString('hex'),
+                    userId,
+                    name,
+                    description: text(source.description, 240) || 'Imported from AuraAudio mobile',
+                    isPublic: false,
+                    tracks: [],
+                    createdAt: validDate(source.createdAt) || new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                this.data.playlists.push(playlist);
+                userPlaylists.push(playlist);
+                playlistByName.set(key, playlist);
+                playlists++;
+            }
+            const knownTracks = new Set((playlist.tracks || []).map(identity).filter(Boolean));
+            for (const sourceTrack of source.tracks) {
+                const track = safeTrack(sourceTrack);
+                const trackKey = track && identity(track);
+                if (!track || !trackKey || knownTracks.has(trackKey) || playlist.tracks.length >= 500) continue;
+                knownTracks.add(trackKey);
+                playlist.tracks.push({
+                    id: 'trk_' + crypto.randomBytes(6).toString('hex'),
+                    ...track,
+                    source: 'library-transfer',
+                    url: '',
+                    sourceUrl: '',
+                    cover: null,
+                    downloadable: false,
+                    localAudioId: '',
+                    addedAt: new Date().toISOString()
+                });
+                playlistTracks++;
+            }
+            playlist.updatedAt = new Date().toISOString();
+        }
+
+        this.data.play_events ||= [];
+        const playKeys = new Set(this.data.play_events.filter(event => event.userId === userId)
+            .map(event => `${identity(event)}|${validDate(event.playedAt)}`));
+        for (const source of transfer.listeningHistory) {
+            const track = safeTrack(source);
+            const playedAt = validDate(source?.playedAt);
+            const key = track && `${identity(track)}|${playedAt}`;
+            if (!track || !track.title || !playedAt || playKeys.has(key)) continue;
+            playKeys.add(key);
+            this.data.play_events.unshift({
+                id: 'play_' + crypto.randomBytes(6).toString('hex'),
+                userId,
+                title: track.title,
+                artist: track.artist,
+                playedAt,
+                imported: true
+            });
+            listeningHistory++;
+        }
+        const retainedPlays = this.data.play_events.filter(event => event.userId === userId).slice(0, 5000);
+        const retainedSet = new Set(retainedPlays);
+        this.data.play_events = this.data.play_events.filter(event => event.userId !== userId || retainedSet.has(event));
+
+        this.data.download_metadata ||= [];
+        const downloadKeys = new Set([
+            ...this.getDownloads(userId),
+            ...this.data.download_metadata.filter(item => item.userId === userId)
+        ].map(identity).filter(Boolean));
+        for (const source of transfer.downloadMetadata) {
+            const track = safeTrack(source);
+            const downloadedAt = validDate(source?.downloadedAt);
+            const key = track && identity(track);
+            if (!track || !track.title || downloadKeys.has(key)) continue;
+            downloadKeys.add(key);
+            this.data.download_metadata.unshift({
+                userId,
+                title: track.title,
+                artist: track.artist,
+                album: track.album,
+                duration: track.duration,
+                downloadedAt: downloadedAt || new Date().toISOString(),
+                importedAt: new Date().toISOString(),
+                metadataOnly: true
+            });
+            downloadMetadata++;
+        }
+
+        const imported = { likedSongs, likedArtists, listeningHistory, playlists, playlistTracks, downloadMetadata };
+        this.save();
+        return { imported, totals: { ...imported } };
     }
 
     getPlayHistoryPreferences(userId = 'guest') {
@@ -410,6 +686,7 @@ class Database {
     getTelemetry(userId = 'guest') {
         this.prunePlayHistory(userId);
         const plays = (this.data.play_events || []).filter(event => event.userId === userId);
+        const normalizedPlays = plays.map(event => ({ ...event, ...normalizedPlayMetadata(event) }));
         const actions = (this.data.activity_events || []).filter(event => event.userId === userId && event.type !== 'play');
         const diagnostics = (this.data.diagnostics || []).filter(event => event.userId === userId);
         const counts = (items, key) => {
@@ -432,7 +709,7 @@ class Database {
             if (byDay.has(day)) byDay.set(day, byDay.get(day) + 1);
         }
         const recent = [
-            ...plays.map(event => ({ type: 'play', title: event.title, artist: event.artist, occurredAt: event.playedAt })),
+            ...normalizedPlays.map(event => ({ type: 'play', title: event.title, artist: event.artist, occurredAt: event.playedAt })),
             ...actions
         ].sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || ''))).slice(0, 25);
         const errors = diagnostics.sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || ''))).slice(0, 10)
@@ -446,8 +723,8 @@ class Database {
                 diagnostics: diagnostics.length
             },
             playsByDay: [...byDay].map(([date, count]) => ({ date, count })),
-            topArtists: counts(plays, 'artist'),
-            topTracks: counts(plays, 'title'),
+            topArtists: counts(normalizedPlays, 'artist'),
+            topTracks: counts(normalizedPlays, 'title'),
             recent,
             diagnostics: errors
         };
@@ -600,7 +877,14 @@ class Database {
 
     // --- Playlists ---
     getPlaylists(userId = 'guest') {
-        return this.data.playlists.filter(p => p.userId === userId || p.isPublic);
+        const playlists = this.data.playlists.filter(p => p.userId === userId || p.isPublic);
+        const orderedOwned = playlists.filter(p => p.userId === userId);
+        if (orderedOwned.every(p => Number.isInteger(p.sortOrder))) {
+            orderedOwned.sort((a, b) => a.sortOrder - b.sortOrder);
+            let ownedIndex = 0;
+            return playlists.map(p => p.userId === userId ? orderedOwned[ownedIndex++] : p);
+        }
+        return playlists;
     }
 
     getPlaylistById(id) {
@@ -608,17 +892,61 @@ class Database {
     }
 
     createPlaylist(userId = 'guest', name, description = '', isPublic = false) {
+        const owned = this.data.playlists.filter(p => p.userId === userId);
         const playlist = {
             id: 'pl_' + crypto.randomBytes(6).toString('hex'),
             userId,
-            name: name || 'Untitled Playlist',
+            name: String(name || 'Untitled Playlist').trim().slice(0, 100) || 'Untitled Playlist',
             description: description || 'Custom AuraAudio Playlist',
             isPublic: !!isPublic,
             tracks: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
+        if (owned.every(p => Number.isInteger(p.sortOrder))) {
+            playlist.sortOrder = owned.length ? Math.max(...owned.map(p => p.sortOrder)) + 1 : 0;
+        }
         this.data.playlists.push(playlist);
+        this.save();
+        return playlist;
+    }
+
+    renamePlaylist(playlistId, userId = 'guest', name) {
+        const playlist = this.getPlaylistById(playlistId);
+        const normalizedName = String(name || '').trim().slice(0, 100);
+        if (!playlist || playlist.userId !== userId || !normalizedName) return null;
+        playlist.name = normalizedName;
+        playlist.updatedAt = new Date().toISOString();
+        this.save();
+        return playlist;
+    }
+
+    reorderPlaylists(userId = 'guest', orderedIds = []) {
+        const owned = this.data.playlists.filter(p => p.userId === userId);
+        const visible = this.data.playlists.filter(p => p.userId === userId || p.isPublic);
+        if (!Array.isArray(orderedIds) || orderedIds.length !== visible.length) return null;
+        const visibleIds = new Set(visible.map(playlist => playlist.id));
+        if (new Set(orderedIds).size !== visible.length || orderedIds.some(id => !visibleIds.has(id))) return null;
+        const byId = new Map(owned.map(playlist => [playlist.id, playlist]));
+        const ownedOrder = orderedIds.filter(id => byId.has(id));
+        if (ownedOrder.length !== owned.length) return null;
+        ownedOrder.forEach((id, sortOrder) => {
+            byId.get(id).sortOrder = sortOrder;
+            byId.get(id).updatedAt = new Date().toISOString();
+        });
+        this.save();
+        return this.getPlaylists(userId);
+    }
+
+    reorderPlaylistTracks(playlistId, userId = 'guest', orderedIndices = []) {
+        const playlist = this.getPlaylistById(playlistId);
+        if (!playlist || playlist.userId !== userId || !Array.isArray(orderedIndices)) return null;
+        const tracks = playlist.tracks || [];
+        if (orderedIndices.length !== tracks.length
+            || new Set(orderedIndices).size !== tracks.length
+            || orderedIndices.some(index => !Number.isInteger(index) || index < 0 || index >= tracks.length)) return null;
+        playlist.tracks = orderedIndices.map(index => tracks[index]);
+        playlist.updatedAt = new Date().toISOString();
         this.save();
         return playlist;
     }
@@ -693,6 +1021,17 @@ class Database {
 
     // --- Downloads Log ---
     addDownloadRecord(record) {
+        const fileName = typeof record.fileName === 'string' ? record.fileName : '';
+        const existing = fileName && this.data.downloads.find(item =>
+            item.userId === record.userId && String(item.fileName || '').toLowerCase() === fileName.toLowerCase()
+        );
+        if (existing) {
+            for (const field of ['title', 'artist', 'album', 'duration', 'source', 'cover', 'coverFile']) {
+                if (record[field] !== undefined && record[field] !== null && record[field] !== '') existing[field] = record[field];
+            }
+            this.save();
+            return existing;
+        }
         const entry = {
             id: 'dl_' + crypto.randomBytes(6).toString('hex'),
             ...record,
@@ -714,13 +1053,34 @@ class Database {
     }
 
     getDownloads(userId = 'guest') {
-        return this.data.downloads.filter(d => d.userId === userId);
+        const unique = new Map();
+        for (const download of this.data.downloads.filter(item => item.userId === userId)) {
+            const fileName = String(download.fileName || '').trim().toLowerCase();
+            const key = fileName || String(download.id || `${download.title || ''}|${download.downloadedAt || ''}`);
+            if (!unique.has(key)) unique.set(key, download);
+        }
+        return [...unique.values()];
+    }
+
+    getDownloadMetadata(userId = 'guest') {
+        return (this.data.download_metadata || [])
+            .filter(item => item.userId === userId && typeof item.title === 'string' && item.title.trim())
+            .sort((a, b) => String(b.downloadedAt || '').localeCompare(String(a.downloadedAt || '')))
+            .map(item => ({
+                title: item.title.trim().slice(0, 240),
+                artist: typeof item.artist === 'string' ? item.artist.trim().slice(0, 180) : '',
+                downloadedAt: typeof item.downloadedAt === 'string' ? item.downloadedAt : ''
+            }));
     }
 
     removeDownload(userId = 'guest', fileName) {
-        const index = this.data.downloads.findIndex(item => item.userId === userId && item.fileName === fileName);
+        const normalizedFileName = String(fileName || '').toLowerCase();
+        const index = this.data.downloads.findIndex(item => item.userId === userId && String(item.fileName || '').toLowerCase() === normalizedFileName);
         if (index < 0) return null;
-        const [removed] = this.data.downloads.splice(index, 1);
+        const removed = this.data.downloads[index];
+        this.data.downloads = this.data.downloads.filter(item =>
+            item.userId !== userId || String(item.fileName || '').toLowerCase() !== normalizedFileName
+        );
         this.save();
         return removed;
     }

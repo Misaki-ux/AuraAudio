@@ -1,24 +1,52 @@
 {
   "name": "auraplayer",
-  "version": "1.2.0",
+  "version": "1.5.0",
   "description": "AuraAudio - Modern Dark Glassmorphic Audio Player with 3-State Dynamic Reduction and Smart Auto-Reduction",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "app": "electron .",
+    "web": "npx http-server . -p 8080",
     "server": "node server/index.js",
-    "setup:ytdlp": "powershell -ExecutionPolicy Bypass -File tools/install-ytdlp.ps1",
     "dev": "electron . --enable-logging",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "mobile:compile": "node tools/build-mobile.js",
+    "mobile:build": "npm run mobile:compile",
+    "mobile:dist": "npm run mobile:compile",
+    "server:compile": "node tools/build-server.js",
+    "server:build": "npm run server:compile",
+    "server:dist": "npm run server:compile",
+    "setup:ytdlp": "powershell -ExecutionPolicy Bypass -File tools/install-ytdlp.ps1",
+    "appcompile": "npm run server:compile && electron-builder",
+    "app:exe": "npm run server:compile && electron-builder --win portable --config.directories.output=dist-portable",
+    "build": "npm run appcompile",
+    "pack": "npm run server:compile && electron-builder --dir",
+    "dist": "npm run appcompile",
+    "all:build": "npm run mobile:compile && npm run server:compile && electron-builder",
+    "android:apk": "node tools/build-android.js",
+    "android:autonomous-apk": "node tools/build-autonomous-android.js"
   },
   "build": {
     "appId": "com.auraplayer.app",
     "productName": "AuraAudio",
+    "asar": true,
     "files": [
       "**/*",
       "!downloads/**",
+      "!standalone-server/**",
       "!server/data/db.json",
-      "!dist/**"
+      "!dist/**",
+      "!tools/**",
+      "!**/*.map",
+      "!**/*.log"
+    ],
+    "extraResources": [
+      {
+        "from": "tools/yt-dlp.exe",
+        "to": "tools/yt-dlp.exe"
+      }
+    ],
+    "asarUnpack": [
+      "server/**/*"
     ],
     "win": {
       "icon": "assets/royal-blue/icon.ico",
@@ -55,7 +83,14 @@
   "author": "Yohann",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^44.9.0",
+    "@capacitor/cli": "^8.4.3",
+    "electron": "^28.0.0",
     "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "axios": "^1.20.0",
+    "qrcode-generator": "^2.0.4"
   }
 }

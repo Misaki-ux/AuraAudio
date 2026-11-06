@@ -56,6 +56,7 @@ class AuraServer {
         this.server = null;
         this.activePort = Number(process.env.AURA_PORT) || this.config.server.port || 3456;
         this.host = process.env.AURA_HOST || this.config.server.host || '127.0.0.1';
+        this.router.serverHost = this.host;
     }
 
     start(requestedPort = null) {

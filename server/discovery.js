@@ -389,7 +389,7 @@ class DiscoveryService {
         return false;
     }
 
-    async search(query) {
+async search(query) {
         const q = String(query || '').trim();
         if (!q) return { artists: [], tracks: [], releases: [] };
         try {
@@ -404,8 +404,19 @@ class DiscoveryService {
                     basedOn: ['live'],
                     playQuery: DiscoveryService.playQuery(release.artist, release.title)
                 }));
-            // Tracks and artists come from the live providers wired into /api/search.
-            return { artists: [], tracks: [], releases: matched };
+
+            // Real track results from the iTunes/MusicBrainz providers so the
+            // mobile search view actually shows songs instead of an empty list.
+            const tracks = await this.musicMetadata.searchSongs(q, 12)
+                .then(list => DiscoveryService.feedList(list))
+                .catch(error => {
+                    if (!/abort|timeout/i.test(String(error?.message || ''))) {
+                        console.warn('[Discovery] Search track lookup failed:', error.message);
+                    }
+                    return [];
+                });
+
+            return { artists: [], tracks, releases: matched };
         } catch (error) {
             if (!/abort|timeout/i.test(String(error?.message || ''))) {
                 console.warn('[Discovery] Search feed lookup failed:', error.message);

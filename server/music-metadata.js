@@ -11,6 +11,69 @@ function releaseType(title, fallback) {
     return suffix ? `${suffix[1][0].toUpperCase()}${suffix[1].slice(1).toLowerCase()}` : (fallback || 'Release');
 }
 
+// Shared track metadata parser used by the YouTube downloader, the lyrics
+// lookup and the cover lookup so that the artist is never silently replaced
+// by a generic "YouTube Audio" / "Topic" uploader name.
+const GENERIC_ARTIST_RE = /^(unknown(?:\s+artist)?|youtube(?:\s+audio)?|various\s+artists?|topic|unknown)$/i;
+const FEATURE_RE = /\s*(?:ft\.?|feat\.?|featuring|with)\s+[a-z0-9][a-z0-9'&. -]*/gi;
+const PAREN_BRACKET_RE = /\s*[\[(](?:[^)\]]*(?:official|music\s+video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version|clip|preview|премьера\s+клипа|official\s+video)[^)]*)[)\]]/gi;
+
+function cleanTitleToken(rawTitle) {
+    return String(rawTitle || '')
+        .replace(PAREN_BRACKET_RE, ' ')
+        .replace(/\s*[-–—]\s*(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ')
+        .replace(FEATURE_RE, ' ')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function cleanArtistToken(rawArtist) {
+    return String(rawArtist || '')
+        .replace(/\s*-\s*topic$/i, '')
+        .replace(/\s*\(?\s*(?:official|music\s+video|vevo|topic)\s*\)?\s*$/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function splitArtistTitle(rawTitle) {
+    // Split on the first " - " (or en/em dash) that separates artist from title.
+    const match = String(rawTitle || '').match(/^(.*?)\s*[-–—]\s*(.+)$/);
+    if (!match) return { artist: '', title: rawTitle };
+    return { artist: match[1].trim(), title: match[2].trim() };
+}
+
+function parseTrackMeta(info = {}, fallbackTitle = '') {
+    // info comes from yt-dlp metadata (or a hand-built object).
+    const rawTitle = String(info.title || fallbackTitle || '').trim();
+
+    // 1. Explicit artist fields from yt-dlp.
+    const explicitArtist = cleanArtistToken(info.artist || info.creator || (info.artists && info.artists[0]) || '');
+
+    // 2. Parse the title "Artist - Title".
+    const split = splitArtistTitle(rawTitle);
+    const titleParsedArtist = cleanArtistToken(split.artist);
+
+    // 3. Channel / uploader, cleaned.
+    const channelArtist = cleanArtistToken(info.channel || info.uploader || '');
+
+    // 4. Generic names force us to fall through to the next candidate.
+    const isGeneric = name => !name || GENERIC_ARTIST_RE.test(name);
+
+    let artist = '';
+    if (!isGeneric(explicitArtist)) {
+        artist = explicitArtist;
+    } else if (!isGeneric(titleParsedArtist)) {
+        artist = titleParsedArtist;
+    } else if (!isGeneric(channelArtist)) {
+        artist = channelArtist;
+    }
+
+    const titleSource = !isGeneric(titleParsedArtist) ? split.title : rawTitle;
+    const title = cleanTitleToken(titleSource) || titleSource || rawTitle;
+    return { artist, title };
+}
+
 class MusicMetadataService {
     constructor() {
         this.cache = new Map();
@@ -490,3 +553,4 @@ class MusicMetadataService {
 
 module.exports = MusicMetadataService;
 module.exports.matchKey = matchKey;
+module.exports.parseTrackMeta = parseTrackMeta;

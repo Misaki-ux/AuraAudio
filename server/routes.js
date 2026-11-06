@@ -7,8 +7,11 @@ const url = require('url');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const os = require('os');
 const MusicMetadataService = require('./music-metadata');
-const { matchKey } = require('./music-metadata');
+const { matchKey, parseTrackMeta } = require('./music-metadata');
+const JamService = require('./jam');
+const { clientIp, isLanRequest, isPrivateIp, normalizeIp } = require('./lan');
 
 function downloadIdentity(track) {
     const title = String(track.title || path.parse(track.fileName || '').name).toLocaleLowerCase()
@@ -35,15 +38,119 @@ class ApiRouter {
         this.ytb = youtubeService;
         this.downloadsDir = path.resolve(downloadsDir);
         this.musicMetadata = musicMetadata || new MusicMetadataService();
+        this.jam = new JamService();
+        this.pendingPairings = new Map();
+        this.pairedClientTokens = new Map();
+        this.pairClaimAttempts = new Map();
+        this.pendingLibraryTransfers = new Map();
+    }
+
+    validPairedClientToken(token) {
+        const expiresAt = this.pairedClientTokens.get(token);
+        if (!expiresAt) return false;
+        if (expiresAt <= Date.now()) {
+            this.pairedClientTokens.delete(token);
+            return false;
+        }
+        return true;
+    }
+
+    prunePairingState() {
+        const now = Date.now();
+        for (const [code, pairing] of this.pendingPairings) {
+            if (pairing.expiresAt <= now) this.pendingPairings.delete(code);
+        }
+        for (const [token, expiresAt] of this.pairedClientTokens) {
+            if (expiresAt <= now) this.pairedClientTokens.delete(token);
+        }
+        for (const [ip, times] of this.pairClaimAttempts) {
+            const recent = times.filter(time => now - time < 60_000);
+            if (recent.length) this.pairClaimAttempts.set(ip, recent);
+            else this.pairClaimAttempts.delete(ip);
+        }
+        while (this.pendingPairings.size >= 100) this.pendingPairings.delete(this.pendingPairings.keys().next().value);
+        while (this.pairedClientTokens.size >= 500) this.pairedClientTokens.delete(this.pairedClientTokens.keys().next().value);
+        while (this.pairClaimAttempts.size > 1000) this.pairClaimAttempts.delete(this.pairClaimAttempts.keys().next().value);
+    }
+
+    pairingAddress(req) {
+        const hostHeader = String(req.headers.host || '');
+        if (!hostHeader || /[\s/@\\]/.test(hostHeader)) throw new Error('Could not determine the server address for pairing.');
+        const proxyAddress = normalizeIp(req.socket?.remoteAddress);
+        const forwardedProtocol = proxyAddress === '127.0.0.1' || proxyAddress === '::1'
+            ? String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase()
+            : '';
+        const protocol = forwardedProtocol === 'https' || req.socket?.encrypted ? 'https' : 'http';
+        let address = new URL(`${protocol}://${hostHeader}`);
+        if (['localhost', '127.0.0.1', '::1'].includes(address.hostname.toLowerCase())) {
+            if (this.serverHost !== '0.0.0.0' && this.serverHost !== '::') {
+                throw new Error('QR pairing needs a server reachable on your Wi-Fi. Connect the standalone LAN server, not this PC’s local-only server.');
+            }
+            const interfaces = Object.values(os.networkInterfaces()).flat().filter(Boolean);
+            const localAddress = interfaces.find(item => item.family === 'IPv4' && !item.internal
+                && isPrivateIp(item.address))?.address;
+            if (!localAddress) throw new Error('No private Wi-Fi/LAN address was found for this server.');
+            address.hostname = localAddress;
+        }
+        const isLocalAddress = ['127.0.0.1', '::1'].includes(normalizeIp(address.hostname));
+        const isProtectedExternalHttps = Boolean(process.env.AURA_PUBLIC_ACCESS_KEY)
+            && protocol === 'https'
+            && (proxyAddress === '127.0.0.1' || proxyAddress === '::1')
+            && forwardedProtocol === 'https';
+        if (isLocalAddress || (!isPrivateIp(address.hostname) && !isProtectedExternalHttps)) {
+            throw new Error('QR pairing requires a private Wi-Fi/LAN address or the protected HTTPS launcher.');
+        }
+        return address.origin;
+    }
+
+    startDownload(body, userId) {
+        const target = typeof body.url === 'string' ? body.url.trim() : '';
+        const title = typeof body.title === 'string' ? body.title.trim().slice(0, 240) : '';
+        if (!target || target.length > 500) throw new Error('A valid download URL or search query is required.');
+
+        const videoId = target.match(/(?:v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/i)?.[1] || '';
+        const existingActive = this.ytb.findActiveByVideoId(videoId, target);
+        if (existingActive) {
+            return { success: true, id: existingActive.id, status: existingActive.status, reused: true };
+        }
+
+        let downloadId;
+        const downloadPromise = this.ytb.downloadAudio(target, title, id => { downloadId = id; }, { videoId });
+        downloadPromise.then(result => {
+            for (const existing of this.db.getDownloads(userId)) {
+                if (!sameDownload(result, existing)) continue;
+                const previousPath = path.basename(existing.fileName || '') === existing.fileName ? path.join(this.downloadsDir, existing.fileName) : '';
+                try { if (previousPath && fs.existsSync(previousPath)) fs.unlinkSync(previousPath); }
+                catch (error) { console.warn('[API] Could not remove duplicate downloaded audio:', error.message); continue; }
+                if (/^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(existing.coverFile || '')) {
+                    try { fs.unlinkSync(path.join(this.downloadsDir, existing.coverFile)); } catch {}
+                }
+                this.db.removeDownload(userId, existing.fileName);
+            }
+            this.db.addDownloadRecord({ userId, ...result, coverChecked: true });
+            this.db.recordActivity(userId, 'download', result);
+            const progress = this.ytb.getDownloadProgress(downloadId);
+            if (progress) progress.result = { ...result, streamUrl: `/api/media/${encodeURIComponent(result.fileName)}` };
+        }).catch(error => {
+            console.error('[API] YouTube download failed:', error.message);
+            const progress = this.ytb.getDownloadProgress(downloadId);
+            if (progress) {
+                progress.status = 'failed';
+                progress.error = error.message;
+            }
+        });
+
+        return { success: true, id: downloadId, status: 'queued' };
     }
 
     sendJson(res, statusCode, data) {
         res.writeHead(statusCode, {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key'
+            'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key, X-Aura-Jam-Token, X-Aura-Library-Transfer-Token'
         });
+        if (res.req?.method?.toUpperCase() === 'HEAD') return res.end();
         res.end(JSON.stringify(data));
     }
 
@@ -51,7 +158,7 @@ class ApiRouter {
         this.sendJson(res, statusCode, { error: true, message });
     }
 
-    parseBody(req) {
+    parseBody(req, maxBytes = 1024 * 1024) {
         return new Promise((resolve, reject) => {
             let body = '';
             let size = 0;
@@ -59,9 +166,9 @@ class ApiRouter {
             req.on('data', chunk => {
                 if (failed) return;
                 size += chunk.length;
-                if (size > 1024 * 1024) {
+                if (size > maxBytes) {
                     failed = true;
-                    const error = new Error('Request body exceeds the 1 MB limit.');
+                    const error = new Error(`Request body exceeds the ${Math.ceil(maxBytes / (1024 * 1024))} MB limit.`);
                     error.statusCode = 413;
                     reject(error);
                     req.resume();
@@ -125,8 +232,8 @@ class ApiRouter {
         if (method === 'OPTIONS') {
             res.writeHead(204, {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key',
+                'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key, X-Aura-Jam-Token, X-Aura-Library-Transfer-Token',
                 'Access-Control-Allow-Private-Network': 'true',
                 'Access-Control-Max-Age': '86400'
             });
@@ -134,29 +241,221 @@ class ApiRouter {
         }
 
         const publicAccessKey = String(process.env.AURA_PUBLIC_ACCESS_KEY || '');
-        if (pathname.startsWith('/api/') && publicAccessKey) {
+        const isPairClaim = pathname === '/api/mobile/pairing/claim' && method === 'POST';
+        const isLibraryTransferImport = pathname === '/api/library/transfer/import' && method === 'POST';
+        if (pathname.startsWith('/api/') && publicAccessKey && !isPairClaim && !isLibraryTransferImport) {
             // Desktop/mobile clients send the header; <audio>/<img> elements cannot, so also accept ?accessKey=.
             const bearerKey = /^ApiKey\s+(.+)$/i.exec(String(req.headers.authorization || ''))?.[1] || '';
             const suppliedKey = req.headers['x-aura-access-key'] || (query && query.accessKey) || bearerKey || '';
             const supplied = Buffer.from(String(suppliedKey));
             const expected = Buffer.from(publicAccessKey);
-            if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) {
+            const validKey = supplied.length === expected.length && crypto.timingSafeEqual(supplied, expected);
+            if (!validKey && !this.validPairedClientToken(String(suppliedKey))) {
                 return this.sendError(res, 401, 'This server requires its current external access key.');
             }
+        }
+
+        if (pathname.startsWith('/api/mobile/pairing/') || pathname === '/api/mobile/pairing') {
+            this.prunePairingState();
+            if (pathname === '/api/mobile/pairing' && method === 'POST') {
+                if (!isLanRequest(req) && !publicAccessKey) {
+                    return this.sendError(res, 403, 'External pairing requires the protected HTTPS launcher.');
+                }
+                let pairUrl;
+                try { pairUrl = this.pairingAddress(req); }
+                catch (error) { return this.sendError(res, 400, error.message); }
+                const code = crypto.randomBytes(32).toString('hex');
+                this.pendingPairings.set(code, {
+                    expiresAt: Date.now() + 2 * 60 * 1000,
+                    externalAccess: Boolean(publicAccessKey)
+                });
+                return this.sendJson(res, 201, {
+                    pairUrl: `${pairUrl}/autonomousclientmobile/?pair=${code}`,
+                    expiresInSeconds: 120
+                });
+            }
+            if (pathname === '/api/mobile/pairing/claim' && method === 'POST') {
+                const ip = clientIp(req);
+                const attempts = (this.pairClaimAttempts.get(ip) || []).filter(time => Date.now() - time < 60_000);
+                if (attempts.length >= 10) return this.sendError(res, 429, 'Too many pairing attempts. Wait a minute and try again.');
+                attempts.push(Date.now());
+                this.pairClaimAttempts.set(ip, attempts);
+                const body = await this.parseBody(req);
+                const code = typeof body.code === 'string' ? body.code : '';
+                const pending = this.pendingPairings.get(code);
+                if (!isLanRequest(req) && !pending?.externalAccess) {
+                    return this.sendError(res, 403, 'This pairing code is available only on the same Wi-Fi/LAN.');
+                }
+                if (!pending || pending.expiresAt <= Date.now()) {
+                    this.pendingPairings.delete(code);
+                    return this.sendError(res, 401, 'This pairing QR code has expired or was already used. Generate a new one on the server device.');
+                }
+                this.pendingPairings.delete(code);
+                const accessToken = crypto.randomBytes(32).toString('hex');
+                this.pairedClientTokens.set(accessToken, Date.now() + 30 * 24 * 60 * 60 * 1000);
+                return this.sendJson(res, 200, { accessToken, expiresInSeconds: 30 * 24 * 60 * 60 });
+            }
+            return this.sendError(res, 404, 'Mobile pairing endpoint not found.');
+        }
+
+        if (pathname.startsWith('/api/jam')) {
+            if (!isLanRequest(req)) return this.sendError(res, 403, 'Jam is available only to devices on a private Wi-Fi/LAN network.');
+            const bindAddress = normalizeIp(this.serverHost).toLowerCase();
+            if (['127.0.0.1', '::1', 'localhost'].includes(bindAddress)) {
+                return this.sendError(res, 400, 'Jam needs the standalone server bound to your Wi-Fi/LAN. The desktop app local-only server cannot be reached by other devices.');
+            }
+            const token = String(req.headers['x-aura-jam-token'] || '');
+            try {
+                if (pathname === '/api/jam/session' && method === 'POST') {
+                    const body = await this.parseBody(req);
+                    return this.sendJson(res, 201, this.jam.create(body.name));
+                }
+                if (pathname === '/api/jam/join' && method === 'POST') {
+                    const body = await this.parseBody(req);
+                    return this.sendJson(res, 200, this.jam.join(body.code, body.name));
+                }
+                if (pathname === '/api/jam/session' && method === 'GET') {
+                    return this.sendJson(res, 200, this.jam.get(token));
+                }
+                if (pathname === '/api/jam/playback' && method === 'PUT') {
+                    return this.sendJson(res, 200, this.jam.publish(token, await this.parseBody(req)));
+                }
+                if (pathname === '/api/jam/queue' && method === 'POST') {
+                    return this.sendJson(res, 201, this.jam.requestTrack(token, await this.parseBody(req)));
+                }
+                const requestMatch = pathname.match(/^\/api\/jam\/queue\/([a-f0-9]{16})$/i);
+                if (requestMatch && method === 'DELETE') {
+                    return this.sendJson(res, 200, { removed: !!this.jam.consumeRequest(token, requestMatch[1]) });
+                }
+                if (pathname === '/api/jam/session' && method === 'DELETE') {
+                    return this.sendJson(res, 200, { ended: this.jam.leave(token) });
+                }
+                return this.sendError(res, 404, 'Jam endpoint not found.');
+            } catch (error) {
+                const status = /only the Jam host|join a Jam as a guest/i.test(error.message) ? 403
+                    : /no longer connected|invalid or the room has ended/.test(error.message) ? 404
+                        : /maximum number|queue is full/.test(error.message) ? 409 : 400;
+                return this.sendError(res, status, error.message);
+            }
+        }
+
+        if (pathname.startsWith('/api/library/transfer')) {
+            if (pathname === '/api/library/transfer/export' && method === 'GET') {
+                const authUser = this.getAuthUser(req);
+                return this.sendJson(res, 200, this.db.exportLibraryTransfer(authUser ? authUser.userId : 'guest'));
+            }
+
+            if (pathname === '/api/library/transfer/receiver' && method === 'POST') {
+                if (!isLanRequest(req)) return this.sendError(res, 403, 'Library transfer is limited to your private Wi-Fi/LAN.');
+                let receiverUrl;
+                try { receiverUrl = `${this.pairingAddress(req)}/api/library/transfer/import`; }
+                catch (error) { return this.sendError(res, 400, error.message); }
+                const now = Date.now();
+                for (const [token, transfer] of this.pendingLibraryTransfers) {
+                    if (transfer.expiresAt <= now) this.pendingLibraryTransfers.delete(token);
+                }
+                while (this.pendingLibraryTransfers.size >= 20) {
+                    this.pendingLibraryTransfers.delete(this.pendingLibraryTransfers.keys().next().value);
+                }
+                const token = crypto.randomBytes(32).toString('hex');
+                const expiresAt = now + 3 * 60 * 1000;
+                const authUser = this.getAuthUser(req);
+                this.pendingLibraryTransfers.set(token, {
+                    userId: authUser ? authUser.userId : 'guest',
+                    createdAt: now,
+                    expiresAt,
+                    consumed: false,
+                    inFlight: false,
+                    result: null,
+                    error: ''
+                });
+                return this.sendJson(res, 201, { receiverUrl, token, expiresAt, expiresInSeconds: 180 });
+            }
+
+            if (pathname === '/api/library/transfer/status' && method === 'GET') {
+                if (!isLanRequest(req)) return this.sendError(res, 403, 'Library transfer status is available only on your private Wi-Fi/LAN.');
+                const token = String(req.headers['x-aura-library-transfer-token'] || '');
+                const transfer = this.pendingLibraryTransfers.get(token);
+                if (!transfer) return this.sendError(res, 404, 'The library transfer session expired.');
+                if (transfer.expiresAt <= Date.now()) {
+                    this.pendingLibraryTransfers.delete(token);
+                    return this.sendJson(res, 200, { state: 'expired' });
+                }
+                return this.sendJson(res, 200, {
+                    state: transfer.result ? 'complete' : transfer.consumed ? 'failed' : 'waiting',
+                    expiresInSeconds: Math.max(0, Math.ceil((transfer.expiresAt - Date.now()) / 1000)),
+                    summary: transfer.result,
+                    error: transfer.error
+                });
+            }
+
+            if (pathname === '/api/library/transfer/import' && method === 'POST') {
+                if (!isLanRequest(req)) return this.sendError(res, 403, 'Library transfer is limited to your private Wi-Fi/LAN.');
+                const token = String(req.headers['x-aura-library-transfer-token'] || '');
+                if (!/^[a-f0-9]{64}$/i.test(token)) return this.sendError(res, 401, 'A valid one-time library transfer code is required.');
+                const transfer = this.pendingLibraryTransfers.get(token);
+                if (!transfer) return this.sendError(res, 401, 'This library transfer QR code expired or was already used. Create a new code in desktop settings.');
+                if (transfer.expiresAt <= Date.now()) {
+                    this.pendingLibraryTransfers.delete(token);
+                    return this.sendError(res, 401, 'This library transfer QR code expired or was already used. Create a new code in desktop settings.');
+                }
+                if (transfer.consumed) return this.sendError(res, 401, 'This library transfer QR code was already used. Create a new code in desktop settings.');
+                if (transfer.inFlight) return this.sendError(res, 409, 'This library transfer is already being received.');
+                transfer.inFlight = true;
+                let body;
+                try { body = await this.parseBody(req, 3 * 1024 * 1024); }
+                catch (error) {
+                    transfer.inFlight = false;
+                    return this.sendError(res, error.statusCode || 400, error.message || 'Invalid transfer payload.');
+                }
+                if (body.format !== 'AuraAudio-library-transfer' || body.version !== 1) {
+                    transfer.inFlight = false;
+                    return this.sendError(res, 400, 'Unsupported library transfer format.');
+                }
+                const arrays = ['likedSongs', 'likedArtists', 'listeningHistory', 'playlists', 'downloadMetadata'];
+                if (arrays.some(key => !Array.isArray(body[key]))) {
+                    transfer.inFlight = false;
+                    return this.sendError(res, 400, 'The transfer is missing one or more library record collections.');
+                }
+                if (body.playlists.some(playlist => !playlist || !Array.isArray(playlist.tracks) || playlist.tracks.length > 200)) {
+                    transfer.inFlight = false;
+                    return this.sendError(res, 400, 'Each playlist may contain at most 200 tracks.');
+                }
+                if (body.playlists.reduce((total, playlist) => total + playlist.tracks.length, 0) > 5000) {
+                    transfer.inFlight = false;
+                    return this.sendError(res, 400, 'The transfer may contain at most 5,000 playlist tracks.');
+                }
+                transfer.consumed = true;
+                transfer.inFlight = false;
+                try {
+                    transfer.result = this.db.importLibraryTransfer(transfer.userId, body);
+                    return this.sendJson(res, 200, { imported: transfer.result.imported });
+                } catch (error) {
+                    transfer.result = null;
+                    transfer.error = error.message || 'The library transfer could not be imported.';
+                    return this.sendError(res, 400, transfer.error);
+                }
+            }
+
+            return this.sendError(res, 404, 'Library transfer endpoint not found.');
         }
 
         // GET /api/lyrics (Proxied to LRCLIB)
         if (pathname === '/api/lyrics' && method === 'GET') {
             let title = String(query.title || '').trim();
-            const artist = String(query.artist || '').trim();
+            let artist = String(query.artist || '').trim();
             if (!title) return this.sendJson(res, 200, { lines: [] });
 
+            const parsedTrack = parseTrackMeta({ title, artist });
+            title = parsedTrack.title;
+            artist = parsedTrack.artist || artist;
             const cleanTitle = value => String(value || '').replace(/[[(](?:[^)\]]*(?:official|video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version)[^)]*)[)\]]/gi, ' ')
                 .replace(/\s+-\s+(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ').replace(/\s+/g, ' ').trim();
             title = cleanTitle(title);
             const normalize = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
             const titleKey = normalize(title);
-            const artistKey = /^(?:unknown artist|youtube(?: audio)?)$/i.test(artist) ? '' : normalize(artist);
+            const artistKey = /^(?:unknown(?: artist)?|youtube(?: audio)?|various artists?|topic)$/i.test(artist) ? '' : normalize(artist);
+            const lookupArtist = artistKey ? artist : '';
 
             const fetchLyrics = async url => {
                 try {
@@ -173,9 +472,9 @@ class ApiRouter {
             try {
                 const candidates = [], artistMatches = [];
                 const queries = [
-                    `track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(artist)}`,
+                    `track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(lookupArtist)}`,
                     `track_name=${encodeURIComponent(title)}`,
-                    `q=${encodeURIComponent(title + (artist ? ` ${artist}` : ''))}`
+                    `q=${encodeURIComponent(title + (lookupArtist ? ` ${lookupArtist}` : ''))}`
                 ];
                 for (const params of queries) {
                     const matches = await fetchLyrics(`https://lrclib.net/api/search?${params}`);
@@ -655,27 +954,72 @@ class ApiRouter {
 
             // GET /api/search?q=query
             if (pathname === '/api/search' && method === 'GET') {
-                const q = String(query.q || '').trim();
+                const q = decodeURIComponent(String(query.q || '')).trim();
                 if (q.length > 120) return this.sendError(res, 400, 'Search query must be 120 characters or fewer.');
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
-                const feedResults = q ? await this.discovery.search(q) : { artists: [], tracks: [], releases: [] };
-                const library = this.db.searchLibrary(userId, q, 30);
-                const withTimeout = (promise, ms) => Promise.race([promise, new Promise(resolve => setTimeout(() => resolve(null), ms))]);
-                // Internal lookups pass yt=0 / artists=0 to skip the slow external providers
+
+                // Every external sub-lookup below is individually bounded so a single
+                // slow provider (Apple chart RSS, MusicBrainz rate-limit, yt-dlp)
+                // cannot push the whole search past the client's request timeout.
+                // The endpoint always answers within a few seconds with whatever
+                // results came back in time.
+                const withTimeout = (promise, ms, fallback) => Promise.race([
+                    promise,
+                    new Promise(resolve => setTimeout(() => resolve(fallback), ms))
+                ]);
+
                 const wantYoutube = query.yt !== '0', wantArtists = query.artists !== '0';
-                const [youtube, onlineArtists] = await Promise.all([
+
+                const [feedResults, directTracks, youtube, onlineArtists] = await Promise.all([
+                    // Discovery feed (releases + track matches). Bounded so the slow
+                    // Apple chart RSS cannot stall the whole search.
+                    withTimeout(this.discovery.search(q).catch(error => {
+                        console.warn('[Search] Discovery feed failed:', error.message);
+                        return { artists: [], tracks: [], releases: [] };
+                    }), 8000, { artists: [], tracks: [], releases: [] }),
+                    // Real track hits directly from the iTunes search API. Always
+                    // populated, so the search view is never empty.
+                    withTimeout(this.musicMetadata.searchSongs(q, 12).catch(error => {
+                        console.warn('[Search] Direct track lookup failed:', error.message);
+                        return [];
+                    }), 6000, []),
+                    // YouTube results via yt-dlp. Bounded so a stalled extractor
+                    // cannot hang the request loop.
                     q && wantYoutube
-                        ? this.ytb.search(q, 8).catch(error => { console.warn('[Search] YouTube results unavailable:', error.message); return []; })
+                        ? withTimeout(this.ytb.search(q, 8).catch(error => {
+                            console.warn('[Search] YouTube results unavailable:', error.message);
+                            return [];
+                        }), 6000, [])
                         : [],
+                    // MusicBrainz artist matches. Bounded; enrichment is capped too.
                     q.length >= 2 && wantArtists
-                        ? withTimeout(this.musicMetadata.searchArtists(q, 6).catch(() => []), 3500)
+                        ? withTimeout(this.musicMetadata.searchArtists(q, 6).catch(() => []), 4000, [])
                         : []
                 ]);
-                // Real MusicBrainz artists, enriched with a picture from Wikipedia.
-                const matchedArtists = (onlineArtists || []).filter(artist => artist.name && artist.score >= 70).slice(0, 5);
+
+                let tracks = Array.isArray(feedResults.tracks) ? feedResults.tracks : [];
+                if (!tracks.length) {
+                    tracks = (directTracks || []).map(t => ({ ...t, playQuery: `${t.artist} ${t.title}`.trim() }));
+                } else if (directTracks && directTracks.length) {
+                    // Merge: feed tracks first, then any extra direct hits not already present.
+                    const seen = new Set(tracks.map(t => `${t.artist || ''}|${t.title || ''}`.toLowerCase()));
+                    for (const t of directTracks) {
+                        const key = `${t.artist || ''}|${t.title || ''}`.toLowerCase();
+                        if (seen.has(key)) continue;
+                        seen.add(key);
+                        tracks.push({ ...t, playQuery: `${t.artist} ${t.title}`.trim() });
+                    }
+                }
+
+                const library = this.db.searchLibrary(userId, q, 30);
+
+                // Enrich the top artist matches with a Wikipedia summary + picture.
+                // Cap both the number of artists and the per-artist lookup so a slow
+                // Wikipedia endpoint cannot push the search past its budget.
+                const matchedArtists = (onlineArtists || []).filter(artist => artist.name && artist.score >= 50).slice(0, 3);
                 const artists = await Promise.all(matchedArtists.map(async artist => {
-                    const wiki = await withTimeout(this.musicMetadata.wikipediaSummary(artist.name), 2500);
+                    const wiki = await withTimeout(this.musicMetadata.wikipediaSummary(artist.name).catch(() => null), 2500, null);
                     return { id: artist.id, name: artist.name, genre: [artist.type, ...(artist.tags || []).slice(0, 2)].filter(Boolean).join(' · ') || 'Artist',
                         image: wiki?.image || '', description: artist.disambiguation || wiki?.description || '' };
                 }));
@@ -684,7 +1028,7 @@ class ApiRouter {
                     const externalUrl = /^https?:\/\//i.test(video.url || '') ? video.url : (/^[\w-]{11}$/.test(videoId) ? `https://www.youtube.com/watch?v=${videoId}` : '');
                     return { ...video, externalUrl };
                 });
-                return this.sendJson(res, 200, { ...feedResults, artists, library, youtube: youtubeResults });
+                return this.sendJson(res, 200, { ...feedResults, tracks, artists, library, youtube: youtubeResults });
             }
 
             // -------------------------------------------------------------
@@ -709,44 +1053,44 @@ class ApiRouter {
             // POST /api/ytb/download (Start Audio Download to Local Folder)
             if (pathname === '/api/ytb/download' && method === 'POST') {
                 const body = await this.parseBody(req);
-                if (!body.url) return this.sendError(res, 400, 'Target URL is required');
-
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
+                let result;
+                try { result = this.startDownload(body, userId); }
+                catch (error) { return this.sendError(res, 400, error.message); }
+                return this.sendJson(res, result.reused ? 200 : 202, { ...result, downloadsDir: this.downloadsDir });
+            }
 
-                let downloadId;
-                const downloadPromise = this.ytb.downloadAudio(body.url, body.title, id => { downloadId = id; });
-                
-                downloadPromise.then(result => {
-                    for (const existing of this.db.getDownloads(userId)) {
-                        if (!sameDownload(result, existing)) continue;
-                        const previousPath = path.basename(existing.fileName || '') === existing.fileName ? path.join(this.downloadsDir, existing.fileName) : '';
-                        try { if (previousPath && fs.existsSync(previousPath)) fs.unlinkSync(previousPath); }
-                        catch (error) { console.warn('[API] Could not remove duplicate downloaded audio:', error.message); continue; }
-                        if (/^cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/.test(existing.coverFile || '')) {
-                            try { fs.unlinkSync(path.join(this.downloadsDir, existing.coverFile)); } catch {}
-                        }
-                        this.db.removeDownload(userId, existing.fileName);
+            // POST /api/ytb/batch: accept many downloads and process them on the
+            // existing serialized server queue without waiting for playback clients.
+            if (pathname === '/api/ytb/batch' && method === 'POST') {
+                const body = await this.parseBody(req);
+                if (!Array.isArray(body.tracks) || !body.tracks.length || body.tracks.length > 100) {
+                    return this.sendError(res, 400, 'Provide between 1 and 100 tracks to download.');
+                }
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const jobs = [];
+                const seen = new Set();
+                for (const track of body.tracks) {
+                    const title = typeof track?.title === 'string' ? track.title.trim().slice(0, 240) : '';
+                    const artist = typeof track?.artist === 'string' ? track.artist.trim().slice(0, 160) : '';
+                    const sourceUrl = [track?.url, track?.sourceUrl, track?.playQuery]
+                        .find(value => typeof value === 'string' && value.trim())?.trim() || '';
+                    const youtubeUrl = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//i.test(sourceUrl) ? sourceUrl : '';
+                    const target = youtubeUrl || `${title} ${artist}`.trim();
+                    if (!target || target.length > 500) continue;
+                    const identity = target.toLocaleLowerCase();
+                    if (seen.has(identity)) continue;
+                    seen.add(identity);
+                    try {
+                        jobs.push({ title: title || target, ...this.startDownload({ url: target, title }, userId) });
+                    } catch (error) {
+                        jobs.push({ title: title || target, status: 'failed', error: error.message });
                     }
-                    this.db.addDownloadRecord({ userId, ...result, coverChecked: true });
-                    this.db.recordActivity(userId, 'download', result);
-                    const progress = this.ytb.getDownloadProgress(downloadId);
-                    if (progress) progress.result = { ...result, streamUrl: `/api/media/${encodeURIComponent(result.fileName)}` };
-                }).catch(error => {
-                    console.error('[API] YouTube download failed:', error.message);
-                    const progress = this.ytb.getDownloadProgress(downloadId);
-                    if (progress) {
-                        progress.status = 'failed';
-                        progress.error = error.message;
-                    }
-                });
-                
-                return this.sendJson(res, 202, {
-                    success: true,
-                    id: downloadId,
-                    status: 'downloading',
-                    downloadsDir: this.downloadsDir
-                });
+                }
+                if (!jobs.length) return this.sendError(res, 400, 'No valid tracks were provided.');
+                return this.sendJson(res, 202, { jobs, queued: jobs.length });
             }
 
             // GET /api/ytb/progress/:id
@@ -766,15 +1110,25 @@ class ApiRouter {
             // LOCAL MEDIA STREAMING (Downloaded Audio Files)
             // -------------------------------------------------------------
             const mediaMatch = pathname.match(/^\/api\/media\/(.+)$/);
-            if (mediaMatch && method === 'GET') {
+            if (mediaMatch && (method === 'GET' || method === 'HEAD')) {
+                const isHead = method === 'HEAD';
+                const mediaError = (status, message) => {
+                    if (!isHead) return this.sendError(res, status, message);
+                    return res.writeHead(status, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Range, X-Aura-Access-Key, X-Aura-Jam-Token, X-Aura-Library-Transfer-Token'
+                    }).end();
+                };
                 const decodedFilename = decodeURIComponent(mediaMatch[1]);
                 if (path.basename(decodedFilename) !== decodedFilename || decodedFilename.includes('..')) {
-                    return this.sendError(res, 400, 'Invalid media filename');
+                    return mediaError(400, 'Invalid media filename');
                 }
 
                 const filePath = path.join(this.downloadsDir, decodedFilename);
                 if (!fs.existsSync(filePath)) {
-                    return this.sendError(res, 404, 'Audio file not found');
+                    return mediaError(404, 'Audio file not found');
                 }
 
                 const stat = fs.statSync(filePath);
@@ -794,7 +1148,6 @@ class ApiRouter {
                         return res.end();
                     }
                     const chunksize = (end - start) + 1;
-                    const file = fs.createReadStream(filePath, { start, end });
                     const head = {
                         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
                         'Accept-Ranges': 'bytes',
@@ -803,7 +1156,8 @@ class ApiRouter {
                         'Access-Control-Allow-Origin': '*'
                     };
                     res.writeHead(206, head);
-                    return file.pipe(res);
+                    if (isHead) return res.end();
+                    return fs.createReadStream(filePath, { start, end }).pipe(res);
                 } else {
                     const head = {
                         'Content-Length': fileSize,
@@ -811,6 +1165,7 @@ class ApiRouter {
                         'Access-Control-Allow-Origin': '*'
                     };
                     res.writeHead(200, head);
+                    if (isHead) return res.end();
                     return fs.createReadStream(filePath).pipe(res);
                 }
             }
@@ -873,11 +1228,12 @@ class ApiRouter {
                 }
                 const cover = typeof body.cover === 'string' ? body.cover : '';
                 const album = typeof body.album === 'string' ? body.album.trim().slice(0, 240) : '';
-                if (!cover && !album) return this.sendError(res, 400, 'Artwork or album metadata is required.');
+                const artist = typeof body.artist === 'string' ? body.artist.trim().slice(0, 180) : '';
+                if (!cover && !album && !artist) return this.sendError(res, 400, 'Artwork or track metadata is required.');
                 if (cover && (cover.length > 1500 || !(/^https?:\/\//i.test(cover) || /^\/api\/covers\/cover-[a-f0-9]{24}\.(?:jpg|png|webp|gif)$/i.test(cover)))) {
                     return this.sendError(res, 400, 'A valid artwork URL is required.');
                 }
-                const updated = this.db.updateLikedSongArtwork(userId, body.trackId, cover, album);
+                const updated = this.db.updateLikedSongArtwork(userId, body.trackId, cover, album, artist);
                 return this.sendJson(res, 200, { updated });
             }
 
@@ -940,6 +1296,14 @@ class ApiRouter {
                 return this.sendJson(res, 200, result);
             }
 
+            // GET /api/library/download-metadata
+            if (pathname === '/api/library/download-metadata' && method === 'GET') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                res.setHeader('Cache-Control', 'no-store');
+                return this.sendJson(res, 200, this.db.getDownloadMetadata(userId));
+            }
+
             // DELETE /api/library/downloads (Remove a downloaded file and its record)
             if (pathname === '/api/library/downloads' && method === 'DELETE') {
                 const authUser = this.getAuthUser(req);
@@ -981,7 +1345,7 @@ class ApiRouter {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
                 const playlists = this.db.getPlaylists(userId);
-                return this.sendJson(res, 200, playlists);
+                return this.sendJson(res, 200, playlists.map(playlist => ({ ...playlist, isOwner: playlist.userId === userId })));
             }
 
             if (pathname === '/api/library/artists/liked' && method === 'GET') {
@@ -1043,9 +1407,25 @@ class ApiRouter {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
                 const body = await this.parseBody(req);
+                if (body.name !== undefined && (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 100)) {
+                    return this.sendError(res, 400, 'Playlist name must contain 1 to 100 characters.');
+                }
                 const playlist = this.db.createPlaylist(userId, body.name, body.description, body.isPublic);
                 if (playlist) this.db.recordActivity(userId, 'playlist_created', { name: playlist.name });
                 return this.sendJson(res, 201, playlist);
+            }
+
+            if (pathname === '/api/library/playlists/order' && method === 'PUT') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const body = await this.parseBody(req);
+                if (!Array.isArray(body.order) || body.order.length > 100
+                    || body.order.some(id => typeof id !== 'string' || id.length > 80)) {
+                    return this.sendError(res, 400, 'Playlist order must be an array of playlist IDs.');
+                }
+                const playlists = this.db.reorderPlaylists(userId, body.order);
+                if (!playlists) return this.sendError(res, 400, 'Playlist order must include each of your playlists exactly once.');
+                return this.sendJson(res, 200, playlists);
             }
 
             // POST /api/library/playlists/:id/tracks
@@ -1073,13 +1453,41 @@ class ApiRouter {
                 return this.sendJson(res, 200, updated);
             }
 
+            const playlistRenameMatch = pathname.match(/^\/api\/library\/playlists\/([a-z0-9_-]+)$/i);
+            if (playlistRenameMatch && method === 'PATCH') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const body = await this.parseBody(req);
+                if (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 100) {
+                    return this.sendError(res, 400, 'Playlist name must contain 1 to 100 characters.');
+                }
+                const renamed = this.db.renamePlaylist(playlistRenameMatch[1], userId, body.name);
+                if (!renamed) return this.sendError(res, 404, 'Playlist not found or access denied.');
+                return this.sendJson(res, 200, renamed);
+            }
+
+            const playlistTrackOrderMatch = pathname.match(/^\/api\/library\/playlists\/([a-z0-9_-]+)\/tracks\/order$/i);
+            if (playlistTrackOrderMatch && method === 'PUT') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const body = await this.parseBody(req);
+                if (!Array.isArray(body.order) || body.order.length > 1000
+                    || body.order.some(index => !Number.isInteger(index))) {
+                    return this.sendError(res, 400, 'Track order must be an array of track indexes.');
+                }
+                const playlist = this.db.reorderPlaylistTracks(playlistTrackOrderMatch[1], userId, body.order);
+                if (!playlist) return this.sendError(res, 400, 'Track order must include each playlist track exactly once.');
+                return this.sendJson(res, 200, playlist);
+            }
+
             // DELETE /api/library/playlists/:id
             const playlistDeleteMatch = pathname.match(/^\/api\/library\/playlists\/([a-z0-9_-]+)$/i);
             if (playlistDeleteMatch && method === 'DELETE') {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
                 const deleted = this.db.deletePlaylist(playlistDeleteMatch[1], userId);
-                return this.sendJson(res, 200, { success: deleted });
+                if (!deleted) return this.sendError(res, 404, 'Playlist not found or access denied.');
+                return this.sendJson(res, 200, { success: true });
             }
 
             // 404 For Unmatched API Routes

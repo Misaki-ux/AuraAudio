@@ -145,9 +145,245 @@
       "likedAt": "2026-10-19T10:13:04.762Z"
     }
   ],
-  "playlists": [],
+  "playlists": [
+    {
+      "id": "pl_19d862b70e73",
+      "userId": "guest",
+      "name": "руc",
+      "description": "Custom AuraAudio Playlist",
+      "isPublic": false,
+      "tracks": [
+        {
+          "id": "server_download_dl_b59b8086cb6de30c",
+          "title": "наколки",
+          "artist": "YouTube Audio",
+          "album": "",
+          "duration": 0,
+          "url": "http://127.0.0.1:3457/api/media/%D0%BD%D0%B0%D0%BA%D0%BE%D0%BB%D0%BA%D0%B8%20%5Bdl_b59b8086cb6de30c%5D.mp3?accessKey=93d2586153e48a9bbc7a4b44fc2d76e",
+          "source": "download",
+          "sourceUrl": "",
+          "cover": null,
+          "downloadable": false,
+          "localAudioId": "",
+          "addedAt": "2026-10-28T17:10:22.816Z"
+        }
+      ],
+      "createdAt": "2026-10-28T17:10:17.564Z",
+      "updatedAt": "2026-10-28T17:10:22.816Z"
+    }
+  ],
   "imported_media": [],
   "play_events": [
+    {
+      "id": "play_16f3fcd68395",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-11-06T03:03:24.234Z"
+    },
+    {
+      "id": "play_6352531417f8",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-11-06T03:01:41.100Z"
+    },
+    {
+      "id": "play_3a018a61cfd4",
+      "userId": "guest",
+      "title": "Without Me",
+      "artist": "Eminem",
+      "playedAt": "2026-11-05T09:19:03.523Z"
+    },
+    {
+      "id": "play_9e2c599430d1",
+      "userId": "guest",
+      "title": "Without Me",
+      "artist": "Eminem",
+      "playedAt": "2026-11-05T08:16:49.884Z"
+    },
+    {
+      "id": "play_26f1962b55aa",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-11-05T08:15:57.100Z"
+    },
+    {
+      "id": "play_f8554d787917",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-11-05T08:15:54.708Z"
+    },
+    {
+      "id": "play_42c876f2f432",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV",
+      "playedAt": "2026-11-05T08:15:53.013Z"
+    },
+    {
+      "id": "play_b8f9f409f034",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-11-05T08:11:40.166Z"
+    },
+    {
+      "id": "play_c24283222ba9",
+      "userId": "guest",
+      "title": "Yuve Yuve Yu (Official Music Video)",
+      "artist": "The HU",
+      "playedAt": "2026-10-28T23:07:53.684Z"
+    },
+    {
+      "id": "play_be1374970a12",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV",
+      "playedAt": "2026-10-28T23:06:14.367Z"
+    },
+    {
+      "id": "play_a590a876e6ce",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T23:06:12.054Z"
+    },
+    {
+      "id": "play_bc9125f9f66a",
+      "userId": "guest",
+      "title": "Eve lève toi (Clip Officiel - avec paroles)",
+      "artist": "Julie Pietri",
+      "playedAt": "2026-10-28T23:04:05.429Z"
+    },
+    {
+      "id": "play_10a6c3666315",
+      "userId": "guest",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra",
+      "playedAt": "2026-10-28T23:04:04.891Z"
+    },
+    {
+      "id": "play_8d72f0baaaa0",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-28T23:04:04.158Z"
+    },
+    {
+      "id": "play_203a7e688dac",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-28T23:04:03.440Z"
+    },
+    {
+      "id": "play_12caf1b540b6",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV",
+      "playedAt": "2026-10-28T23:04:02.697Z"
+    },
+    {
+      "id": "play_847852688ae7",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T23:04:00.770Z"
+    },
+    {
+      "id": "play_24f56412531c",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T23:01:29.610Z"
+    },
+    {
+      "id": "play_1ad9750d1b72",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-28T22:57:29.811Z"
+    },
+    {
+      "id": "play_b4f31134d673",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-28T22:54:50.824Z"
+    },
+    {
+      "id": "play_a44f44d7d349",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV",
+      "playedAt": "2026-10-28T22:52:46.504Z"
+    },
+    {
+      "id": "play_40f155038963",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "zhanulka",
+      "playedAt": "2026-10-28T22:50:43.507Z"
+    },
+    {
+      "id": "play_e33d3693d43c",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-28T17:23:23.434Z"
+    },
+    {
+      "id": "play_86df8fdd59ff",
+      "userId": "guest",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra",
+      "playedAt": "2026-10-28T17:08:32.799Z"
+    },
+    {
+      "id": "play_85aba6e06e0c",
+      "userId": "guest",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman",
+      "playedAt": "2026-10-28T17:04:06.506Z"
+    },
+    {
+      "id": "play_d17a8386861d",
+      "userId": "guest",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp",
+      "playedAt": "2026-10-28T17:01:27.502Z"
+    },
+    {
+      "id": "play_540f08c62fa3",
+      "userId": "guest",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-28T16:59:23.183Z"
+    },
+    {
+      "id": "play_5d5fddefe0fe",
+      "userId": "guest",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "playedAt": "2026-10-28T16:57:15.145Z"
+    },
+    {
+      "id": "play_87611c79e696",
+      "userId": "guest",
+      "title": "VAN HALEN (Clip Officiel)",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-28T16:41:08.294Z"
+    },
+    {
+      "id": "play_da09c1d94026",
+      "userId": "guest",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS",
+      "playedAt": "2026-10-28T16:39:36.199Z"
+    },
     {
       "id": "play_5c98df724b08",
       "userId": "guest",
@@ -983,6 +1219,332 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "activity_fbb7eddaf95c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-06T03:03:24.234Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_48b2893d9f0b",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-06T03:01:41.100Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_2c26cb4d94bc",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-05T09:19:03.523Z",
+      "title": "Without Me",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_fe6e66c259e7",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-05T08:16:49.884Z",
+      "title": "Without Me",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_44791504745a",
+      "userId": "guest",
+      "type": "download",
+      "occurredAt": "2026-11-05T08:16:43.748Z",
+      "title": "Without Me",
+      "artist": "Eminem"
+    },
+    {
+      "id": "activity_1f80f345ef22",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-05T08:15:57.101Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_872bda071c8f",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-05T08:15:54.708Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_fd391b88d189",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-05T08:15:53.013Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV"
+    },
+    {
+      "id": "activity_1ed256616aea",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-11-05T08:11:40.166Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_ad0273fa7228",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-11-01T12:30:04.687Z",
+      "title": "SLAVA MARLOW - Ты Горишь Как Огонь (ПРЕМЬЕРА КЛИПА)",
+      "artist": "SLAVA MARLOW",
+      "name": "SLAVA MARLOW - Ты Горишь Как Огонь (ПРЕМЬЕРА КЛИПА)"
+    },
+    {
+      "id": "activity_1b55f10184d2",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-11-01T12:30:04.681Z",
+      "title": "POPO",
+      "artist": "TSB x OPT",
+      "name": "POPO"
+    },
+    {
+      "id": "activity_c6fc3ee48ad1",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-28T23:30:17.796Z",
+      "title": "POPO",
+      "artist": "TSB x OPT",
+      "name": "POPO"
+    },
+    {
+      "id": "activity_2410ba3be2f6",
+      "userId": "guest",
+      "type": "like_removed",
+      "occurredAt": "2026-10-28T23:30:00.538Z",
+      "title": "POPO",
+      "artist": "TSB x OPT",
+      "name": "POPO"
+    },
+    {
+      "id": "activity_bd9fbe897fbc",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-28T23:29:02.820Z",
+      "title": "POPO",
+      "artist": "TSB x OPT",
+      "name": "POPO"
+    },
+    {
+      "id": "activity_e33cbf0688d0",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:07:53.684Z",
+      "title": "Yuve Yuve Yu (Official Music Video)",
+      "artist": "The HU"
+    },
+    {
+      "id": "activity_7af185546615",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:06:14.367Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV"
+    },
+    {
+      "id": "activity_510148ecf13c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:06:12.054Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_f2eb6bc8cfe5",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:04:05.429Z",
+      "title": "Eve lève toi (Clip Officiel - avec paroles)",
+      "artist": "Julie Pietri"
+    },
+    {
+      "id": "activity_38d9a0582d17",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:04:04.892Z",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra"
+    },
+    {
+      "id": "activity_a836d505a76c",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:04:04.158Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_68d5f6190aae",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:04:03.440Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_720be71860ad",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:04:02.697Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV"
+    },
+    {
+      "id": "activity_acc10e28e606",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:04:00.770Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_a2defdb2cb24",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-28T23:03:14.295Z",
+      "title": "SLAVA MARLOW - Ты Горишь Как Огонь (ПРЕМЬЕРА КЛИПА)",
+      "name": "SLAVA MARLOW - Ты Горишь Как Огонь (ПРЕМЬЕРА КЛИПА)"
+    },
+    {
+      "id": "activity_c56c22779caa",
+      "userId": "guest",
+      "type": "like_added",
+      "occurredAt": "2026-10-28T23:02:57.334Z",
+      "title": "TSB x OPT - POPO",
+      "artist": "TSB x OPT",
+      "name": "TSB x OPT - POPO"
+    },
+    {
+      "id": "activity_faa159a80ef9",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T23:01:29.610Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_7aac42e57506",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T22:57:29.811Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_31c2ff5c570e",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T22:54:50.825Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_5311b780ab2f",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T22:52:46.504Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "BODIEV"
+    },
+    {
+      "id": "activity_679b8686994e",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T22:50:43.507Z",
+      "title": "наколки",
+      "artist": "zhanulka"
+    },
+    {
+      "id": "activity_8a6eb18aa69f",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T17:23:23.434Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_2e16c1ad3bd0",
+      "userId": "guest",
+      "type": "playlist_track_added",
+      "occurredAt": "2026-10-28T17:10:22.819Z",
+      "title": "наколки",
+      "artist": "YouTube Audio",
+      "name": "руc"
+    },
+    {
+      "id": "activity_0f46fd2e2124",
+      "userId": "guest",
+      "type": "playlist_created",
+      "occurredAt": "2026-10-28T17:10:17.566Z",
+      "name": "руc"
+    },
+    {
+      "id": "activity_38dc694f2e06",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T17:08:32.799Z",
+      "title": "9 Milli (Clip Officiel)",
+      "artist": "Kekra"
+    },
+    {
+      "id": "activity_abd5c4cf43d3",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T17:04:06.506Z",
+      "title": "Fast Car (Official Music Video)",
+      "artist": "Tracy Chapman"
+    },
+    {
+      "id": "activity_c471e8a61388",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T17:01:27.502Z",
+      "title": "Breakfast In America (Official Audio)",
+      "artist": "Supertramp"
+    },
+    {
+      "id": "activity_aa128c083933",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T16:59:23.183Z",
+      "title": "BODIEV — Крузак 200 (ПРЕМЬЕРА КЛИПА)",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_51044e3558aa",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T16:57:15.145Z",
+      "title": "наколки",
+      "artist": "YouTube Audio"
+    },
+    {
+      "id": "activity_d39c7f1b44c2",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T16:41:08.295Z",
+      "title": "VAN HALEN (Clip Officiel)",
+      "artist": "KAARIS"
+    },
+    {
+      "id": "activity_1b4a54215cd7",
+      "userId": "guest",
+      "type": "play",
+      "occurredAt": "2026-10-28T16:39:36.200Z",
+      "title": "HURACAN (Clip Officiel)",
+      "artist": "KAARIS"
+    },
     {
       "id": "activity_929026eb76d8",
       "userId": "guest",
@@ -1889,6 +2451,158 @@
   ],
   "diagnostics": [
     {
+      "id": "diag_67bbaaace67b",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-06T03:08:54.877Z"
+    },
+    {
+      "id": "diag_42a0c191a300",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-06T03:08:54.874Z"
+    },
+    {
+      "id": "diag_fda3ce399d7d",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T15:50:15.196Z"
+    },
+    {
+      "id": "diag_6114e01e5f4f",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T15:50:15.191Z"
+    },
+    {
+      "id": "diag_d5a5b8280c50",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T15:00:09.575Z"
+    },
+    {
+      "id": "diag_2ee73fa909df",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T15:00:09.572Z"
+    },
+    {
+      "id": "diag_b4b8ef1fda2e",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T14:30:29.838Z"
+    },
+    {
+      "id": "diag_169a8724a8e9",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T14:30:29.833Z"
+    },
+    {
+      "id": "diag_2afac49ec275",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T12:41:22.099Z"
+    },
+    {
+      "id": "diag_0e876ff18559",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T12:41:22.097Z"
+    },
+    {
+      "id": "diag_215ce43eb826",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T11:01:12.717Z"
+    },
+    {
+      "id": "diag_97782aa9124b",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T11:01:12.713Z"
+    },
+    {
+      "id": "diag_da5da902a654",
+      "userId": "guest",
+      "category": "api",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T10:30:41.206Z"
+    },
+    {
+      "id": "diag_f0d5a4017f36",
+      "userId": "guest",
+      "category": "api",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T09:56:40.408Z"
+    },
+    {
+      "id": "diag_a94134cec84d",
+      "userId": "guest",
+      "category": "api",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T09:56:40.394Z"
+    },
+    {
+      "id": "diag_b4eb2f922541",
+      "userId": "guest",
+      "category": "api",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-11-05T09:56:40.275Z"
+    },
+    {
+      "id": "diag_dee145ed6e26",
+      "userId": "guest",
+      "category": "download",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-29T08:53:39.393Z"
+    },
+    {
+      "id": "diag_67567456dd68",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-28T23:08:59.774Z"
+    },
+    {
+      "id": "diag_068ce0a151db",
+      "userId": "guest",
+      "category": "library",
+      "method": "GET",
+      "statusCode": 404,
+      "occurredAt": "2026-10-28T23:08:59.771Z"
+    },
+    {
       "id": "diag_4b5e9527c36e",
       "userId": "guest",
       "category": "library",
@@ -2034,6 +2748,20 @@
     }
   ],
   "downloads": [
+    {
+      "id": "dl_c5972b7e12f1d1eb",
+      "userId": "guest",
+      "title": "Without Me",
+      "artist": "Eminem",
+      "filePath": "C:\\Users\\Yohann\\Desktop\\auraplayer\\downloads\\Eminem - Without Me (Official Music Video) [dl_c5972b7e12f1d1eb].mp3",
+      "fileName": "Eminem - Without Me (Official Music Video) [dl_c5972b7e12f1d1eb].mp3",
+      "fileSize": 8877260,
+      "coverFile": "cover-e28d9409072769112658483c.jpg",
+      "cover": "/api/covers/cover-e28d9409072769112658483c.jpg",
+      "streamUrl": "/api/media/Eminem%20-%20Without%20Me%20(Official%20Music%20Video)%20%5Bdl_c5972b7e12f1d1eb%5D.mp3",
+      "coverChecked": true,
+      "downloadedAt": "2026-11-05T08:16:43.746Z"
+    },
     {
       "id": "dl_b59b8086cb6de30c",
       "userId": "guest",
@@ -2201,6 +2929,7 @@
       "coverChecked": true
     }
   ],
+  "download_metadata": [],
   "play_history_preferences": [],
   "mobile_sync_actions": [],
   "settings": {
