@@ -1,0 +1,10 @@
+{
+	auto_https disable_redirects
+}
+
+{$AURA_PUBLIC_DOMAIN} {
+	tls {
+		dns duckdns {env.DUCKDNS_API_TOKEN}
+	}
+	reverse_proxy 127.0.0.1:{$AURA_PORT}
+}
