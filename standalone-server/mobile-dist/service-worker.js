@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aura-mobile-v7';
+const CACHE_NAME = 'aura-mobile-v7.2.9';
 const APP_SHELL = ['/mobile/', '/manifest.webmanifest', '/assets/icon_32x32.png', '/assets/icon_128x128.png'];
 
 self.addEventListener('install', event => {
