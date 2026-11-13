@@ -30,6 +30,115 @@ function sameDownload(trackA, trackB) {
     return !!a && !!b && a.title === b.title && (!a.artist || !b.artist || a.artist === b.artist);
 }
 
+const ROMAJI_TO_HIRAGANA = (() => {
+    const syllabaries = {
+        k: 'かきくけこ', s: 'さしすせそ', t: 'たちつてと', n: 'なにぬねの',
+        h: 'はひふへほ', m: 'まみむめも', y: 'や　ゆ　よ', r: 'らりるれろ',
+        w: 'わ　　　', g: 'がぎぐげご', z: 'ざじずぜぞ', d: 'だぢづでど',
+        b: 'ばびぶべぼ', p: 'ぱぴぷぺぽ'
+    };
+    const mora = { a: 'あ', i: 'い', u: 'う', e: 'え', o: 'お', wo: 'を', vu: 'ゔ' };
+    for (const [consonant, kana] of Object.entries(syllabaries)) {
+        for (let index = 0; index < 5; index++) {
+            if (kana[index] !== '　') mora[consonant + 'aiueo'[index]] = kana[index];
+        }
+    }
+    Object.assign(mora, {
+        shi: 'し', si: 'し', chi: 'ち', ti: 'ち', tsu: 'つ', tu: 'つ', fu: 'ふ', hu: 'ふ', ji: 'じ', zi: 'じ',
+        ja: 'じゃ', ju: 'じゅ', jo: 'じょ', jya: 'じゃ', jyu: 'じゅ', jyo: 'じょ',
+        cha: 'ちゃ', chu: 'ちゅ', cho: 'ちょ', cya: 'ちゃ', cyu: 'ちゅ', cyo: 'ちょ',
+        sha: 'しゃ', shu: 'しゅ', sho: 'しょ', sya: 'しゃ', syu: 'しゅ', syo: 'しょ',
+        tya: 'ちゃ', tyu: 'ちゅ', tyo: 'ちょ', dya: 'ぢゃ', dyu: 'ぢゅ', dyo: 'ぢょ',
+        nya: 'にゃ', nyu: 'にゅ', nyo: 'にょ', hya: 'ひゃ', hyu: 'ひゅ', hyo: 'ひょ',
+        mya: 'みゃ', myu: 'みゅ', myo: 'みょ', rya: 'りゃ', ryu: 'りゅ', ryo: 'りょ',
+        kya: 'きゃ', kyu: 'きゅ', kyo: 'きょ', gya: 'ぎゃ', gyu: 'ぎゅ', gyo: 'ぎょ',
+        bya: 'びゃ', byu: 'びゅ', byo: 'びょ', pya: 'ぴゃ', pyu: 'ぴゅ', pyo: 'ぴょ',
+        wi: 'うぃ', we: 'うぇ', kwa: 'くぁ', kwi: 'くぃ', kwe: 'くぇ', kwo: 'くぉ',
+        va: 'ゔぁ', vi: 'ゔぃ', ve: 'ゔぇ', vo: 'ゔぉ'
+    });
+    return mora;
+})();
+
+const JAPANESE_ROMAJI_HINTS = new Set([
+    'anata', 'arigatou', 'ashita', 'boku', 'bokura', 'dare', 'dakara', 'demo', 'kikoeru',
+    'kimi', 'kokoro', 'konna', 'koto', 'kyou', 'mada', 'mata', 'minna', 'nara', 'sakura',
+    'sekai', 'sore', 'watashi', 'yume'
+]);
+
+function romanjiToHiragana(value) {
+    const input = String(value || '').toLowerCase();
+    let output = '';
+    let convertedLetters = 0;
+    let letterCount = 0;
+
+    for (let index = 0; index < input.length;) {
+        const char = input[index];
+        if (/[a-z]/.test(char)) {
+            letterCount++;
+            if (index + 1 < input.length && char === input[index + 1]
+                && /[bcdfghjklmpqrstvwxyz]/.test(char) && char !== 'n') {
+                output += 'っ';
+                convertedLetters += 2;
+                index++;
+                continue;
+            }
+            if (char === 'n' && input[index + 1] === "'") {
+                output += 'ん';
+                index += 2;
+                convertedLetters++;
+                continue;
+            }
+            if (char === 'n' && (index + 1 === input.length || !/[aeiouy]/.test(input[index + 1]))) {
+                output += 'ん';
+                index++;
+                convertedLetters++;
+                continue;
+            }
+
+            let matched = false;
+            for (let length = 3; length >= 1; length--) {
+                const kana = ROMAJI_TO_HIRAGANA[input.slice(index, index + length)];
+                if (!kana) continue;
+                output += kana;
+                index += length;
+                convertedLetters += length;
+                matched = true;
+                break;
+            }
+            if (!matched) return null;
+            continue;
+        }
+        if (char === "'") {
+            index++;
+            continue;
+        }
+        if (/\s/.test(char)) {
+            output += ' ';
+            index++;
+            continue;
+        }
+        if (/[\p{P}\p{S}]/u.test(char)) {
+            output += char;
+            index++;
+            continue;
+        }
+        return null;
+    }
+
+    return letterCount > 0 && convertedLetters / letterCount >= 0.8 ? output.trim() : null;
+}
+
+function isRomanizedJapaneseLyrics(lines) {
+    const tokens = lines.flatMap(line => String(line.text || '').toLowerCase().match(/[a-z]+/g) || []);
+    const hints = tokens.filter(token => JAPANESE_ROMAJI_HINTS.has(token)).length;
+    return tokens.length >= 6 && hints >= 2 && hints / tokens.length >= 0.12;
+}
+
+function sameTranslationText(left, right) {
+    const normalize = value => String(value || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+    return normalize(left) !== '' && normalize(left) === normalize(right);
+}
+
 class ApiRouter {
     constructor(db, authService, discoveryService, youtubeService, downloadsDir, musicMetadata) {
         this.db = db;
@@ -43,6 +152,123 @@ class ApiRouter {
         this.pairedClientTokens = new Map();
         this.pairClaimAttempts = new Map();
         this.pendingLibraryTransfers = new Map();
+        this.translationUsageDate = new Date().toISOString().slice(0, 10);
+        this.translationCharactersUsed = 0;
+        this.translationCache = new Map();
+    }
+
+    async translateLyricsWithMyMemory(lines, targetLanguage) {
+        const today = new Date().toISOString().slice(0, 10);
+        if (this.translationUsageDate !== today) {
+            this.translationUsageDate = today;
+            this.translationCharactersUsed = 0;
+        }
+
+        const romanizedLines = lines.filter(line => !/[\u3040-\u30ff\u3400-\u9fff]/u.test(line.text));
+        const romanizedJapanese = isRomanizedJapaneseLyrics(romanizedLines);
+        const sourceLines = lines.map(line => {
+            const alreadyJapanese = /[\u3040-\u30ff\u3400-\u9fff]/u.test(line.text);
+            const kana = !alreadyJapanese && romanizedJapanese ? romanjiToHiragana(line.text) : null;
+            const isJapanese = alreadyJapanese || Boolean(kana);
+            return {
+                text: line.text,
+                providerText: kana || line.text,
+                sourceLanguage: isJapanese ? 'ja' : 'autodetect'
+            };
+        });
+        const uniqueLines = new Map();
+        for (const line of sourceLines) {
+            const key = `${line.sourceLanguage}\0${line.providerText}`;
+            if (!uniqueLines.has(key)) uniqueLines.set(key, line);
+        }
+        const pending = [...uniqueLines.values()].map(line => {
+            const cacheKey = crypto.createHash('sha256')
+                .update(`${line.sourceLanguage}\0${targetLanguage}\0${line.providerText}`).digest('hex');
+            return { ...line, cacheKey, cached: this.translationCache.get(cacheKey) };
+        }).filter(item => item.cached === undefined);
+
+        if (pending.some(item => Buffer.byteLength(item.providerText, 'utf8') > 500)) {
+            return { notice: 'A lyric line exceeds MyMemory’s 500-byte segment limit; no partial translation was shown.' };
+        }
+
+        const requestedCharacters = pending.reduce((total, item) => total + Array.from(item.providerText).length, 0);
+        if (this.translationCharactersUsed + requestedCharacters > 5000) {
+            return { notice: 'MyMemory’s free anonymous limit is 5,000 characters per server IP each day. Try again after the daily quota resets.' };
+        }
+        this.translationCharactersUsed += requestedCharacters;
+
+        let nextIndex = 0;
+        let failure = '';
+        const worker = async () => {
+            while (nextIndex < pending.length && !failure) {
+                const item = pending[nextIndex++];
+                try {
+                    const url = new URL('https://api.mymemory.translated.net/get');
+                    url.searchParams.set('q', item.providerText);
+                    url.searchParams.set('langpair', `${item.sourceLanguage}|${targetLanguage}`);
+                    const response = await fetch(url, {
+                        headers: { 'User-Agent': 'AuraAudio/1.6.2 (https://github.com/auraplayer)' },
+                        signal: AbortSignal.timeout(8000)
+                    });
+                    if (!response.ok) throw new Error(`MyMemory returned HTTP ${response.status}`);
+                    const payload = await response.json();
+                    if (payload?.quotaFinished) {
+                        failure = 'MyMemory’s free translation quota has been reached for today.';
+                        break;
+                    }
+                    const translated = String(payload?.responseData?.translatedText || '').trim();
+                    if (Number(payload?.responseStatus) !== 200 || !translated) {
+                        failure = payload?.responseDetails || 'MyMemory could not translate every lyric line.';
+                        break;
+                    }
+                    this.translationCache.set(item.cacheKey, translated);
+                    if (this.translationCache.size > 2000) {
+                        this.translationCache.delete(this.translationCache.keys().next().value);
+                    }
+                } catch (error) {
+                    failure = `MyMemory translation failed: ${error.message}`;
+                }
+            }
+        };
+        await Promise.all(Array.from({ length: Math.min(4, pending.length) }, worker));
+        if (failure) return { notice: failure };
+
+        const providerTranslations = lines.map((line, index) => {
+            const sourceLine = sourceLines[index];
+            const cacheKey = crypto.createHash('sha256')
+                .update(`${sourceLine.sourceLanguage}\0${targetLanguage}\0${sourceLine.providerText}`).digest('hex');
+            return this.translationCache.get(cacheKey);
+        });
+        const unchangedLines = sourceLines.reduce((count, line, index) => (
+            sameTranslationText(line.providerText, providerTranslations[index])
+                || sameTranslationText(line.text, providerTranslations[index])
+                ? count + 1
+                : count
+        ), 0);
+        const translations = providerTranslations.map((text, index) => (
+            sameTranslationText(sourceLines[index].providerText, text)
+                || sameTranslationText(sourceLines[index].text, text)
+                ? ''
+                : text
+        ));
+        if (!translations.some(Boolean)) {
+            return {
+                notice: romanizedJapanese
+                    ? 'MyMemory could not reliably interpret this Romanized Japanese. Try Japanese-script lyrics or a different lyrics source.'
+                    : 'MyMemory returned the original text instead of translating it; no translation was shown.'
+            };
+        }
+        const notices = [];
+        if (romanizedJapanese) notices.push('Romanized Japanese was converted to kana before translation; machine translation may still be approximate.');
+        if (unchangedLines) notices.push('Some lyric lines could not be translated and are shown in the original only.');
+        return {
+            translations,
+            notice: notices.join(' '),
+            provider: {
+                name: 'MyMemory',
+                url: 'https://mymemory.translated.net/'
+            }
+        };
     }
 
     validPairedClientToken(token) {
@@ -106,6 +332,9 @@ class ApiRouter {
     startDownload(body, userId) {
         const target = typeof body.url === 'string' ? body.url.trim() : '';
         const title = typeof body.title === 'string' ? body.title.trim().slice(0, 240) : '';
+        const artist = typeof body.artist === 'string' ? body.artist.trim().slice(0, 180) : '';
+        const album = typeof body.album === 'string' ? body.album.trim().slice(0, 240) : '';
+        const cover = typeof body.cover === 'string' ? body.cover.trim().slice(0, 1000) : '';
         if (!target || target.length > 500) throw new Error('A valid download URL or search query is required.');
 
         const videoId = target.match(/(?:v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/i)?.[1] || '';
@@ -115,7 +344,8 @@ class ApiRouter {
         }
 
         let downloadId;
-        const downloadPromise = this.ytb.downloadAudio(target, title, id => { downloadId = id; }, { videoId });
+        const metadata = { title, artist, album, cover };
+        const downloadPromise = this.ytb.downloadAudio(target, title, id => { downloadId = id; }, { videoId, metadata });
         downloadPromise.then(result => {
             for (const existing of this.db.getDownloads(userId)) {
                 if (!sameDownload(result, existing)) continue;
@@ -444,23 +674,39 @@ class ApiRouter {
         if (pathname === '/api/lyrics' && method === 'GET') {
             let title = String(query.title || '').trim();
             let artist = String(query.artist || '').trim();
-            if (!title) return this.sendJson(res, 200, { lines: [] });
+            if (!title) return this.sendJson(res, 200, { lines: [], synced: false });
 
             const parsedTrack = parseTrackMeta({ title, artist });
             title = parsedTrack.title;
             artist = parsedTrack.artist || artist;
-            const cleanTitle = value => String(value || '').replace(/[[(](?:[^)\]]*(?:official|video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version)[^)]*)[)\]]/gi, ' ')
-                .replace(/\s+-\s+(?:\d{4}\s+)?remaster(?:ed)?\b.*$/i, ' ').replace(/\s+/g, ' ').trim();
+            const cleanTitle = value => String(value || '')
+                .replace(/[[(](?:[^)\]]*(?:official|video|lyrics?|audio|explicit|remaster(?:ed)?|international\s+version|radio\s+edit|single\s+version|subbed|subtitles?)[^)]*)[)\]]/gi, ' ')
+                .replace(/\s*[-|–—]\s*(?:\d{4}\s+)?(?:remaster(?:ed)?|subbed|subtitles?|with\s+subtitles)\b.*$/i, ' ')
+                .replace(/\b(?:subbed|subtitles?|with\s+subtitles)\b.*$/i, ' ')
+                .replace(/^(?:vocal|lyrics?\s+video|music\s+video|amv)\s+/i, '')
+                .replace(/\s+/g, ' ').trim();
             title = cleanTitle(title);
             const normalize = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+            const titleTokens = value => [...new Set(normalize(value).split(/\s+/).filter(Boolean))];
             const titleKey = normalize(title);
             const artistKey = /^(?:unknown(?: artist)?|youtube(?: audio)?|various artists?|topic)$/i.test(artist) ? '' : normalize(artist);
             const lookupArtist = artistKey ? artist : '';
+            const translationLanguage = String(query.translation || '').trim().toLowerCase();
+
+            const titleVariants = [...new Set([title, cleanTitle(query.title), String(query.title || '').trim()].map(value => value.trim()).filter(Boolean))];
+            const titleScore = (candidateTitle, queryTitle) => {
+                const candidateTokens = titleTokens(cleanTitle(candidateTitle));
+                const queryTokens = titleTokens(cleanTitle(queryTitle));
+                if (!candidateTokens.length || !queryTokens.length) return 0;
+                const querySet = new Set(queryTokens);
+                const overlap = candidateTokens.filter(token => querySet.has(token)).length;
+                return overlap / new Set([...candidateTokens, ...queryTokens]).size;
+            };
 
             const fetchLyrics = async url => {
                 try {
                     const lrcRes = await fetch(url, {
-                        headers: { 'User-Agent': 'AuraAudio/1.5.0 (https://github.com/auraplayer)' },
+                        headers: { 'User-Agent': 'AuraAudio/1.6.2 (https://github.com/auraplayer)' },
                         signal: AbortSignal.timeout(5000)
                     });
                     if (!lrcRes.ok) return null;
@@ -470,47 +716,84 @@ class ApiRouter {
             };
 
             try {
-                const candidates = [], artistMatches = [];
-                const queries = [
-                    `track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(lookupArtist)}`,
-                    `track_name=${encodeURIComponent(title)}`,
-                    `q=${encodeURIComponent(title + (lookupArtist ? ` ${lookupArtist}` : ''))}`
-                ];
-                for (const params of queries) {
+                const searches = [];
+                for (const variant of titleVariants) {
+                    if (lookupArtist) searches.push(`track_name=${encodeURIComponent(variant)}&artist_name=${encodeURIComponent(lookupArtist)}`);
+                    searches.push(`track_name=${encodeURIComponent(variant)}`);
+                    searches.push(`q=${encodeURIComponent(variant)}`);
+                }
+                const seenSearches = new Set();
+                let bestMatch = null;
+                let bestScore = 0;
+                for (const params of searches) {
+                    if (seenSearches.has(params)) continue;
+                    seenSearches.add(params);
                     const matches = await fetchLyrics(`https://lrclib.net/api/search?${params}`);
                     for (const item of matches || []) {
-                        if (normalize(cleanTitle(item.trackName)) !== titleKey) continue;
+                        const similarity = Math.max(...titleVariants.map(variant => titleScore(item.trackName, variant)));
+                        if (similarity < 0.55) continue;
                         const candidateArtist = normalize(item.artistName);
-                        candidates.push(item);
-                        if (!artistKey || !candidateArtist || candidateArtist === artistKey
-                            || candidateArtist.includes(artistKey) || artistKey.includes(candidateArtist)) artistMatches.push(item);
+                        const artistMatch = artistKey && candidateArtist
+                            && (candidateArtist === artistKey || candidateArtist.includes(artistKey) || artistKey.includes(candidateArtist));
+                        const score = similarity + (artistMatch ? 0.02 : 0) + (item.syncedLyrics ? 0.005 : 0);
+                        if (score > bestScore) {
+                            bestMatch = item;
+                            bestScore = score;
+                        }
                     }
-                    if (candidates.length) break;
+                    if (bestScore >= 0.95) break;
                 }
-                const bestMatch = artistMatches.find(item => item.syncedLyrics) || artistMatches.find(item => item.plainLyrics)
-                    || candidates.find(item => item.syncedLyrics) || candidates.find(item => item.plainLyrics);
+                if (!bestMatch) return this.sendJson(res, 200, { lines: [], synced: false });
 
-                if (!bestMatch) return this.sendJson(res, 200, { lines: [] });
+                const synced = Boolean(bestMatch.syncedLyrics);
+                const lines = synced
+                    ? bestMatch.syncedLyrics.split('\n').map(line => {
+                        const timestamps = [...line.matchAll(/\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g)];
+                        const text = line.replace(/\[(?:\d+):\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+                        if (!timestamps.length || !text) return [];
+                        return timestamps.map(match => ({
+                            t: Number(match[1]) * 60 + Number(match[2]) + (match[3] ? Number(`0.${match[3]}`) : 0),
+                            text
+                        }));
+                    }).flat()
+                    : bestMatch.plainLyrics
+                        ? bestMatch.plainLyrics.split('\n').filter(line => line.trim()).map((text, index) => ({ t: index * 4, text }))
+                        : [];
 
-                if (bestMatch.syncedLyrics) {
-                    const lines = bestMatch.syncedLyrics.split('\n')
-                        .map(line => {
-                            const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
-                            if (match) {
-                                const time = parseInt(match[1]) * 60 + parseFloat(match[2]);
-                                const text = match[3].trim();
-                                return text ? { t: time, text } : null;
-                            }
-                            return null;
-                        }).filter(Boolean);
-                    return this.sendJson(res, 200, { lines });
-                } else if (bestMatch.plainLyrics) {
-                    const lines = bestMatch.plainLyrics.split('\n').filter(l => l.trim()).map((text, i) => ({ t: i * 4, text }));
-                    return this.sendJson(res, 200, { lines });
+                let translationData = null;
+                let translationNotice = '';
+                if (translationLanguage && /^[a-z]{2}$/.test(translationLanguage)) {
+                    const result = await this.translateLyricsWithMyMemory(lines, translationLanguage);
+                    translationNotice = result.notice || '';
+                    if (result.translations?.length === lines.length) {
+                        translationData = {
+                            lines: result.translations,
+                            language: translationLanguage,
+                            provider: result.provider
+                        };
+                    }
                 }
-                return this.sendJson(res, 200, { lines: [] });
+                const trackMetadata = {
+                    title: String(bestMatch.trackName || '').trim(),
+                    artist: String(bestMatch.artistName || '').trim()
+                };
+
+                if (synced) {
+                    if (translationData && translationData.lines.length !== lines.length) {
+                        translationData = null;
+                        translationNotice = 'The available translation does not align with this synchronized lyric version.';
+                    }
+                    return this.sendJson(res, 200, { lines, synced: true, translation: translationData, translationNotice, track: trackMetadata });
+                } else if (lines.length) {
+                    if (translationData && translationData.lines.length !== lines.length) {
+                        translationData = null;
+                        translationNotice = 'The available translation does not align with these lyrics.';
+                    }
+                    return this.sendJson(res, 200, { lines, synced: false, translation: translationData, translationNotice, track: trackMetadata });
+                }
+                return this.sendJson(res, 200, { lines: [], synced: false });
             } catch (err) {
-                return this.sendJson(res, 200, { lines: [] });
+                return this.sendJson(res, 200, { lines: [], synced: false });
             }
             }
             if (method === 'GET' && (pathname === '/mobile' || pathname === '/mobile/')) {
@@ -810,10 +1093,34 @@ class ApiRouter {
             if ((pathname === '/api/music/album' || pathname === '/api/albums') && method === 'GET') {
                 try {
                     const artist = /^(unknown artist|youtube(?: audio)?)$/i.test(String(query.artist || '').trim()) ? '' : query.artist || '';
-                    const result = pathname === '/api/albums'
-                        ? await this.musicMetadata.lookupAlbumByName(query.title || query.name || '', artist)
-                        : await this.musicMetadata.lookupAlbum(query.title || '', artist);
-                    return this.sendJson(res, 200, result || { found: false, message: 'No matching album was found.' });
+                    const title = query.title || query.name || '';
+                    const hasTracks = (value) => Boolean(value && Array.isArray(value.tracks) && value.tracks.length);
+                    let result = null;
+                    if (pathname === '/api/albums') {
+                        const attempts = [];
+                        if (query.id || query.itunesId) attempts.push(() => this.musicMetadata.lookupAlbumById(query.id, query.source || '', query.itunesId || '', title, artist));
+                        if (title) attempts.push(() => this.musicMetadata.lookupAlbumByName(title, artist));
+                        if (title) attempts.push(() => this.musicMetadata.lookupAlbum(title, artist));
+                        for (const attempt of attempts) {
+                            try {
+                                const candidate = await attempt();
+                                if (hasTracks(candidate)) { result = candidate; break; }
+                                if (!result && candidate && candidate.found) result = candidate;
+                            } catch (error) {
+                                console.warn('[Metadata] Album lookup attempt failed:', error.message);
+                            }
+                        }
+                    } else {
+                        result = await this.musicMetadata.lookupAlbum(query.title || '', artist);
+                    }
+                    if (result && !hasTracks(result)) {
+                        result = {
+                            ...result,
+                            found: true,
+                            message: result.message || 'No track list is available for this album right now.'
+                        };
+                    }
+                    return this.sendJson(res, 200, result || { found: false, title, artist, message: 'No matching album was found.' });
                 } catch (error) {
                     console.warn('[Metadata] Album lookup failed:', error.message);
                     return this.sendJson(res, 200, { found: false, title: query.title || query.name || '', artist: query.artist || '', cover: '', tracks: [], message: 'Album metadata is temporarily unavailable.' });
@@ -1014,21 +1321,46 @@ class ApiRouter {
 
                 const library = this.db.searchLibrary(userId, q, 30);
 
-                // Enrich the top artist matches with a Wikipedia summary + picture.
-                // Cap both the number of artists and the per-artist lookup so a slow
-                // Wikipedia endpoint cannot push the search past its budget.
-                const matchedArtists = (onlineArtists || []).filter(artist => artist.name && artist.score >= 50).slice(0, 3);
-                const artists = await Promise.all(matchedArtists.map(async artist => {
-                    const wiki = await withTimeout(this.musicMetadata.wikipediaSummary(artist.name).catch(() => null), 2500, null);
-                    return { id: artist.id, name: artist.name, genre: [artist.type, ...(artist.tags || []).slice(0, 2)].filter(Boolean).join(' · ') || 'Artist',
-                        image: wiki?.image || '', description: artist.disambiguation || wiki?.description || '' };
+                // Enrich artist matches like the mobile flow expects: keep exact/strong
+                // matches (including iTunes-only results with score 0), and resolve a
+                // portrait + bio quickly so search can show a real artist card.
+                const qKey = matchKey(q);
+                const rankedArtists = (onlineArtists || [])
+                    .filter(artist => artist && artist.name)
+                    .map(artist => {
+                        const nameKey = matchKey(artist.name);
+                        const exact = qKey && nameKey === qKey;
+                        const prefix = qKey && nameKey.startsWith(qKey);
+                        const score = Number(artist.score) || 0;
+                        return { artist, exact, rank: (exact ? 1000 : 0) + (prefix ? 250 : 0) + score };
+                    })
+                    .filter(item => item.exact || item.artist.score >= 50 || item.rank >= 200)
+                    .sort((a, b) => b.rank - a.rank)
+                    .slice(0, 4)
+                    .map(item => item.artist);
+                const artists = await Promise.all(rankedArtists.map(async artist => {
+                    const [wiki, artwork] = await Promise.all([
+                        withTimeout(this.musicMetadata.wikipediaSummary(artist.name).catch(() => null), 2500, null),
+                        withTimeout(this.musicMetadata.itunesArtistArtwork?.(artist.name).catch(() => '') || Promise.resolve(''), 2500, '')
+                    ]);
+                    const image = wiki?.image || artwork || '';
+                    return {
+                        id: artist.id || '',
+                        name: artist.name,
+                        genre: [artist.type, ...(artist.tags || []).slice(0, 2)].filter(Boolean).join(' · ') || 'Artist',
+                        image,
+                        description: artist.disambiguation || wiki?.description || '',
+                        articleUrl: wiki?.articleUrl || '',
+                        exactMatch: qKey ? matchKey(artist.name) === qKey : false
+                    };
                 }));
+                const topArtist = artists.find(artist => artist.exactMatch) || artists[0] || null;
                 const youtubeResults = (youtube || []).map(video => {
                     const videoId = String(video.id || '').replace(/^yt_/, '');
                     const externalUrl = /^https?:\/\//i.test(video.url || '') ? video.url : (/^[\w-]{11}$/.test(videoId) ? `https://www.youtube.com/watch?v=${videoId}` : '');
                     return { ...video, externalUrl };
                 });
-                return this.sendJson(res, 200, { ...feedResults, tracks, artists, library, youtube: youtubeResults });
+                return this.sendJson(res, 200, { ...feedResults, tracks, artists, topArtist, library, youtube: youtubeResults });
             }
 
             // -------------------------------------------------------------
@@ -1071,22 +1403,37 @@ class ApiRouter {
                 const authUser = this.getAuthUser(req);
                 const userId = authUser ? authUser.userId : 'guest';
                 const jobs = [];
-                const seen = new Set();
+                const seen = new Map();
                 for (const track of body.tracks) {
                     const title = typeof track?.title === 'string' ? track.title.trim().slice(0, 240) : '';
                     const artist = typeof track?.artist === 'string' ? track.artist.trim().slice(0, 160) : '';
+                    const album = typeof track?.album === 'string' ? track.album.trim().slice(0, 240) : '';
+                    const cover = typeof track?.cover === 'string' ? track.cover.trim().slice(0, 1000) : '';
+                    const clientId = typeof track?.clientId === 'string' ? track.clientId.slice(0, 100) : '';
                     const sourceUrl = [track?.url, track?.sourceUrl, track?.playQuery]
                         .find(value => typeof value === 'string' && value.trim())?.trim() || '';
                     const youtubeUrl = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//i.test(sourceUrl) ? sourceUrl : '';
                     const target = youtubeUrl || `${title} ${artist}`.trim();
                     if (!target || target.length > 500) continue;
                     const identity = target.toLocaleLowerCase();
-                    if (seen.has(identity)) continue;
-                    seen.add(identity);
+                    if (seen.has(identity)) {
+                        const originalJob = seen.get(identity);
+                        jobs.push({
+                            clientId, title: title || target, artist, album, cover,
+                            id: originalJob.id, status: originalJob.status, reused: true
+                        });
+                        continue;
+                    }
                     try {
-                        jobs.push({ title: title || target, ...this.startDownload({ url: target, title }, userId) });
+                        const downloadTitle = youtubeUrl && title === 'YouTube download' ? '' : title;
+                        const job = {
+                            clientId, title: title || target, artist, album, cover,
+                            ...this.startDownload({ url: target, title: downloadTitle, artist, album, cover }, userId)
+                        };
+                        jobs.push(job);
+                        seen.set(identity, job);
                     } catch (error) {
-                        jobs.push({ title: title || target, status: 'failed', error: error.message });
+                        jobs.push({ clientId, title: title || target, artist, album, cover, status: 'failed', error: error.message });
                     }
                 }
                 if (!jobs.length) return this.sendError(res, 400, 'No valid tracks were provided.');
@@ -1216,6 +1563,7 @@ class ApiRouter {
                 const userId = authUser ? authUser.userId : 'guest';
                 const body = await this.parseBody(req);
                 if (!Array.isArray(body.tracks)) return this.sendError(res, 400, 'Tracks must be an array.');
+                if (body.tracks.length > 5000) return this.sendError(res, 413, 'Too many tracks in one import request. Import in smaller batches.');
                 return this.sendJson(res, 200, this.db.importLikedSongs(userId, body.tracks));
             }
 
@@ -1478,6 +1826,21 @@ class ApiRouter {
                 const playlist = this.db.reorderPlaylistTracks(playlistTrackOrderMatch[1], userId, body.order);
                 if (!playlist) return this.sendError(res, 400, 'Track order must include each playlist track exactly once.');
                 return this.sendJson(res, 200, playlist);
+            }
+
+            const playlistTrackDeleteMatch = pathname.match(/^\/api\/library\/playlists\/([a-z0-9_-]+)\/tracks\/([^/]+)$/i);
+            if (playlistTrackDeleteMatch && method === 'DELETE') {
+                const authUser = this.getAuthUser(req);
+                const userId = authUser ? authUser.userId : 'guest';
+                const playlistId = playlistTrackDeleteMatch[1];
+                const trackId = decodeURIComponent(playlistTrackDeleteMatch[2]);
+                const playlist = this.db.getPlaylistById(playlistId);
+                if (!playlist || (playlist.userId !== userId && userId !== 'admin')) {
+                    return this.sendError(res, 404, 'Playlist not found or access denied.');
+                }
+                const updated = this.db.removeTrackFromPlaylist(playlistId, trackId);
+                if (!updated) return this.sendError(res, 404, 'Playlist not found.');
+                return this.sendJson(res, 200, updated);
             }
 
             // DELETE /api/library/playlists/:id

@@ -4,6 +4,7 @@
 // =========================================================================
 
 const http = require('http');
+const net = require('net');
 const path = require('path');
 const fs = require('fs');
 
@@ -30,6 +31,25 @@ function loadConfig() {
         storage: { downloadsDir: './downloads', databaseFile: './server/data/db.json' },
         oauth: {}
     };
+}
+
+function findAvailableLoopbackPort(port) {
+    if (!port) return Promise.resolve(port);
+
+    return new Promise((resolve, reject) => {
+        const probe = net.createServer();
+        probe.once('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.warn(`[Server] Loopback port ${port} is in use, attempting ${port + 1}...`);
+                findAvailableLoopbackPort(port + 1).then(resolve, reject);
+                return;
+            }
+            reject(err);
+        });
+        probe.listen(port, '127.0.0.1', () => {
+            probe.close((err) => err ? reject(err) : resolve(port));
+        });
+    });
 }
 
 class AuraServer {
@@ -60,8 +80,8 @@ class AuraServer {
     }
 
     start(requestedPort = null) {
-        return new Promise((resolve, reject) => {
-            const port = requestedPort || this.activePort;
+        const port = requestedPort || this.activePort;
+        return findAvailableLoopbackPort(port).then((availablePort) => new Promise((resolve, reject) => {
             this.server = http.createServer((req, res) => {
                 this.router.handle(req, res).catch(err => {
                     console.error('[Router Error]', err);
@@ -73,16 +93,16 @@ class AuraServer {
 
             this.server.on('error', (err) => {
                 if (err.code === 'EADDRINUSE') {
-                    console.warn(`[Server] Port ${port} is in use, attempting ${port + 1}...`);
+                    console.warn(`[Server] Port ${availablePort} is in use, attempting ${availablePort + 1}...`);
                     this.server.close();
-                    this.start(port + 1).then(resolve).catch(reject);
+                    this.start(availablePort + 1).then(resolve).catch(reject);
                 } else {
                     reject(err);
                 }
             });
 
-            this.server.listen(port, this.host, () => {
-                this.activePort = port;
+            this.server.listen(availablePort, this.host, () => {
+                this.activePort = availablePort;
                 const clientHost = this.host === '0.0.0.0' ? '127.0.0.1' : this.host;
                 console.log(`[AuraAudio Server] Running online at http://${this.host}:${this.activePort}`);
                 console.log(`[AuraAudio Server] API Status: http://${this.host}:${this.activePort}/api/status`);
@@ -94,7 +114,7 @@ class AuraServer {
                     url: `http://${clientHost}:${this.activePort}`
                 });
             });
-        });
+        }));
     }
 
     stop() {

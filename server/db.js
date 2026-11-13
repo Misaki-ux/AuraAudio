@@ -852,13 +852,18 @@ class Database {
         const collection = this.data.liked_songs;
         const existingIds = new Set(collection.filter(item => item.userId === userId).map(item => String(item.trackId || '').toLowerCase()));
         const existingIdentities = new Set(collection.filter(item => item.userId === userId).map(likedSongIdentity).filter(Boolean));
+        const maxTracksPerImport = 5000;
+        const capped = Array.isArray(tracks) && tracks.length > maxTracksPerImport;
+        const sourceTracks = Array.isArray(tracks) ? tracks.slice(0, maxTracksPerImport) : [];
         let added = 0;
-        for (const track of tracks.slice(0, 1000)) {
+        let skipped = 0;
+        for (const track of sourceTracks) {
+            if (!track || typeof track !== 'object') { skipped++; continue; }
             const trackId = String(track.id || track.trackId || '').trim();
             const idKey = trackId.toLowerCase();
             const identity = likedSongIdentity(track);
-            if ((!idKey || existingIds.has(idKey)) || (identity && existingIdentities.has(identity))) continue;
-            existingIds.add(idKey);
+            if ((idKey && existingIds.has(idKey)) || (identity && existingIdentities.has(identity))) { skipped++; continue; }
+            if (idKey) existingIds.add(idKey);
             if (identity) existingIdentities.add(identity);
             collection.unshift({
                 id: 'like_' + crypto.randomBytes(6).toString('hex'), userId, trackId,
@@ -872,7 +877,7 @@ class Database {
             added++;
         }
         if (added) this.save();
-        return { added, total: tracks.length };
+        return { added, skipped, capped, total: Array.isArray(tracks) ? tracks.length : 0, processed: sourceTracks.length };
     }
 
     // --- Playlists ---

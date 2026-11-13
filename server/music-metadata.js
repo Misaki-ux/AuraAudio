@@ -43,6 +43,22 @@ function splitArtistTitle(rawTitle) {
     return { artist: match[1].trim(), title: match[2].trim() };
 }
 
+function normalizeCompareName(value) {
+    return cleanArtistToken(String(value || '')
+        .replace(/[\[(].*?[\])]/gi, ' ')
+        .replace(/\s*[-–—]\s*(?:official|lyrics?|music video|audio|video|live|remix|mix|clip|explicit).*$/i, ' ')
+        .replace(/\s+/g, ' ')
+        .trim());
+}
+
+function removeTrailingArtistFromTitle(title, artist) {
+    const safeTitle = String(title || '').replace(/[\[(].*?[\])]/gi, ' ').trim();
+    const safeArtist = normalizeCompareName(artist);
+    if (!safeTitle || !safeArtist) return safeTitle;
+    const artistPattern = new RegExp(`\\s*[-–—]\\s*${safeArtist.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i');
+    return safeTitle.replace(artistPattern, '').trim();
+}
+
 function parseTrackMeta(info = {}, fallbackTitle = '') {
     // info comes from yt-dlp metadata (or a hand-built object).
     const rawTitle = String(info.title || fallbackTitle || '').trim();
@@ -61,16 +77,24 @@ function parseTrackMeta(info = {}, fallbackTitle = '') {
     const isGeneric = name => !name || GENERIC_ARTIST_RE.test(name);
 
     let artist = '';
-    if (!isGeneric(explicitArtist)) {
+    let titleCandidate = rawTitle;
+
+    if (channelArtist && !isGeneric(channelArtist) && split.title && normalizeCompareName(split.title).toLowerCase() === channelArtist.toLowerCase()) {
+        artist = channelArtist;
+        titleCandidate = split.artist || rawTitle;
+    } else if (!isGeneric(explicitArtist)) {
         artist = explicitArtist;
+        titleCandidate = split.artist && split.title && normalizeCompareName(split.title).toLowerCase() === explicitArtist.toLowerCase() ? split.artist : split.title || rawTitle;
     } else if (!isGeneric(titleParsedArtist)) {
         artist = titleParsedArtist;
+        titleCandidate = split.title || rawTitle;
     } else if (!isGeneric(channelArtist)) {
         artist = channelArtist;
+        titleCandidate = split.title || rawTitle;
     }
 
-    const titleSource = !isGeneric(titleParsedArtist) ? split.title : rawTitle;
-    const title = cleanTitleToken(titleSource) || titleSource || rawTitle;
+    titleCandidate = removeTrailingArtistFromTitle(titleCandidate, artist);
+    const title = cleanTitleToken(titleCandidate) || titleCandidate || rawTitle;
     return { artist, title };
 }
 
@@ -117,7 +141,7 @@ class MusicMetadataService {
             const response = await fetch(url, {
                 headers: {
                     Accept: 'application/json',
-                    'User-Agent': 'AuraAudio/1.2.0 (music discovery; https://github.com/auraplayer)'
+                    'User-Agent': 'AuraAudio/1.6.2 (music discovery; https://github.com/auraplayer)'
                 },
                 signal: AbortSignal.timeout(timeoutMs)
             });
@@ -134,33 +158,26 @@ class MusicMetadataService {
     }
 
     async wikipediaSummary(title, force = false) {
-        if (!force) {
-            return this.cached(`wiki:${title.toLowerCase()}`, 24 * 60 * 60 * 1000, async () => {
+        const fetchSummary = async () => {
+            const summary = { description: '', image: '', articleUrl: '' };
+            for (const language of ['en', 'fr']) {
                 try {
-                    const result = await this.requestJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, 'wikimedia');
-                    return {
-                        description: result.extract || '',
-                        image: result.thumbnail?.source || result.originalimage?.source || '',
-                        articleUrl: result.content_urls?.desktop?.page || result.desktop?.page || ''
-                    };
+                    const result = await this.requestJson(`https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, 'wikimedia');
+                    summary.description ||= result.extract || '';
+                    summary.image ||= result.thumbnail?.source || result.originalimage?.source || '';
+                    summary.articleUrl ||= result.content_urls?.desktop?.page || result.desktop?.page || '';
+                    if (summary.description) break;
                 } catch {
-                    return { description: '', image: '', articleUrl: '' };
+                    continue;
                 }
-            });
-        }
-
-        try {
-            const result = await this.requestJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, 'wikimedia');
-            const summary = {
-                description: result.extract || '',
-                image: result.thumbnail?.source || result.originalimage?.source || '',
-                articleUrl: result.content_urls?.desktop?.page || result.desktop?.page || ''
-            };
-            this.cache.set(`wiki:${title.toLowerCase()}`, { value: summary, expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+            }
             return summary;
-        } catch {
-            return { description: '', image: '', articleUrl: '' };
-        }
+        };
+        if (!force) return this.cached(`wiki:${title.toLowerCase()}`, 24 * 60 * 60 * 1000, fetchSummary);
+
+        const summary = await fetchSummary();
+        this.cache.set(`wiki:${title.toLowerCase()}`, { value: summary, expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+        return summary;
     }
 
     async wikipediaArtistImage(name) {
@@ -230,8 +247,44 @@ class MusicMetadataService {
         const q = String(query || '').trim();
         if (q.length < 2) return [];
         return this.cached(`artist-search:${q.toLowerCase()}`, 15 * 60 * 1000, async () => {
-            const data = await this.requestJson(`https://musicbrainz.org/ws/2/artist/?query=${encodeURIComponent(q)}&fmt=json&limit=${Math.max(1, Math.min(20, limit))}`);
-            return (data.artists || []).map(artist => this.normalizeArtist(artist));
+            const resultLimit = Math.max(1, Math.min(20, limit));
+            const [musicBrainz, itunes] = await Promise.all([
+                this.requestJson(`https://musicbrainz.org/ws/2/artist/?query=${encodeURIComponent(q)}&fmt=json&limit=${resultLimit}`)
+                    .catch(error => {
+                        console.warn(`[MusicMetadata] MusicBrainz artist search failed for "${q}":`, error.message);
+                        return { artists: [] };
+                    }),
+                this.requestJson(`https://itunes.apple.com/search?${new URLSearchParams({ term: q, entity: 'musicArtist', limit: String(resultLimit) })}`, 'itunes')
+                    .catch(error => {
+                        console.warn(`[MusicMetadata] iTunes artist search failed for "${q}":`, error.message);
+                        return { results: [] };
+                    })
+            ]);
+            const artistsByName = new Map();
+            for (const artist of musicBrainz.artists || []) {
+                const normalized = this.normalizeArtist(artist);
+                const key = matchKey(normalized.name);
+                if (key) artistsByName.set(key, normalized);
+            }
+            for (const artist of itunes.results || []) {
+                if (artist.wrapperType !== 'artist' || !artist.artistName) continue;
+                const key = matchKey(artist.artistName);
+                if (key && !artistsByName.has(key)) {
+                    artistsByName.set(key, {
+                        id: '',
+                        name: artist.artistName,
+                        type: artist.artistType || 'Person',
+                        country: '',
+                        disambiguation: '',
+                        score: 0,
+                        tags: []
+                    });
+                }
+            }
+            return [...artistsByName.values()]
+                .sort((a, b) => Number(matchKey(b.name) === matchKey(q)) - Number(matchKey(a.name) === matchKey(q))
+                    || (Number(b.score) || 0) - (Number(a.score) || 0))
+                .slice(0, resultLimit);
         });
     }
 
@@ -240,33 +293,73 @@ class MusicMetadataService {
         return this.cached(`artist-profile:${id}`, 12 * 60 * 60 * 1000, async () => {
             const artistData = await this.requestJson(`https://musicbrainz.org/ws/2/artist/${encodeURIComponent(id)}?fmt=json&inc=genres+tags`);
             const artist = this.normalizeArtist(artistData);
-            const [summary, releaseData, recordings] = await Promise.all([
+            const trackQuery = new URLSearchParams({ term: artist.name, entity: 'song', limit: '50' });
+            const [summary, releaseData, recordings, itunesAlbums, itunesTracks] = await Promise.all([
                 this.wikipediaSummary(artist.name),
-                this.requestJson(`https://musicbrainz.org/ws/2/release-group?artist=${encodeURIComponent(id)}&limit=12&fmt=json`).catch(() => ({ 'release-groups': [] })),
-                this.requestJson(`https://musicbrainz.org/ws/2/recording/?query=${encodeURIComponent(`arid:${id}`)}&limit=12&fmt=json`).catch(() => ({ recordings: [] }))
+                this.requestJson(`https://musicbrainz.org/ws/2/release-group?artist=${encodeURIComponent(id)}&limit=100&fmt=json`).catch(() => ({ 'release-groups': [] })),
+                this.requestJson(`https://musicbrainz.org/ws/2/recording/?query=${encodeURIComponent(`arid:${id}`)}&limit=25&fmt=json`).catch(() => ({ recordings: [] })),
+                this.getItunesAlbumsForArtist(artist.name),
+                this.requestJson(`https://itunes.apple.com/search?${trackQuery}`, 'itunes').catch(error => {
+                    console.warn(`[MusicMetadata] iTunes tracks lookup failed for "${artist.name}":`, error.message);
+                    return { results: [] };
+                })
             ]);
-            const albums = (releaseData['release-groups'] || []).map(release => ({
+            const musicBrainzAlbums = (releaseData['release-groups'] || []).map(release => ({
                 id: release.id,
                 title: release.title,
                 date: release['first-release-date'] || '',
                 type: release['primary-type'] || 'Release',
-                cover: `https://coverartarchive.org/release-group/${release.id}/front-250`
+                cover: `https://coverartarchive.org/release-group/${release.id}/front-250`,
+                artist: artist.name,
+                source: 'musicbrainz'
             }));
-            const tracks = (recordings.recordings || []).map(recording => ({
+            const albumMap = new Map(musicBrainzAlbums.map(album => [matchKey(album.title), album]));
+            for (const album of this.normalizeItunesAlbums(itunesAlbums.results, matchKey(artist.name))) {
+                const key = matchKey(album.title);
+                const existing = albumMap.get(key);
+                if (!existing) albumMap.set(key, album);
+                else {
+                    existing.itunesId = album.id;
+                    if (!existing.cover && album.cover) existing.cover = album.cover;
+                }
+            }
+            const albums = [...albumMap.values()]
+                .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+                .slice(0, 100);
+            const musicBrainzTracks = (recordings.recordings || []).map(recording => ({
                 id: recording.id,
                 title: recording.title,
                 artist: artist.name,
                 duration: recording.length ? Math.round(recording.length / 1000) : 0,
                 source: 'musicbrainz'
             }));
+            const itunesTrackRows = (itunesTracks.results || [])
+                .filter(track => track.wrapperType === 'track' && track.trackName && matchKey(track.artistName) === matchKey(artist.name))
+                .map(track => ({
+                    id: track.trackId ? `itunes_${track.trackId}` : `itunes_${matchKey(track.trackName)}`,
+                    title: track.trackName,
+                    artist: track.artistName || artist.name,
+                    album: track.collectionName || '',
+                    duration: track.trackTimeMillis ? Math.round(track.trackTimeMillis / 1000) : 0,
+                    cover: String(track.artworkUrl100 || '').replace(/\d+x\d+bb\./, '600x600bb.'),
+                    playQuery: `${track.artistName || artist.name} ${track.trackName}`.trim(),
+                    source: 'itunes'
+                }));
+            const trackMap = new Map();
+            for (const track of [...musicBrainzTracks, ...itunesTrackRows]) {
+                const key = matchKey(track.title);
+                if (key && !trackMap.has(key)) trackMap.set(key, track);
+            }
             const curated = fallback || {};
             return {
                 ...artist,
                 description: summary.description || curated.bio || '',
-                image: summary.image || await this.getArtistImage(artist.name, false, summary) || curated.image || curated.avatar || '',
+                image: summary.image || await this.getArtistImage(artist.name, false, summary) || albums.find(album => album.cover)?.cover || curated.image || curated.avatar || '',
                 articleUrl: summary.articleUrl || '',
                 albums,
-                topTracks: tracks.length ? tracks : (curated.topTracks || []).map(track => ({ ...track, artist: artist.name })),
+                topTracks: [...trackMap.values()].slice(0, 25).length
+                    ? [...trackMap.values()].slice(0, 25)
+                    : (curated.topTracks || []).map(track => ({ ...track, artist: artist.name })),
                 sourceUrls: {
                     musicbrainz: `https://musicbrainz.org/artist/${artist.id}`,
                     wikipedia: summary.articleUrl || ''
@@ -311,7 +404,7 @@ class MusicMetadataService {
         return (results || [])
             .filter(item => item.wrapperType === 'collection'
                 && item.collectionName
-                && (!artistKey || matchKey(item.artistName) === artistKey || matchKey(item.artistName).includes(artistKey)))
+                && (!artistKey || matchKey(item.artistName) === artistKey))
             .map(item => ({
                 id: String(item.collectionId),
                 title: item.collectionName,
@@ -319,9 +412,30 @@ class MusicMetadataService {
                 date: String(item.releaseDate || '').slice(0, 10),
                 type: releaseType(item.collectionName, item.collectionType),
                 genre: item.primaryGenreName || '',
-                cover: String(item.artworkUrl100 || '').replace(/\d+x\d+bb\./, '600x600bb.')
+                cover: String(item.artworkUrl100 || '').replace(/\d+x\d+bb\./, '600x600bb.'),
+                source: 'itunes'
             }))
             .filter(release => release.id && release.title);
+    }
+
+    async getItunesAlbumsForArtist(name) {
+        const cleanName = String(name || '').trim().slice(0, 120);
+        if (cleanName.length < 2) return { results: [] };
+        const artistQuery = new URLSearchParams({ term: cleanName, entity: 'musicArtist', limit: '25' });
+        const artistData = await this.requestJson(`https://itunes.apple.com/search?${artistQuery}`, 'itunes').catch(error => {
+            console.warn(`[MusicMetadata] iTunes artist lookup failed for "${cleanName}":`, error.message);
+            return { results: [] };
+        });
+        const exactArtist = (artistData.results || []).find(item => item.wrapperType === 'artist'
+            && matchKey(item.artistName) === matchKey(cleanName));
+        const albumQuery = exactArtist?.artistId
+            ? new URLSearchParams({ id: String(exactArtist.artistId), entity: 'album', limit: '200' })
+            : new URLSearchParams({ term: cleanName, entity: 'album', limit: '200' });
+        const endpoint = exactArtist?.artistId ? 'lookup' : 'search';
+        return this.requestJson(`https://itunes.apple.com/${endpoint}?${albumQuery}`, 'itunes').catch(error => {
+            console.warn(`[MusicMetadata] iTunes albums lookup failed for "${cleanName}":`, error.message);
+            return { results: [] };
+        });
     }
 
     async getArtistTopAlbums(name) {
@@ -422,11 +536,61 @@ class MusicMetadataService {
     }
 
     async getArtistByName(name, fallback = null) {
+        const cleanName = String(name || '').trim().slice(0, 120);
+        if (cleanName.length < 2) return fallback ? this.getFeaturedArtist(fallback) : null;
         const matches = await this.searchArtists(name, 5);
-        const normalized = String(name || '').trim().toLowerCase();
-        const match = matches.find(item => item.name.toLowerCase() === normalized) || matches[0];
-        if (!match) return fallback ? this.getFeaturedArtist(fallback) : null;
-        return this.getArtistProfile(match.id, fallback);
+        const exactMatch = matches.find(item => matchKey(item.name) === matchKey(cleanName));
+        if (!exactMatch?.id) return this.getArtistCatalogProfile(cleanName, fallback);
+        try {
+            return await this.getArtistProfile(exactMatch.id, fallback);
+        } catch (error) {
+            console.warn(`[MusicMetadata] MusicBrainz profile failed for "${cleanName}"; trying the catalog profile:`, error.message);
+            return this.getArtistCatalogProfile(cleanName, fallback);
+        }
+    }
+
+    async getArtistCatalogProfile(name, fallback = null) {
+        const cleanName = String(name || '').trim().slice(0, 120);
+        if (cleanName.length < 2) return fallback ? this.getFeaturedArtist(fallback) : null;
+        return this.cached(`artist-catalog-profile:${matchKey(cleanName)}`, 12 * 60 * 60 * 1000, async () => {
+            const trackQuery = new URLSearchParams({ term: cleanName, entity: 'song', limit: '50' });
+            const [summary, albumData, trackData] = await Promise.all([
+                this.wikipediaSummary(cleanName),
+                this.getItunesAlbumsForArtist(cleanName),
+                this.requestJson(`https://itunes.apple.com/search?${trackQuery}`, 'itunes')
+            ]);
+            const artistName = [...(albumData.results || []), ...(trackData.results || [])]
+                .find(item => matchKey(item.artistName) === matchKey(cleanName))?.artistName || cleanName;
+            const artistKey = matchKey(artistName);
+            const albums = this.normalizeItunesAlbums(albumData.results, artistKey)
+                .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            const topTracks = (trackData.results || [])
+                .filter(track => track.wrapperType === 'track' && track.trackName && matchKey(track.artistName) === artistKey)
+                .map(track => ({
+                    id: track.trackId ? `itunes_${track.trackId}` : `itunes_${matchKey(track.trackName)}`,
+                    title: track.trackName,
+                    artist: track.artistName || artistName,
+                    album: track.collectionName || '',
+                    duration: track.trackTimeMillis ? Math.round(track.trackTimeMillis / 1000) : 0,
+                    cover: String(track.artworkUrl100 || '').replace(/\d+x\d+bb\./, '600x600bb.'),
+                    playQuery: `${track.artistName || artistName} ${track.trackName}`.trim(),
+                    source: 'itunes'
+                }));
+            if (!albums.length && !topTracks.length) return fallback ? this.getFeaturedArtist(fallback) : null;
+            return {
+                id: '',
+                name: artistName,
+                type: 'Person',
+                country: '',
+                tags: [],
+                description: summary.description || fallback?.bio || '',
+                image: summary.image || albums.find(album => album.cover)?.cover || await this.getArtistImage(artistName, false, summary) || fallback?.image || fallback?.avatar || '',
+                articleUrl: summary.articleUrl || '',
+                albums,
+                topTracks: topTracks.slice(0, 25),
+                sourceUrls: { wikipedia: summary.articleUrl || '', itunes: 'https://www.apple.com/apple-music/' }
+            };
+        });
     }
 
     async findItunesTrack(title, artist = '') {
@@ -493,15 +657,121 @@ class MusicMetadataService {
         const cleanName = String(name || '').trim().slice(0, 180);
         const cleanArtist = String(artist || '').trim().slice(0, 120);
         if (cleanName.length < 2) return null;
-        return this.cached(`itunes-album-name:${matchKey(cleanName)}:${matchKey(cleanArtist)}`, 24 * 60 * 60 * 1000, async () => {
-            const query = new URLSearchParams({ term: [cleanArtist, cleanName].filter(Boolean).join(' '), entity: 'album', limit: '25' });
-            const data = await this.requestJson(`https://itunes.apple.com/search?${query}`, 'itunes');
+        const cacheKey = `itunes-album-name-v2:${matchKey(cleanName)}:${matchKey(cleanArtist)}`;
+        const cached = this.cache.get(cacheKey);
+        if (cached && cached.expiresAt > Date.now() && cached.value?.tracks?.length) return cached.value;
+
+        const searchAndResolve = async (term, artistKey, strict = false) => {
+            const query = new URLSearchParams({ term, entity: 'album', limit: '25' });
+            const data = await this.requestJson(`https://itunes.apple.com/search?${query}`, 'itunes').catch(() => ({ results: [] }));
             const nameKey = matchKey(cleanName);
-            const artistKey = matchKey(cleanArtist);
-            const match = (data.results || []).find(item => matchKey(item.collectionName) === nameKey
-                && (!artistKey || matchKey(item.artistName) === artistKey || matchKey(item.artistName).includes(artistKey)));
-            return match ? this.lookupItunesCollection(match.collectionId) : null;
-        });
+            const results = (data.results || []).filter(item => item.wrapperType === 'collection' && item.collectionName);
+            const score = (item) => {
+                const cKey = matchKey(item.collectionName);
+                const aKey = matchKey(item.artistName);
+                let v = 0;
+                if (cKey === nameKey) v += 100;
+                else if (cKey.includes(nameKey) || nameKey.includes(cKey)) v += 55;
+                else if (strict) return -1;
+                else v += 10;
+                if (artistKey) {
+                    if (aKey === artistKey) v += 60;
+                    else if (aKey.includes(artistKey) || artistKey.includes(aKey)) v += 25;
+                    else if (strict) return -1;
+                }
+                return v;
+            };
+            const candidates = results
+                .map(item => ({ item, score: score(item) }))
+                .filter(entry => entry.score > 0)
+                .sort((a, b) => b.score - a.score);
+            for (const candidate of candidates.slice(0, 5)) {
+                const album = await this.lookupItunesCollection(candidate.item.collectionId).catch(() => null);
+                if (album?.tracks?.length) return { ...album, found: true };
+            }
+            return candidates[0] ? await this.lookupItunesCollection(candidates[0].item.collectionId).catch(() => null) : null;
+        };
+
+        const artistKey = matchKey(cleanArtist);
+        let result = null;
+        if (cleanArtist) result = await searchAndResolve([cleanArtist, cleanName].filter(Boolean).join(' '), artistKey, false);
+        if (!result?.tracks?.length) result = await searchAndResolve(cleanName, artistKey, false);
+        if (!result?.tracks?.length && !artistKey) result = await searchAndResolve(cleanName, '', false);
+        if (result?.tracks?.length) {
+            result.found = true;
+            this.cache.set(cacheKey, { value: result, expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+            return result;
+        }
+        return result; // may be found with empty tracks, but don't cache empty as success
+    }
+
+    async lookupAlbumById(id, source, itunesId = '', title = '', artist = '') {
+        const cleanId = String(id || '').trim();
+        const cleanItunesId = /^d+$/.test(String(itunesId || '').trim()) ? String(itunesId).trim() : '';
+        const hasTracks = (value) => Boolean(value && Array.isArray(value.tracks) && value.tracks.length);
+
+        if (cleanItunesId) {
+            const result = await this.lookupItunesCollection(cleanItunesId).catch(() => null);
+            if (hasTracks(result)) return result;
+        }
+        if (/^d+$/.test(cleanId)) {
+            const result = await this.lookupItunesCollection(cleanId).catch(() => null);
+            if (hasTracks(result)) return result;
+        }
+
+        if (/^[a-f0-9-]{36}$/i.test(cleanId)) {
+            const cacheKey = `musicbrainz-album-track-v2:${cleanId}`;
+            const cached = this.cache.get(cacheKey);
+            if (cached && cached.expiresAt > Date.now() && cached.value?.tracks?.length) return cached.value;
+            try {
+                const group = await this.requestJson(`https://musicbrainz.org/ws/2/release-group/${encodeURIComponent(cleanId)}?inc=releases&fmt=json`);
+                const releases = group.releases || [];
+                const ranked = [...releases].sort((a, b) => (a.status === 'Official' ? -1 : 1) - (b.status === 'Official' ? -1 : 1));
+                for (const release of ranked.slice(0, 4)) {
+                    if (!release?.id) continue;
+                    try {
+                        const releaseData = await this.requestJson(`https://musicbrainz.org/ws/2/release/${encodeURIComponent(release.id)}?inc=recordings+artist-credits&fmt=json`);
+                        const artistName = (releaseData['artist-credit'] || [])
+                            .filter(credit => typeof credit === 'object')
+                            .map(credit => credit.name || credit.artist?.name)
+                            .filter(Boolean)
+                            .join(', ');
+                        const tracks = (releaseData.media || []).flatMap(medium => (medium.tracks || []).map(track => ({
+                            title: track.title || track.recording?.title || '',
+                            artist: (track['artist-credit'] || releaseData['artist-credit'] || [])
+                                .filter(credit => typeof credit === 'object')
+                                .map(credit => credit.name || credit.artist?.name)
+                                .filter(Boolean)
+                                .join(', ') || artistName,
+                            duration: track.length || track.recording?.length
+                                ? Math.round((track.length || track.recording.length) / 1000)
+                                : null,
+                            source: 'musicbrainz'
+                        }))).filter(track => track.title);
+                        if (tracks.length) {
+                            const result = {
+                                found: true,
+                                title: release.title || group.title || '',
+                                artist: artistName,
+                                cover: `https://coverartarchive.org/release/${release.id}/front-250`,
+                                tracks
+                            };
+                            this.cache.set(cacheKey, { value: result, expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+                            return result;
+                        }
+                    } catch (releaseError) {
+                        console.warn('[MusicMetadata] Release lookup failed:', release?.id, releaseError.message);
+                    }
+                }
+            } catch (error) {
+                console.warn('[MusicMetadata] MusicBrainz album lookup failed:', cleanId, error.message);
+            }
+        }
+
+        const fallbackTitle = String(title || '').trim();
+        const fallbackArtist = String(artist || '').trim();
+        if (fallbackTitle) return this.lookupAlbumByName(fallbackTitle, fallbackArtist);
+        return null;
     }
 
     async lookupTrack(title, artist = '') {

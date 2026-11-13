@@ -65,7 +65,7 @@ async function fetchLegitimateCover(artist, title) {
     try {
         const query = encodeURIComponent(`recording:"${title}" AND artist:"${artist}"`);
         const mbRes = await fetch(`https://musicbrainz.org/ws/2/recording/?query=${query}&fmt=json&limit=1`, {
-            headers: { 'User-Agent': 'AuraAudio/1.2.0 (https://github.com/auraplayer)' },
+            headers: { 'User-Agent': 'AuraAudio/1.6.2 (https://github.com/auraplayer)' },
             signal: AbortSignal.timeout(4000) 
         });
         if (mbRes.ok) {
@@ -146,7 +146,7 @@ class YouTubeService {
         
         this.queue = [];
         this.activeProcesses = 0;
-        this.maxConcurrent = 1; 
+        this.maxConcurrent = 2;
         this.proxy = process.env.YTB_PROXY_URL || null; 
 
         this.ytDlpExecutable = locateTool('yt-dlp');
@@ -236,13 +236,17 @@ class YouTubeService {
         return coverUrl ? this.cacheCover(coverUrl, fileName) : null;
     }
 
-    async processQueue() {
-        if (this.activeProcesses >= this.maxConcurrent || this.queue.length === 0) return;
-        this.activeProcesses++;
-        const { task, resolve, reject } = this.queue.shift();
-        try { resolve(await task()); } catch (err) { reject(err); } finally {
-            this.activeProcesses--;
-            this.processQueue();
+    processQueue() {
+        while (this.activeProcesses < this.maxConcurrent && this.queue.length > 0) {
+            this.activeProcesses++;
+            const { task, resolve, reject } = this.queue.shift();
+            Promise.resolve()
+                .then(task)
+                .then(resolve, reject)
+                .finally(() => {
+                    this.activeProcesses--;
+                    this.processQueue();
+                });
         }
     }
 
@@ -281,12 +285,16 @@ class YouTubeService {
         // Allocate the job before it enters the serialized yt-dlp queue. Callers
         // need a stable progress id even while another download is active.
         const downloadId = 'dl_' + crypto.randomBytes(8).toString('hex');
+        const metadata = options.metadata && typeof options.metadata === 'object' ? options.metadata : {};
         this.activeDownloads.set(downloadId, {
             id: downloadId,
             status: 'queued',
             progress: 0,
             targetUrl,
-            title: customTitle || 'Downloading…',
+            title: customTitle || metadata.title || 'Downloading…',
+            artist: metadata.artist || '',
+            album: metadata.album || '',
+            cover: metadata.cover || '',
             stage: 'Queued',
             result: null
         });
@@ -298,7 +306,7 @@ class YouTubeService {
                 task: () => new Promise(async (res, rej) => {
                     this.ensureDir();
                     const job = this.activeDownloads.get(downloadId);
-                    if (job) { job.status = 'downloading'; job.stage = 'Starting'; }
+                    if (job) { job.status = 'downloading'; job.stage = 'Resolving video metadata…'; }
                     const outputTemplate = path.join(this.downloadsDir, `%(title)s [${downloadId}].%(ext)s`);
                     const isSearch = !/^https?:\/\//i.test(targetUrl);
                     const downloadTarget = isSearch ? `ytsearch3:${targetUrl}` : targetUrl;
@@ -323,15 +331,17 @@ class YouTubeService {
                         return rej(error);
                     }
 
-                    let outputBuffer = '', downloadedFilePath = null, videoThumbnail = null, videoId = null, videoMetadata = null, lastInfoLine = 'Starting';
-                    let stageTimer = null, stalledTimer = null;
-                    let extractorStarted = false;
-                    const refreshStage = () => {
-                        const current = this.activeDownloads.get(downloadId);
-                        if (current && current.stage !== 'Downloading') {
-                            current.stage = lastInfoLine || 'Starting';
-                        }
+                    let downloadedFilePath = null, videoThumbnail = null, videoId = null, videoMetadata = null;
+                    const outputBuffers = { stdout: '', stderr: '' };
+                    let processError = null;
+                    const failureLines = [];
+                    const rememberFailure = text => {
+                        if (!/(?:\bERROR:|\berror\b|ffmpeg|ffprobe|postprocess|not found|not installed|unable to)/i.test(text)) return;
+                        failureLines.push(text.slice(0, 320));
+                        if (failureLines.length > 5) failureLines.shift();
                     };
+                    let stalledTimer = null;
+                    let extractorStarted = false;
                     const tickStalled = () => {
                         // yt-dlp extractor phase is silent for a long time on
                         // unavailable / geo-blocked videos. Surface that the job is
@@ -344,12 +354,14 @@ class YouTubeService {
                         }
                     };
                     const consumeOutput = (data, isError = false) => {
-                        outputBuffer += data.toString();
-                        const lines = outputBuffer.split(/\r?\n|\r/);
-                        outputBuffer = lines.pop() || '';
+                        const stream = isError ? 'stderr' : 'stdout';
+                        outputBuffers[stream] += data.toString();
+                        const lines = outputBuffers[stream].split(/\r?\n|\r/);
+                        outputBuffers[stream] = lines.pop() || '';
                         for (const line of lines) {
                             const text = line.replace(/\x1b\[[0-9;]*m/g, '').trim();
                             if (!text) continue;
+                            if (isError) rememberFailure(text);
                             const metadataPrefix = '__AURAAUDIO_METADATA__';
                             if (text.startsWith(metadataPrefix)) {
                                 const [artist, creator, channel, uploader, title] = text.slice(metadataPrefix.length)
@@ -366,8 +378,9 @@ class YouTubeService {
                                 // yt-dlp resolves the extractor / fetches the m3u8.
                                 const infoMatch = text.match(/^\[info\]\s+(.+)$/i);
                                 if (infoMatch) {
-                                    lastInfoLine = infoMatch[1].slice(0, 80);
+                                    const infoLine = infoMatch[1].slice(0, 80);
                                     extractorStarted = true;
+                                    if (current && current.stage !== 'Downloading') current.stage = infoLine;
                                 }
                             }
                             
@@ -383,15 +396,16 @@ class YouTubeService {
                     };
                     process.stdout.on('data', d => consumeOutput(d));
                     process.stderr.on('data', d => consumeOutput(d, true));
-                    // Heartbeat: push a fresh stage label every 2s so progress polls
-                    // during the long yt-dlp extractor phase report something useful.
-                    stageTimer = setInterval(refreshStage, 2000);
                     stalledTimer = setInterval(tickStalled, 8000);
 
                     process.on('close', async (code) => {
-                        if (stageTimer) clearInterval(stageTimer);
                         if (stalledTimer) clearInterval(stalledTimer);
                         this.processes.delete(downloadId);
+                        if (processError) return;
+                        for (const remainingOutput of Object.values(outputBuffers)) {
+                            const text = remainingOutput.replace(/\x1b\[[0-9;]*m/g, '').trim();
+                            if (text) rememberFailure(text);
+                        }
                         
                         if (!downloadedFilePath || !fs.existsSync(downloadedFilePath)) {
                             const files = fs.readdirSync(this.downloadsDir).filter(f => f.includes(`[${downloadId}]`));
@@ -404,21 +418,28 @@ class YouTubeService {
                                 const fileName = path.basename(downloadedFilePath);
                                 const parsedName = path.parse(fileName).name.replace(` [${downloadId}]`, '');
 
-                                // Prefer extractor metadata, then parse the downloaded title.
+                                // Keep the selected library metadata attached to its own job;
+                                // extractor fields are only a fallback when a client omitted it.
                                 const parsed = parseTrackMeta(videoMetadata || {}, parsedName);
-                                const artist = parsed.artist || 'YouTube Audio';
-                                const title = parsed.title || customTitle || 'Downloaded Audio';
+                                const supplied = parseTrackMeta({ artist: metadata.artist, title: metadata.title || customTitle || '' });
+                                const artist = supplied.artist || parsed.artist || 'YouTube Audio';
+                                const title = supplied.title || parsed.title || customTitle || 'Downloaded Audio';
+                                const album = String(metadata.album || '').trim();
 
                                 const urlId = (targetUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) || [])[1];
                                 const id = videoId || urlId;
-                                const sourceArtwork = isAllowedArtworkUrl(videoThumbnail) ? videoThumbnail
-                                    : (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
-                                const cachedCover = await this.resolveAndCacheCover(artist, title, fileName, sourceArtwork);
+                                const sourceArtwork = isAllowedArtworkUrl(metadata.cover) ? metadata.cover
+                                    : (isAllowedArtworkUrl(videoThumbnail) ? videoThumbnail
+                                    : (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : ''));
+                                let cachedCover = '';
+                                if (isAllowedArtworkUrl(metadata.cover)) cachedCover = await this.cacheCover(metadata.cover, fileName);
+                                if (!cachedCover) cachedCover = await this.resolveAndCacheCover(artist, title, fileName, sourceArtwork);
 
                                 const result = {
                                     id: downloadId,
                                     title,
                                     artist,
+                                    album,
                                     filePath: downloadedFilePath,
                                     fileName,
                                     fileSize: stats.size,
@@ -427,7 +448,9 @@ class YouTubeService {
                                     streamUrl: `/api/media/${encodeURIComponent(fileName)}`
                                 };
 
+                                const current = this.activeDownloads.get(downloadId) || {};
                                 this.activeDownloads.set(downloadId, {
+                                    ...current,
                                     id: downloadId,
                                     status: 'completed',
                                     progress: 100,
@@ -447,15 +470,17 @@ class YouTubeService {
                         }
 
                         const current = this.activeDownloads.get(downloadId);
+                        const failure = failureLines.at(-1) || `Download failed (code ${code}). File not found.`;
                         if (current) {
                             current.status = 'failed';
-                            current.stage = 'Failed';
-                            current.error = `Download failed (code ${code}). File not found.`;
+                            current.stage = failure;
+                            current.error = failure;
                         }
-                        rej(new Error(`Download failed (code ${code}). File not found.`));
+                        rej(new Error(failure));
                     });
 
                     process.on('error', (err) => {
+                        processError = err;
                         this.processes.delete(downloadId);
                         const current = this.activeDownloads.get(downloadId);
                         if (current) { current.status = 'failed'; current.stage = 'Failed'; current.error = err.message; }
